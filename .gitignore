@@ -1,0 +1,6 @@
+Backend/StockWise/appsettings.json
+Backend/StockWise/bin/Debug/net8.0/appsettings.json
+.vs/
+*.user
+*.suo
+*.vsidx
