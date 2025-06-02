@@ -39,3 +39,12 @@ export const postProductToApi = async(product: ProductDto)=>{
         console.log(err);
     }
 }
+
+export const getProductsByEanFromApi = async(ean: string) => {
+    try{
+        const response = await axios.get<Product>(`https://localhost:7178/api/Ean/${ean}`);
+        return response.data
+    }catch(err){
+        console.log(err);
+    }
+}

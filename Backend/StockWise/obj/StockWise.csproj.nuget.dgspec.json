@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\DESKTOP\\source\\repos\\StockWise\\StockWise\\StockWise.csproj": {}
+    "C:\\Users\\DESKTOP\\source\\repos\\StockWise\\Backend\\StockWise\\StockWise.csproj": {}
   },
   "projects": {
-    "C:\\Users\\DESKTOP\\source\\repos\\StockWise\\StockWise\\StockWise.csproj": {
+    "C:\\Users\\DESKTOP\\source\\repos\\StockWise\\Backend\\StockWise\\StockWise.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\DESKTOP\\source\\repos\\StockWise\\StockWise\\StockWise.csproj",
+        "projectUniqueName": "C:\\Users\\DESKTOP\\source\\repos\\StockWise\\Backend\\StockWise\\StockWise.csproj",
         "projectName": "StockWise",
-        "projectPath": "C:\\Users\\DESKTOP\\source\\repos\\StockWise\\StockWise\\StockWise.csproj",
+        "projectPath": "C:\\Users\\DESKTOP\\source\\repos\\StockWise\\Backend\\StockWise\\StockWise.csproj",
         "packagesPath": "C:\\Users\\DESKTOP\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\DESKTOP\\source\\repos\\StockWise\\StockWise\\obj\\",
+        "outputPath": "C:\\Users\\DESKTOP\\source\\repos\\StockWise\\Backend\\StockWise\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

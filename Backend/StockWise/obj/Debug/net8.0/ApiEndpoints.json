@@ -1,5 +1,21 @@
 [
   {
+    "ContainingType": "StockWise.Controllers.EanController",
+    "Method": "GetProductByEan",
+    "RelativePath": "api/Ean/{ean}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "ean",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "StockWise.Controllers.ProductController",
     "Method": "GetProducts",
     "RelativePath": "api/Product",

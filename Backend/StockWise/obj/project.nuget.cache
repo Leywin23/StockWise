@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "b5hrVd45kXc=",
+  "dgSpecHash": "BUDlz8hHN4Y=",
   "success": true,
-  "projectFilePath": "C:\\Users\\DESKTOP\\source\\repos\\StockWise\\StockWise\\StockWise.csproj",
+  "projectFilePath": "C:\\Users\\DESKTOP\\source\\repos\\StockWise\\Backend\\StockWise\\StockWise.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\DESKTOP\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\DESKTOP\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",
