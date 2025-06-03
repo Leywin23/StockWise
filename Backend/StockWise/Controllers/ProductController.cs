@@ -21,6 +21,10 @@ namespace StockWise.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetProductById(int id)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
 
             var product = _context.products.FirstOrDefault(x => x.ProductId == id);
             if (product == null)
@@ -40,6 +44,10 @@ namespace StockWise.Controllers
         [HttpPost]
         public async Task<IActionResult> AddProduct([FromBody] CreateProductDto productDto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
             if (productDto == null) {
                 return BadRequest("Product data is required.");
             }
@@ -58,6 +66,35 @@ namespace StockWise.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetProductById), new { id = product.ProductId }, product);
+        }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteProduct(int id)
+        {
+            if (!ModelState.IsValid) {
+                return BadRequest();
+            }
+            var productToDelete = await _context.products.FindAsync(id);
+            if (productToDelete == null) {
+                return NotFound($"Couldn't find a product with given id: {id}");
+            }
+            _context.products.Remove(productToDelete);
+            await _context.SaveChangesAsync();
+            return Ok(productToDelete);
+        }
+        [HttpPut]
+        public async Task<IActionResult> UpdateProduct(Product product) {
+            var productToUpdate = await _context.products.FirstOrDefaultAsync(x=>x.EAN == product.EAN);
+            if (productToUpdate == null) {
+                return NotFound($"Couldn't find a product");
+            }
+            productToUpdate.ProductName = product.ProductName;
+            productToUpdate.Category = product.Category;
+            productToUpdate.Description = product.Description;
+            productToUpdate.ShoppingPrice = product.ShoppingPrice;
+            productToUpdate.SellingPrice = product.SellingPrice;
+            productToUpdate.Image = product.Image;
+            await _context.SaveChangesAsync();
+            return Ok(productToUpdate);
         }
     }
 }

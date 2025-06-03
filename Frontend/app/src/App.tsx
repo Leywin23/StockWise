@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import {
+  DeleteProductApi,
   getProductsByEanFromApi,
   getProductsFromApi,
   postProductToApi,
   Product,
-  ProductDto
+  ProductDto,
+  UpdateProductApi
 } from './api';
 
 function App() {
@@ -20,11 +22,16 @@ function App() {
     sellingPrice: 0,
     category: ''
   });
-
+  const[isEdited, setIsEdited] = useState<boolean>(false);
   const[eanProduct, setEanProduct] = useState<ProductDto>();
 
   const [eanSearch, setEanSearch] = useState('');
   const [message, setMessage] = useState('');
+
+  const [editedProduct, setEditedProduct] = useState<Product | null>(null);
+
+
+  
 
   const handleEanSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +87,37 @@ function App() {
     setNewProduct(prev=>({...prev, [name]: value}))
   };
 
+  const handleDelete = async(id:number) =>{
+    try{
+      const result = await DeleteProductApi(id);
+      alert("The product has been removed.");
+      await loadProducts();
+    }catch(err){
+      console.log(`Error while deleting ${err}`)
+    }
+
+  };
+
+  const handleEdit = async(product: Product)=>{
+    setIsEdited(true);
+    setEditedProduct(product);
+  };
+
+  const handleEditChange = (e:any)=>{
+    const {name, value} = e.target;
+    setEditedProduct(prev =>
+      prev ? { ...prev, [name]: value } : null
+    );
+  }
+  const editProduct = async(e:any,product: Product)=>{
+    e.preventDefault();
+    try{
+      await UpdateProductApi(product);
+      loadProducts();
+    }catch(err){
+      console.log(err);
+    }
+  }
   return (
     <div className="App">
       {products.length > 0 ? (
@@ -88,6 +126,41 @@ function App() {
             <h2>{p.productName}</h2>
             <h3>{p.description}</h3>
             <p>{p.sellingPrice}$</p>
+            <button onClick={()=>handleDelete(p.productId)}>Delete</button>
+            <button onClick={()=>handleEdit(p)}>Edit</button>
+             {isEdited && editedProduct?.productId === p.productId && (
+        <form onSubmit={(e) => {
+            editProduct(e, editedProduct);
+            setIsEdited(false);
+            setEditedProduct(null);
+          }}>
+          <input name="productName" value={editedProduct.productName} onChange={handleEditChange} placeholder="Product Name" />
+          <input name="ean" value={editedProduct.ean} onChange={handleEditChange} placeholder="EAN" />
+          <input name="image" value={editedProduct.image} onChange={handleEditChange} placeholder="Image" />
+          <input name="description" value={editedProduct.description} onChange={handleEditChange} placeholder="Description" />
+          <input
+            type="number"
+            name="shoppingPrice"
+            value={editedProduct.shoppingPrice}
+            onChange={handleEditChange}
+            placeholder="Shopping Price"
+          />
+          <input
+            type="number"
+            name="sellingPrice"
+            value={editedProduct.sellingPrice}
+            onChange={handleEditChange}
+            placeholder="Selling Price"
+          />
+          <input
+            name="category"
+            value={editedProduct.category}
+            onChange={handleEditChange}
+            placeholder="Category"
+          />
+          <button type="submit">Save Changes</button>
+        </form>
+      )}
           </li>
         ))
       ) : (
@@ -130,6 +203,7 @@ function App() {
           <p><strong>Category:</strong> {newProduct.category}</p>
           <p><strong>Shopping Price:</strong> {newProduct.shoppingPrice}</p>
           <p><strong>Selling Price:</strong> {newProduct.sellingPrice}</p>
+          
         </div>
       )}
 
