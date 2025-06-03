@@ -21,6 +21,8 @@ function App() {
     category: ''
   });
 
+  const[eanProduct, setEanProduct] = useState<ProductDto>();
+
   const [eanSearch, setEanSearch] = useState('');
   const [message, setMessage] = useState('');
 
@@ -67,7 +69,7 @@ function App() {
         return;
       }
       const { productId, ...productDto } = product;
-      setNewProduct(productDto);
+      setEanProduct(productDto);
     } catch (error) {
       console.error("Błąd podczas pobierania produktu:", error);
     }
@@ -141,6 +143,31 @@ function App() {
           />
           <button type="submit">Search by EAN</button>
         </form>
+
+        {eanProduct &&
+          <form onSubmit={(e) => addProduct(e, newProduct)}>
+            <input name="productName" value={eanProduct.productName} onChange={handleChange} placeholder="Product Name" />
+            <input name="ean" value={eanProduct.ean} onChange={handleChange} placeholder="EAN" />
+            <input name="image" value={eanProduct.image} onChange={handleChange} placeholder="Image" />
+            <input name="description" value={eanProduct.description} onChange={handleChange} placeholder="Description" />
+            <input
+              type="number"
+              name="shoppingPrice"
+              value={eanProduct.shoppingPrice}
+              onChange={handleChange}
+              placeholder="Shopping Price"
+            />
+            <input
+              type="number"
+              name="sellingPrice"
+              value={eanProduct.sellingPrice}
+              onChange={handleChange}
+              placeholder="Selling Price"
+            />
+            <input name="category" value={eanProduct.category} onChange={handleChange} placeholder="Category" />
+            <button type="submit">Add Product</button>
+          </form>
+        }
       </div>
     </div>
   );
