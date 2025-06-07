@@ -9,6 +9,7 @@
         public string Description {  get; set; }
         public decimal ShoppingPrice { get; set; } = 0;
         public decimal SellingPrice { get; set; } = 0;
-        public string Category { get; set; }
+        public int CategoryId {  get; set; }
+        public Category Category { get; set; }
     }
 }

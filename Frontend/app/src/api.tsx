@@ -1,6 +1,12 @@
 import React from 'react'
 import axios from 'axios';
 
+export type Category = {
+  categoryId: number;
+  name: string;
+  parent?: Category | null;
+}
+
 export type Product = {
     productId: number;
     productName: string;
@@ -9,7 +15,7 @@ export type Product = {
     description: string;
     shoppingPrice: number;
     sellingPrice: number;
-    category: string;
+     category: Category;
 }
 
 export type ProductDto = {
@@ -21,19 +27,30 @@ export type ProductDto = {
     sellingPrice: number;
     category: string;
 }
+type ProductsApiResponse = {
+  $id: string;
+  $values: ProductWithCategory[]; 
+};
 
-export const getProductsFromApi = async()=>{
-    try{
-        const response = await axios.get<Product[]>('https://localhost:7178/api/Product');
-        return response.data
-    }catch(err){
-        console.log(err);
-    }
+export type ProductWithCategory={
+    product: Product;
+    categoryString: string;
 }
+export const getProductsFromApi = async (): Promise<ProductWithCategory[]> => {
+  try {
+    const response = await axios.get<ProductsApiResponse>('https://localhost:7178/api/Product');
+    return response.data.$values;
+  } catch (err) {
+    console.error(err);
+    return []; 
+  }
+};
+
+
 
 export const postProductToApi = async(product: ProductDto)=>{
     try{
-        const response = await axios.post<Product>('`https://localhost:7178/api', product);
+        const response = await axios.post<Product>('https://localhost:7178/api/Product', product);
         return response.data;
     }catch(err){
         console.log(err);

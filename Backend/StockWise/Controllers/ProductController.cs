@@ -5,6 +5,7 @@ using StockWise.Data;
 using StockWise.Models;
 using StockWise.Dtos;
 using static System.Net.Mime.MediaTypeNames;
+using StockWise.Migrations;
 
 namespace StockWise.Controllers
 {
@@ -26,21 +27,67 @@ namespace StockWise.Controllers
                 return BadRequest();
             }
 
-            var product = _context.products.FirstOrDefault(x => x.ProductId == id);
+            var product = await _context.products
+                .Include(p=>p.Category)
+                .ThenInclude(c=>c.Parent)
+                .FirstOrDefaultAsync(p=>p.ProductId == id);
+
             if (product == null)
             {
                 return NotFound();
             }
 
-            return Ok(product);
+            var categoryFullPath = GetCategoryFullPath(product.Category);
+
+            var result = new
+            {
+                Product = product,
+                CategoryPath = categoryFullPath,
+            };
+            
+            return Ok(result);
+        }
+
+        private string GetCategoryFullPath(Models.Category category)
+        {
+           var names = new List<string>();
+            var current = category;
+
+            while (current != null)
+            {
+                names.Add(current.Name);
+                if (current.Parent == null && current.ParentId != null)
+                {
+                    current = _context.categories.FirstOrDefault(c => c.CategoryId == current.ParentId);
+                }
+                else
+                {
+                    current = current.Parent;
+                }
+            }
+            names.Reverse();
+            return string.Join(" > ", names);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetProducts()
         {
-            List<Product> products = await _context.products.ToListAsync();
-            return Ok(products);
+            List<Product> products = await _context.products.Include(p=>p.Category).ThenInclude(c=>c.Parent).ToListAsync();
+            
+            var result = new List<object>();
+
+            foreach (var product in products)
+            {
+                var categoryString = GetCategoryFullPath(product.Category);
+                result.Add(new
+                {
+                    Product = product,
+                    CategoryString = categoryString,
+                });
+            }
+            return Ok(result);
         }
+
         [HttpPost]
         public async Task<IActionResult> AddProduct([FromBody] CreateProductDto productDto)
         {
@@ -51,6 +98,15 @@ namespace StockWise.Controllers
             if (productDto == null) {
                 return BadRequest("Product data is required.");
             }
+
+            var category = await _context.categories.FirstOrDefaultAsync(c=>c.Name == productDto.Category);
+
+            if (category == null) {
+                category = new Models.Category { Name = productDto.Category };
+                _context.categories.Add(category);
+                await _context.SaveChangesAsync();
+            }
+
             var product = new Product
             {
                 ProductName = productDto.ProductName,
@@ -59,7 +115,7 @@ namespace StockWise.Controllers
                 Description = productDto.Description,
                 ShoppingPrice = productDto.ShoppingPrice,
                 SellingPrice = productDto.SellingPrice,
-                Category = productDto.Category
+                CategoryId = category.CategoryId
             };
 
             await _context.products.AddAsync(product);
@@ -67,6 +123,7 @@ namespace StockWise.Controllers
 
             return CreatedAtAction(nameof(GetProductById), new { id = product.ProductId }, product);
         }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
@@ -81,6 +138,7 @@ namespace StockWise.Controllers
             await _context.SaveChangesAsync();
             return Ok(productToDelete);
         }
+
         [HttpPut]
         public async Task<IActionResult> UpdateProduct(Product product) {
             var productToUpdate = await _context.products.FirstOrDefaultAsync(x=>x.EAN == product.EAN);

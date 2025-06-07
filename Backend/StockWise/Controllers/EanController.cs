@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using StockWise.Data;
 using StockWise.Models;
 using System.Text.Json;
 
@@ -10,10 +12,12 @@ namespace StockWise.Controllers
     public class EanController : ControllerBase
     {
         private readonly IHttpClientFactory _httpClient;
+        private readonly StockWiseDb _context;
 
-        public EanController(IHttpClientFactory httpClient)
+        public EanController(IHttpClientFactory httpClient, StockWiseDb context)
         {
             _httpClient = httpClient;
+            _context = context; 
         }
 
         [HttpGet("{ean}")]
@@ -31,11 +35,14 @@ namespace StockWise.Controllers
                 var content = await response.Content.ReadAsStringAsync(); 
                 var json = JsonDocument.Parse(content);
                 var item = json.RootElement.GetProperty("items")[0];
+                var categoryName = item.GetProperty("category").GetString();
+                var category = await EnsureCategoryHierarchyAsync(categoryName);
+
 
                 var result = new Product
                 {
                     ProductName = item.GetProperty("title").GetString(),
-                    Category = item.GetProperty("category").GetString(),
+                    Category = category,
                     Description = item.GetProperty("description").GetString(),
                     Image = item.TryGetProperty("images", out var images) && images.GetArrayLength() > 0 ? images[0].GetString() : null,
                     EAN = ean
@@ -47,5 +54,40 @@ namespace StockWise.Controllers
             }
 
         }
+
+
+        private async Task<Category> EnsureCategoryHierarchyAsync(string fullCategoryPath)
+        {
+            var categoryNames = fullCategoryPath.Split(">").Select(s => s.Trim()).ToList();
+            Category? parent = null;
+
+            foreach (var name in categoryNames)
+            {
+                int? parentId = parent?.CategoryId;
+
+                var existing = await _context.categories
+                    .FirstOrDefaultAsync(c => c.Name == name && c.ParentId == parentId);
+
+                if (existing == null)
+                {
+                    var newCategory = new Category
+                    {
+                        Name = name,
+                        Parent = parent
+                    };
+
+                    _context.categories.Add(newCategory);
+                    await _context.SaveChangesAsync();
+                    parent = newCategory;
+                }
+                else
+                {
+                    parent = existing;
+                }
+            }
+
+            return parent!;
+        }
+
     }
 }
