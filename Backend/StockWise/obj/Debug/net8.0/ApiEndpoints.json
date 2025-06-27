@@ -16,6 +16,22 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "StockWise.Controllers.InventoryMovementController",
+    "Method": "AddMovement",
+    "RelativePath": "api/InventoryMovement",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "StockWise.Dtos.InventoryMovementDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "StockWise.Controllers.ProductController",
     "Method": "GetProducts",
     "RelativePath": "api/Product",
@@ -50,8 +66,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "product",
-        "Type": "StockWise.Models.Product",
+        "Name": "productDto",
+        "Type": "StockWise.Dtos.UpdateProductDto",
         "IsRequired": true
       }
     ],

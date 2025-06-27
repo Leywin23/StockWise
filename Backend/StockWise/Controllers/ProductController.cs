@@ -140,17 +140,26 @@ namespace StockWise.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateProduct(Product product) {
-            var productToUpdate = await _context.products.FirstOrDefaultAsync(x=>x.EAN == product.EAN);
-            if (productToUpdate == null) {
-                return NotFound($"Couldn't find a product");
+        public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductDto productDto)
+        {
+            var productToUpdate = await _context.products.FirstOrDefaultAsync(x => x.EAN == productDto.ean);
+            if (productToUpdate == null)
+                return NotFound("Couldn't find a product");
+
+            var category = await _context.categories.FirstOrDefaultAsync(x => x.Name == productDto.CategoryName);
+            if (category == null)
+            {
+                return NotFound("Coundn't find a category with this name");
             }
-            productToUpdate.ProductName = product.ProductName;
-            productToUpdate.Category = product.Category;
-            productToUpdate.Description = product.Description;
-            productToUpdate.ShoppingPrice = product.ShoppingPrice;
-            productToUpdate.SellingPrice = product.SellingPrice;
-            productToUpdate.Image = product.Image;
+
+            productToUpdate.ProductName =  productDto.productName;
+            productToUpdate.CategoryId = category.CategoryId;
+            productToUpdate.Description = productDto.description;
+            productToUpdate.ShoppingPrice = productDto.ShoppingPrice;
+            productToUpdate.SellingPrice = productDto.SellingPrice;
+            productToUpdate.Image = productDto.image;
+
+            _context.products.Update(productToUpdate);
             await _context.SaveChangesAsync();
             return Ok(productToUpdate);
         }

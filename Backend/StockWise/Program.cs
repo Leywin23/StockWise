@@ -1,5 +1,6 @@
 using StockWise.Data;
 using Microsoft.EntityFrameworkCore;
+using StockWise.Hubs;
 
 namespace StockWise
 {
@@ -30,8 +31,11 @@ namespace StockWise
                     policy.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod();
                 });
             });
-            var app = builder.Build();
 
+            builder.Services.AddSignalR();
+
+            var app = builder.Build();
+            app.MapHub<StockHub>("/stockHub");
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {

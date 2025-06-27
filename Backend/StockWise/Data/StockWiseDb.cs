@@ -9,6 +9,7 @@ namespace StockWise.Data
 
         public DbSet<Product> products { get; set; }
         public DbSet<Category> categories { get; set; }
+        public DbSet<InventoryMovement> inventoryMovement { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
