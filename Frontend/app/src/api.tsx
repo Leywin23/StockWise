@@ -16,6 +16,7 @@ export type Product = {
   sellingPrice: number;
   categoryId: number;
   category?: Category;
+
 };
 
 export type ProductDto = {
@@ -93,8 +94,28 @@ export const UpdateProductApi = async (product: UpdateProductDto) => {
   } catch (err: any) {
     if (err.response && err.response.data) {
       console.error("Backend returned 400:", err.response.data);
-      console.error("Validation errors:", err.response.data.errors); // 👈 TU DODANE
+      console.error("Validation errors:", err.response.data.errors);
     }
     throw err;
   }
 };
+
+
+export type InventoryMovementDto = {
+  Date:Date;
+  Type:string;
+  ProductId: number;
+  Quantity: number;
+  Comment: string;
+
+}
+
+export const AddMovementFromApi = async(movement: InventoryMovementDto)=>{
+  try{
+    const result = await axios.post("https://localhost:7178/api/inventorymovement", movement);
+    return result.data;
+  }
+  catch(err){
+    console.log(`Error with fetching Api ${err}`);
+  }
+}
