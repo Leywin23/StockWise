@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { ProductDto, getProductsByEanFromApi, postProductToApi} from '../../api'; 
+import { CreateProductDto, getProductsByEanFromApi, postProductToApi} from '../../api'; 
 
 export default function EanSearchForm({ onProductAdded }: { onProductAdded: () => void }) {
   const [eanSearch, setEanSearch] = useState('');
-  const [eanProduct, setEanProduct] = useState<ProductDto>({
+  const [eanProduct, setEanProduct] = useState<CreateProductDto>({
     productName: '',
     ean: '',
     image: '',
@@ -26,7 +26,7 @@ export default function EanSearchForm({ onProductAdded }: { onProductAdded: () =
       if (!product || !product.category) return;
 
       const { productId, category, ...rest } = product;
-      const productDto: ProductDto = { ...rest, category: category.name };
+      const productDto: CreateProductDto = { ...rest, category: category.name };
       setEanProduct(productDto);
     } catch (err) {
       console.error("Error fetching EAN product:", err);

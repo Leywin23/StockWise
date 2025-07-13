@@ -20,6 +20,15 @@ export type Product = {
 };
 
 export type ProductDto = {
+  id:number;
+  productName:string;
+  ean:string;
+  description:string
+  stock:number;
+  categoryString:string;
+}
+
+export type CreateProductDto = {
   productName: string;
   ean: string;
   image?: string;
@@ -29,27 +38,17 @@ export type ProductDto = {
   category: string;
 };
 
-export type ProductWithCategory = {
-  product: Product;
-  categoryString: string;
-};
-
-type ProductsApiResponse = {
-  $id: string;
-  $values: ProductWithCategory[];
-};
-
-export const getProductsFromApi = async (): Promise<ProductWithCategory[]> => {
+export const getProductsFromApi = async () => {
   try {
-    const response = await axios.get<ProductsApiResponse>('https://localhost:7178/api/Product');
-    return response.data.$values;
+    const response = await axios.get<ProductDto[]>('https://localhost:7178/api/Product');
+    return response.data;
   } catch (err) {
     console.error(err);
     return [];
   }
 };
 
-export const postProductToApi = async (product: ProductDto) => {
+export const postProductToApi = async (product: CreateProductDto) => {
   try {
     const response = await axios.post<Product>('https://localhost:7178/api/Product', product);
     return response.data;
@@ -104,7 +103,7 @@ export const UpdateProductApi = async (product: UpdateProductDto) => {
 export type InventoryMovementDto = {
   Date:Date;
   Type:string;
-  ProductId: number;
+  Ean: string;
   Quantity: number;
   Comment: string;
 

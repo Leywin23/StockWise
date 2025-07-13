@@ -16,7 +16,8 @@ namespace StockWise
             builder.Services.AddControllers()
             .AddJsonOptions(options =>
             {
-                options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+                options.JsonSerializerOptions.ReferenceHandler = null;
+                options.JsonSerializerOptions.WriteIndented = true;
             });
             builder.Services.AddRazorPages();
             builder.Services.AddEndpointsApiExplorer();
@@ -28,7 +29,10 @@ namespace StockWise
             {
                 options.AddPolicy("AllowFrontend", policy =>
                 {
-                    policy.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod();
+                    policy.WithOrigins("http://localhost:3000")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
                 });
             });
 

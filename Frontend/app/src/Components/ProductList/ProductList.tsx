@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { ProductWithCategory, Product, UpdateProductApi, DeleteProductApi } from '../../api';
+import { Product,ProductDto, UpdateProductApi, DeleteProductApi } from '../../api';
 
 interface Props {
-  productsWithCategory: ProductWithCategory[];
+  products: ProductDto[];
   onProductsChange: () => void;
 }
 
-export default function ProductList({ productsWithCategory, onProductsChange }: Props) {
+export default function ProductList({ products, onProductsChange }: Props) {
   const [isEdited, setIsEdited] = useState(false);
   const [editedProduct, setEditedProduct] = useState<Product | null>(null);
 
@@ -63,14 +63,16 @@ export default function ProductList({ productsWithCategory, onProductsChange }: 
     <section>
       <h2>Available Products</h2>
       <ul>
-        {productsWithCategory.map(p => (
-          <li key={p.product.productId}>
-            <strong>{p.product.productName}</strong> - {p.categoryString}
+        {products.map(p => (
+          <li key={p.id}>
+            <strong>{p.productName}</strong>
+            <p>{p.ean}</p>
+            <p>${p.stock}</p>
             <br />
-            <button onClick={() => handleDelete(p.product.productId)}>Delete</button>
-            <button onClick={() => handleEdit(p.product)}>Edit</button>
+            <button onClick={() => handleDelete(p.id)}>Delete</button>
+            
 
-            {isEdited && editedProduct?.productId === p.product.productId && (
+            {isEdited && editedProduct?.productId === p.id && (
               <form onSubmit={editProduct}>
                 <input name="productName" value={editedProduct.productName} onChange={handleEditChange} />
                 <input name="ean" value={editedProduct.ean} onChange={handleEditChange} />

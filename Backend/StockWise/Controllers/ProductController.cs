@@ -72,19 +72,18 @@ namespace StockWise.Controllers
         [HttpGet]
         public async Task<IActionResult> GetProducts()
         {
-            List<Product> products = await _context.products.Include(p=>p.Category).ThenInclude(c=>c.Parent).ToListAsync();
-            
-            var result = new List<object>();
+            var products = await _context.products.Include(p=>p.Category).ThenInclude(c=>c.Parent).ToListAsync();
 
-            foreach (var product in products)
+            var result = products.Select(p => new ProductDto
             {
-                var categoryString = GetCategoryFullPath(product.Category);
-                result.Add(new
-                {
-                    Product = product,
-                    CategoryString = categoryString,
-                });
-            }
+                Id = p.ProductId,
+                ProductName = p.ProductName,
+                Ean = p.EAN,
+                Description = p.Description,
+                Stock = p.Stock,
+                CategoryString = GetCategoryFullPath(p.Category),
+            });
+
             return Ok(result);
         }
 

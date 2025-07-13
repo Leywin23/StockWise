@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { ProductDto, postProductToApi } from '../../api';
+import { CreateProductDto, postProductToApi } from '../../api';
 
 interface Props {
   onProductAdded: () => void;
 }
 
 export default function AddProductForm({ onProductAdded }: Props) {
-  const [newProduct, setNewProduct] = useState<ProductDto>({
+  const [newProduct, setNewProduct] = useState<CreateProductDto>({
     productName: '',
     ean: '',
     image: '',

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { HubConnectionState } from "@microsoft/signalr"; 
 import './App.css';
 import {
-  ProductWithCategory,
+  Product,
+  ProductDto,
   getProductsFromApi,
 } from './api';
 import signalRConnection from './signalrClient';
@@ -12,13 +14,13 @@ import EanSearchForm from './Components/EanSearchForm/EanSearchForm';
 import InventoryMovementForm from './Components/InventoryMovementForm/InventoryMovementForm';
 
 function App() {
-  const [productsWithCategory, setProductsWithCategory] = useState<ProductWithCategory[]>([]);
+  const [products, setProducts] = useState<ProductDto[]>([]);
 
   const loadProducts = async () => {
     try {
       const responseBody = await getProductsFromApi();
       if (Array.isArray(responseBody)) {
-        setProductsWithCategory(responseBody);
+        setProducts(responseBody);
       } else {
         console.error("Expected array, got:", responseBody);
       }
@@ -27,20 +29,31 @@ function App() {
     }
   };
 
-  useEffect(() => {
-    signalRConnection.start()
-      .then(() => console.log('SignalR connected'))
-      .catch((err: any) => console.error('SignalR connection error:', err));
+ useEffect(() => {
+  const startConnection = async () => {
+    if (signalRConnection.state === HubConnectionState.Disconnected) {
+      try {
+        await signalRConnection.start();
+        console.log('SignalR connected');
 
-    signalRConnection.on('StockUpdated', (productId: number, stock: number) => {
-      console.log(`Stock updated: Product ${productId} has now ${stock} items`);
-      loadProducts();
-    });
+        signalRConnection.on('StockUpdated', (productId: number, stock: number) => {
+          console.log(`Stock updated: Product ${productId} has now ${stock} items`);
+          loadProducts();
+        });
+      } catch (err) {
+        console.error('SignalR connection error:', err);
+      }
+    } else {
+      console.log('SignalR already connected or connecting');
+    }
+  };
 
-    return () => {
-      signalRConnection.off('StockUpdated');
-    };
-  }, []);
+  startConnection();
+
+  return () => {
+    signalRConnection.off('StockUpdated');
+  };
+}, []);
 
   return (
     <div className="App" style={{ padding: '20px' }}>
@@ -48,7 +61,7 @@ function App() {
 
       <button onClick={loadProducts}>Load Products</button>
 
-      <ProductList productsWithCategory={productsWithCategory} onProductsChange={loadProducts} />
+      <ProductList products={products} onProductsChange={loadProducts} />
       <AddProductForm onProductAdded={loadProducts} />
       <EanSearchForm onProductAdded={loadProducts} />
       <InventoryMovementForm />

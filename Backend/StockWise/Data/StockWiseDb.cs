@@ -25,7 +25,12 @@ namespace StockWise.Data
                 HasOne(p => p.Category)
                 .WithMany(c => c.Products)
                 .HasForeignKey(p => p.CategoryId)
-                .OnDelete(DeleteBehavior.Restrict); 
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<InventoryMovement>().
+                HasOne(im => im.Product)
+                .WithMany(p => p.InventoryMovements)
+                .HasForeignKey(im => im.ProductId);
         }
     }
 }

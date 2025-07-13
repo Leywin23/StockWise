@@ -5,7 +5,7 @@ export default function InventoryMovementForm() {
   const [movement, setMovement] = useState<InventoryMovementDto>({
     Date: new Date(),
     Type: "",
-    ProductId: 0,
+    Ean: "",
     Quantity: 0,
     Comment: ""
   });
@@ -14,7 +14,7 @@ export default function InventoryMovementForm() {
     const { name, value } = e.target;
     setMovement(prev => ({
       ...prev,
-      [name]: name === 'ProductId' || name === 'Quantity' ? Number(value) : value
+      [name]: name === 'Quantity' ? Number(value) : value
     }));
   };
 
@@ -27,7 +27,7 @@ export default function InventoryMovementForm() {
         setMovement({
           Date: new Date(),
           Type: "",
-          ProductId: 0,
+          Ean: "",
           Quantity: 0,
           Comment: ""
         });
@@ -42,11 +42,11 @@ export default function InventoryMovementForm() {
       <h2>Add Inventory Movement</h2>
       <form onSubmit={handleAddMovement}>
         <label>
-          Product ID:
+          Product EAN:
           <input
-            type="number"
-            name="ProductId"
-            value={movement.ProductId}
+            type="text"
+            name="Ean"
+            value={movement.Ean}
             onChange={handleMovementChange}
             required
           />

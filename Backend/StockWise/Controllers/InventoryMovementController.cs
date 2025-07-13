@@ -5,6 +5,7 @@ using StockWise.Data;
 using StockWise.Dtos;
 using StockWise.Hubs;
 using StockWise.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace StockWise.Controllers
 {
@@ -23,10 +24,10 @@ namespace StockWise.Controllers
         [HttpPost]
         public async Task<IActionResult> AddMovement([FromBody] InventoryMovementDto dto)
         {
-            var product = await _context.products.FindAsync(dto.ProductId);
+            var product = await _context.products.FirstOrDefaultAsync(p => p.ProductId == dto.ProductId);
 
             if (product == null) {
-                return NotFound($"Couldn't find a product with id {dto.ProductId}");
+                return NotFound($"Couldn't find a product with EAN number {dto.ProductId}");
             }
 
             var movement = new InventoryMovement
@@ -38,16 +39,23 @@ namespace StockWise.Controllers
                 Comment = dto.Comment,
             };
 
-            switch (movement.Type) {
+            switch (movement.Type?.ToLowerInvariant())
+            {
                 case "inbound":
                     product.Stock += movement.Quantity;
                     break;
+
                 case "outbound":
+                    if (product.Stock < movement.Quantity)
+                        return BadRequest("Stock couldn't be below 0");
+
                     product.Stock -= movement.Quantity;
                     break;
+
                 case "adjustment":
                     product.Stock = movement.Quantity;
                     break;
+
                 default:
                     return BadRequest("Invalid movement type");
             }
