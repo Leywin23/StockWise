@@ -6,6 +6,7 @@ using StockWise.Models;
 using StockWise.Dtos;
 using static System.Net.Mime.MediaTypeNames;
 using StockWise.Migrations;
+using StockWise.Mappers;
 
 namespace StockWise.Controllers
 {
@@ -81,6 +82,8 @@ namespace StockWise.Controllers
                 Ean = p.EAN,
                 Description = p.Description,
                 Stock = p.Stock,
+                SellingPrice = p.SellingPrice,
+                ShoppingPrice = p.ShoppingPrice,
                 CategoryString = GetCategoryFullPath(p.Category),
             });
 
@@ -106,16 +109,7 @@ namespace StockWise.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            var product = new Product
-            {
-                ProductName = productDto.ProductName,
-                EAN = productDto.EAN,
-                Image = productDto.Image,
-                Description = productDto.Description,
-                ShoppingPrice = productDto.ShoppingPrice,
-                SellingPrice = productDto.SellingPrice,
-                CategoryId = category.CategoryId
-            };
+            var product = productDto.ToProductFromCreate(category);
 
             await _context.products.AddAsync(product);
             await _context.SaveChangesAsync();

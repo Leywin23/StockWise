@@ -47,14 +47,13 @@ namespace StockWise.Controllers
                     Image = item.TryGetProperty("images", out var images) && images.GetArrayLength() > 0 ? images[0].GetString() : null,
                     EAN = ean
                 };
+                await _context.products.AddAsync(result);
+                await _context.SaveChangesAsync();
                 return Ok(result);
             }
             catch (Exception ex) {
                 return StatusCode(500, $"Server Error: {ex.Message}");
             }
-
-
-
 
         }
 

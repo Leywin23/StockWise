@@ -30,6 +30,12 @@ namespace StockWise.Controllers
                 return NotFound($"Couldn't find a product with EAN number {dto.ProductId}");
             }
 
+            var existingProduct = await _context.products.FirstOrDefaultAsync(p => p.EAN == product.EAN);
+            if (existingProduct != null)
+            {
+                return BadRequest("The product is already in the database");
+            }
+
             var movement = new InventoryMovement
             {
                 Date = dto.Date,
@@ -38,7 +44,7 @@ namespace StockWise.Controllers
                 ProductId = dto.ProductId,
                 Comment = dto.Comment,
             };
-
+            
             switch (movement.Type?.ToLowerInvariant())
             {
                 case "inbound":
