@@ -14,8 +14,10 @@ namespace StockWise.Mappers
                 Image = productDto.Image,
                 Description = productDto.Description,
                 ShoppingPrice = productDto.ShoppingPrice,
-                SellingPrice = productDto.SellingPrice,
-                CategoryId = category.CategoryId
+                SellingPrice = productDto.SellingPrice, 
+                Stock = productDto.Stock,
+                CategoryId = category.CategoryId,
+                Category = category
             };
         }
     }

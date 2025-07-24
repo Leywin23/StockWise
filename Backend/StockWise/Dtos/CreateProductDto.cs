@@ -9,5 +9,6 @@
         public decimal ShoppingPrice { get; set; }
         public decimal SellingPrice { get; set; }
         public string Category { get; set; }
+        public int Stock { get; set; }
     }
 }

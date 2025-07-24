@@ -104,5 +104,21 @@
       }
     ],
     "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.ProductController",
+    "Method": "GetProductMovementHistory",
+    "RelativePath": "api/Product/{ProductId}/movement-history",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "ProductId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
   }
 ]

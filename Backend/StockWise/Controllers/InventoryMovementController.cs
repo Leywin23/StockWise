@@ -21,6 +21,20 @@ namespace StockWise.Controllers
             _hubContext = hubContext;
         }
 
+
+        [HttpGet("{ProductId:int}")]
+        public async Task<IActionResult> GetProductMovementHistory(int ProductId)
+        {
+            var product = await _context.products
+                  .Include(p => p.InventoryMovements)
+                  .FirstOrDefaultAsync(p => p.ProductId == ProductId);
+
+            if (product == null) return NotFound();
+
+
+            return Ok(product.InventoryMovements);
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddMovement([FromBody] InventoryMovementDto dto)
         {
@@ -30,11 +44,6 @@ namespace StockWise.Controllers
                 return NotFound($"Couldn't find a product with EAN number {dto.ProductId}");
             }
 
-            var existingProduct = await _context.products.FirstOrDefaultAsync(p => p.EAN == product.EAN);
-            if (existingProduct != null)
-            {
-                return BadRequest("The product is already in the database");
-            }
 
             var movement = new InventoryMovement
             {

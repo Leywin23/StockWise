@@ -29,9 +29,9 @@ namespace StockWise.Controllers
             }
 
             var product = await _context.products
-                .Include(p=>p.Category)
-                .ThenInclude(c=>c.Parent)
-                .FirstOrDefaultAsync(p=>p.ProductId == id);
+                .Include(p => p.Category)
+                .ThenInclude(c => c.Parent)
+                .FirstOrDefaultAsync(p => p.ProductId == id);
 
             if (product == null)
             {
@@ -45,13 +45,13 @@ namespace StockWise.Controllers
                 Product = product,
                 CategoryPath = categoryFullPath,
             };
-            
+
             return Ok(result);
         }
 
         private string GetCategoryFullPath(Models.Category category)
         {
-           var names = new List<string>();
+            var names = new List<string>();
             var current = category;
 
             while (current != null)
@@ -73,11 +73,11 @@ namespace StockWise.Controllers
         [HttpGet]
         public async Task<IActionResult> GetProducts()
         {
-            var products = await _context.products.Include(p=>p.Category).ThenInclude(c=>c.Parent).ToListAsync();
+            var products = await _context.products.Include(p => p.Category).ThenInclude(c => c.Parent).ToListAsync();
 
             var result = products.Select(p => new ProductDto
             {
-                Id = p.ProductId,
+                id = p.ProductId,
                 ProductName = p.ProductName,
                 Ean = p.EAN,
                 Description = p.Description,
@@ -101,7 +101,7 @@ namespace StockWise.Controllers
                 return BadRequest("Product data is required.");
             }
 
-            var category = await _context.categories.FirstOrDefaultAsync(c=>c.Name == productDto.Category);
+            var category = await _context.categories.FirstOrDefaultAsync(c => c.Name == productDto.Category);
 
             if (category == null) {
                 category = new Models.Category { Name = productDto.Category };
@@ -145,7 +145,7 @@ namespace StockWise.Controllers
                 return NotFound("Coundn't find a category with this name");
             }
 
-            productToUpdate.ProductName =  productDto.productName;
+            productToUpdate.ProductName = productDto.productName;
             productToUpdate.CategoryId = category.CategoryId;
             productToUpdate.Description = productDto.description;
             productToUpdate.ShoppingPrice = productDto.ShoppingPrice;
@@ -155,6 +155,19 @@ namespace StockWise.Controllers
             _context.products.Update(productToUpdate);
             await _context.SaveChangesAsync();
             return Ok(productToUpdate);
+        }
+
+        [HttpGet("{ProductId:int}/movement-history")]
+        public async Task<IActionResult> GetProductMovementHistory(int ProductId)
+        {
+          var product = await _context.products
+                .Include(p=>p.InventoryMovements)
+                .FirstOrDefaultAsync(p=>p.ProductId==ProductId);
+
+          if (product == null) return NotFound();
+
+
+          return Ok(product.InventoryMovements);
         }
     }
 }
