@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StockWise.Data;
 
@@ -11,9 +12,11 @@ using StockWise.Data;
 namespace StockWise.Migrations
 {
     [DbContext(typeof(StockWiseDb))]
-    partial class StockWiseDbModelSnapshot : ModelSnapshot
+    [Migration("20250728123647_identity-base")]
+    partial class identitybase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -86,11 +89,6 @@ namespace StockWise.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasMaxLength(13)
-                        .HasColumnType("nvarchar(13)");
-
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -142,10 +140,6 @@ namespace StockWise.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
-
-                    b.HasDiscriminator().HasValue("IdentityUser");
-
-                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -395,18 +389,6 @@ namespace StockWise.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("StockWise.Models.AppUser", b =>
-                {
-                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
-
-                    b.Property<int?>("CompanyId")
-                        .HasColumnType("int");
-
-                    b.HasIndex("CompanyId");
-
-                    b.HasDiscriminator().HasValue("AppUser");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -513,16 +495,6 @@ namespace StockWise.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("StockWise.Models.AppUser", b =>
-                {
-                    b.HasOne("StockWise.Models.Company", "Company")
-                        .WithMany("Users")
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Company");
-                });
-
             modelBuilder.Entity("StockWise.Models.Category", b =>
                 {
                     b.Navigation("Children");
@@ -535,8 +507,6 @@ namespace StockWise.Migrations
                     b.Navigation("OrdersAsBuyer");
 
                     b.Navigation("OrdersAsSeller");
-
-                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("StockWise.Models.Order", b =>

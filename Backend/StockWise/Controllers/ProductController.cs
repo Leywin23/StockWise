@@ -28,7 +28,7 @@ namespace StockWise.Controllers
                 return BadRequest();
             }
 
-            var product = await _context.products
+            var product = await _context.Products
                 .Include(p => p.Category)
                 .ThenInclude(c => c.Parent)
                 .FirstOrDefaultAsync(p => p.ProductId == id);
@@ -59,7 +59,7 @@ namespace StockWise.Controllers
                 names.Add(current.Name);
                 if (current.Parent == null && current.ParentId != null)
                 {
-                    current = _context.categories.FirstOrDefault(c => c.CategoryId == current.ParentId);
+                    current = _context.Categories.FirstOrDefault(c => c.CategoryId == current.ParentId);
                 }
                 else
                 {
@@ -73,7 +73,7 @@ namespace StockWise.Controllers
         [HttpGet]
         public async Task<IActionResult> GetProducts()
         {
-            var products = await _context.products.Include(p => p.Category).ThenInclude(c => c.Parent).ToListAsync();
+            var products = await _context.Products.Include(p => p.Category).ThenInclude(c => c.Parent).ToListAsync();
 
             var result = products.Select(p => new ProductDto
             {
@@ -101,17 +101,17 @@ namespace StockWise.Controllers
                 return BadRequest("Product data is required.");
             }
 
-            var category = await _context.categories.FirstOrDefaultAsync(c => c.Name == productDto.Category);
+            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Name == productDto.Category);
 
             if (category == null) {
                 category = new Models.Category { Name = productDto.Category };
-                _context.categories.Add(category);
+                _context.Categories.Add(category);
                 await _context.SaveChangesAsync();
             }
 
             var product = productDto.ToProductFromCreate(category);
 
-            await _context.products.AddAsync(product);
+            await _context.Products.AddAsync(product);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetProductById), new { id = product.ProductId }, product);
@@ -123,11 +123,11 @@ namespace StockWise.Controllers
             if (!ModelState.IsValid) {
                 return BadRequest();
             }
-            var productToDelete = await _context.products.FindAsync(id);
+            var productToDelete = await _context.Products.FindAsync(id);
             if (productToDelete == null) {
                 return NotFound($"Couldn't find a product with given id: {id}");
             }
-            _context.products.Remove(productToDelete);
+            _context.Products.Remove(productToDelete);
             await _context.SaveChangesAsync();
             return Ok(productToDelete);
         }
@@ -135,11 +135,11 @@ namespace StockWise.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductDto productDto)
         {
-            var productToUpdate = await _context.products.FirstOrDefaultAsync(x => x.EAN == productDto.ean);
+            var productToUpdate = await _context.Products.FirstOrDefaultAsync(x => x.EAN == productDto.ean);
             if (productToUpdate == null)
                 return NotFound("Couldn't find a product");
 
-            var category = await _context.categories.FirstOrDefaultAsync(x => x.Name == productDto.CategoryName);
+            var category = await _context.Categories.FirstOrDefaultAsync(x => x.Name == productDto.CategoryName);
             if (category == null)
             {
                 return NotFound("Coundn't find a category with this name");
@@ -152,22 +152,9 @@ namespace StockWise.Controllers
             productToUpdate.SellingPrice = productDto.SellingPrice;
             productToUpdate.Image = productDto.image;
 
-            _context.products.Update(productToUpdate);
+            _context.Products.Update(productToUpdate);
             await _context.SaveChangesAsync();
             return Ok(productToUpdate);
-        }
-
-        [HttpGet("{ProductId:int}/movement-history")]
-        public async Task<IActionResult> GetProductMovementHistory(int ProductId)
-        {
-          var product = await _context.products
-                .Include(p=>p.InventoryMovements)
-                .FirstOrDefaultAsync(p=>p.ProductId==ProductId);
-
-          if (product == null) return NotFound();
-
-
-          return Ok(product.InventoryMovements);
         }
     }
 }

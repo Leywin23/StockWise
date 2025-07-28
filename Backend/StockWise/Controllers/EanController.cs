@@ -47,7 +47,7 @@ namespace StockWise.Controllers
                     Image = item.TryGetProperty("images", out var images) && images.GetArrayLength() > 0 ? images[0].GetString() : null,
                     EAN = ean
                 };
-                await _context.products.AddAsync(result);
+                await _context.Products.AddAsync(result);
                 await _context.SaveChangesAsync();
                 return Ok(result);
             }
@@ -67,7 +67,7 @@ namespace StockWise.Controllers
             {
                 int? parentId = parent?.CategoryId;
 
-                var existing = await _context.categories
+                var existing = await _context.Categories
                     .FirstOrDefaultAsync(c => c.Name == name && c.ParentId == parentId);
 
                 if (existing == null)
@@ -78,7 +78,7 @@ namespace StockWise.Controllers
                         Parent = parent
                     };
 
-                    _context.categories.Add(newCategory);
+                    _context.Categories.Add(newCategory);
                     await _context.SaveChangesAsync();
                     parent = newCategory;
                 }

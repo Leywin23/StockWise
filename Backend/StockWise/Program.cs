@@ -1,6 +1,11 @@
 using StockWise.Data;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Hubs;
+using StockWise.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 namespace StockWise
 {
@@ -21,44 +26,82 @@ namespace StockWise
             });
             builder.Services.AddRazorPages();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
-
-            builder.Services.AddHttpClient();
-
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("AllowFrontend", policy =>
+            builder.Services.AddSwaggerGen(options =>
                 {
-                    policy.WithOrigins("http://localhost:3000")
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowCredentials();
+                    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+                    {
+                        Name = "Authorization",
+                        In = ParameterLocation.Header,
+                        Type = SecuritySchemeType.Http,
+                        Scheme = "Bearer"
+                    });
+                }
+            );
+            
+
+                builder.Services.AddIdentity<AppUser, IdentityRole>().AddEntityFrameworkStores<StockWiseDb>().AddDefaultTokenProviders();
+
+                builder.Services.AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultForbidScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                }).AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidIssuer = builder.Configuration["JWT:Issuer"],
+                        ValidateAudience = true,
+                        ValidAudience = builder.Configuration["JWT:Audience"],
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JWT:SigningKey"]))
+                    };
                 });
-            });
 
-            builder.Services.AddSignalR();
 
-            var app = builder.Build();
-            app.MapHub<StockHub>("/stockHub");
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-            app.MapControllers();
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
+                builder.Services.AddHttpClient();
 
-            app.UseCors("AllowFrontend");
+                builder.Services.AddCors(options =>
+                {
+                    options.AddPolicy("AllowFrontend", policy =>
+                    {
+                        policy.WithOrigins("http://localhost:3000")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                    });
+                });
 
-            app.UseRouting();
+                builder.Services.AddSignalR();
 
-            app.UseAuthorization();
+                var app = builder.Build();
+                app.MapHub<StockHub>("/stockHub");
+                // Configure the HTTP request pipeline.
+                if (app.Environment.IsDevelopment())
+                {
+                    app.UseSwagger();
+                    app.UseSwaggerUI();
+                }
+                app.MapControllers();
+                app.UseHttpsRedirection();
+                app.UseStaticFiles();
 
-            app.MapRazorPages();
+                app.UseCors("AllowFrontend");
 
-            app.Run();
-        }
+                app.UseRouting();
+
+                app.UseAuthentication();
+                app.UseAuthorization();
+
+                app.MapRazorPages();
+
+                app.Run();
+            
+         }
     }
 }

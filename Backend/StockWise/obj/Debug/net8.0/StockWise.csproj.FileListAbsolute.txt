@@ -345,3 +345,9 @@ C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise\obj\Debug\net8.0\refin
 C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise\obj\Debug\net8.0\StockWise.pdb
 C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise\obj\Debug\net8.0\StockWise.genruntimeconfig.cache
 C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise\obj\Debug\net8.0\ref\StockWise.dll
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise\bin\Debug\net8.0\Microsoft.AspNetCore.Cryptography.Internal.dll
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise\bin\Debug\net8.0\Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise\bin\Debug\net8.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise\bin\Debug\net8.0\Microsoft.Extensions.Identity.Core.dll
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise\bin\Debug\net8.0\Microsoft.Extensions.Identity.Stores.dll
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll

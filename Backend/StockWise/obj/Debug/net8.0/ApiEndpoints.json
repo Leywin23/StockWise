@@ -32,6 +32,38 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "StockWise.Controllers.InventoryMovementController",
+    "Method": "GetProductMovementHistory",
+    "RelativePath": "api/InventoryMovement/{ProductId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "ProductId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.OrderController",
+    "Method": "MakeOrder",
+    "RelativePath": "api/Order",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "order",
+        "Type": "StockWise.Dtos.CreateOrderDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "StockWise.Controllers.ProductController",
     "Method": "GetProducts",
     "RelativePath": "api/Product",
@@ -99,22 +131,6 @@
     "Parameters": [
       {
         "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "StockWise.Controllers.ProductController",
-    "Method": "GetProductMovementHistory",
-    "RelativePath": "api/Product/{ProductId}/movement-history",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "ProductId",
         "Type": "System.Int32",
         "IsRequired": true
       }

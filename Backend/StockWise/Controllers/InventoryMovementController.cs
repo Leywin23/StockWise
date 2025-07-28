@@ -25,7 +25,7 @@ namespace StockWise.Controllers
         [HttpGet("{ProductId:int}")]
         public async Task<IActionResult> GetProductMovementHistory(int ProductId)
         {
-            var product = await _context.products
+            var product = await _context.Products
                   .Include(p => p.InventoryMovements)
                   .FirstOrDefaultAsync(p => p.ProductId == ProductId);
 
@@ -38,7 +38,7 @@ namespace StockWise.Controllers
         [HttpPost]
         public async Task<IActionResult> AddMovement([FromBody] InventoryMovementDto dto)
         {
-            var product = await _context.products.FirstOrDefaultAsync(p => p.ProductId == dto.ProductId);
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == dto.ProductId);
 
             if (product == null) {
                 return NotFound($"Couldn't find a product with EAN number {dto.ProductId}");
@@ -74,7 +74,7 @@ namespace StockWise.Controllers
                 default:
                     return BadRequest("Invalid movement type");
             }
-            _context.inventoryMovement.Add(movement);
+            _context.InventoryMovement.Add(movement);
             await _context.SaveChangesAsync();
 
             await _hubContext.Clients.All.SendAsync("StockUpdated", product.ProductId, product.Stock);
