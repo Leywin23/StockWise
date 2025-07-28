@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using StockWise.Interfaces;
+using StockWise.Helpers;
 
 namespace StockWise
 {
@@ -13,31 +15,30 @@ namespace StockWise
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+                var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddDbContext<StockWiseDb>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-            // Add services to the container.
-            builder.Services.AddControllers()
-            .AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-                options.JsonSerializerOptions.WriteIndented = true;
-            });
-            builder.Services.AddRazorPages();
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(options =>
+                builder.Services.AddDbContext<StockWiseDb>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                // Add services to the container.
+                builder.Services.AddControllers()
+                .AddJsonOptions(options =>
                 {
-                    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+                    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+                    options.JsonSerializerOptions.WriteIndented = true;
+                });
+                builder.Services.AddRazorPages();
+                builder.Services.AddEndpointsApiExplorer();
+                builder.Services.AddSwaggerGen(options =>
                     {
-                        Name = "Authorization",
-                        In = ParameterLocation.Header,
-                        Type = SecuritySchemeType.Http,
-                        Scheme = "Bearer"
-                    });
-                }
-            );
-            
+                        options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+                        {
+                            Name = "Authorization",
+                            In = ParameterLocation.Header,
+                            Type = SecuritySchemeType.Http,
+                            Scheme = "Bearer"
+                        });
+                    }
+                );
 
                 builder.Services.AddIdentity<AppUser, IdentityRole>().AddEntityFrameworkStores<StockWiseDb>().AddDefaultTokenProviders();
 
@@ -78,6 +79,7 @@ namespace StockWise
                 });
 
                 builder.Services.AddSignalR();
+                builder.Services.AddScoped<ITokenService, TokenService>();
 
                 var app = builder.Build();
                 app.MapHub<StockHub>("/stockHub");
