@@ -1,5 +1,21 @@
 [
   {
+    "ContainingType": "StockWise.Controllers.AccountController",
+    "Method": "Register",
+    "RelativePath": "api/Account/register",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userDto",
+        "Type": "StockWise.Dtos.RegisterDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "StockWise.Controllers.EanController",
     "Method": "GetProductByEan",
     "RelativePath": "api/Ean/{ean}",
