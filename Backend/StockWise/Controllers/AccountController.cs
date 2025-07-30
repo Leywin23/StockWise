@@ -40,11 +40,17 @@ namespace StockWise.Controllers
                 {
                     return BadRequest("User with this email already exist");
                 }
+                var comapany = await _context.Companies.FirstOrDefaultAsync(c=>c.NIP == userDto.CompanyNIP);
+
+                if (comapany == null) {
+                    return NotFound($"There isn't any company with NIP: {userDto.CompanyNIP}");
+                }
 
                 var newUser = new AppUser
                 {
                     Email = userDto.Email,
                     UserName = userDto.UserName,
+                    Company = comapany
                 };
 
                 var CreatedUser = await _userManager.CreateAsync(newUser, userDto.Password);
@@ -58,7 +64,8 @@ namespace StockWise.Controllers
                         {
                             UserName = userDto.UserName,
                             Email = userDto.Email,
-                            Token = _tokenService.CreateToken(newUser)
+                            CompanyName = comapany.Name,
+                            Token = _tokenService.CreateToken(newUser),
                         });
                     }
                     else

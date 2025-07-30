@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using StockWise.Interfaces;
-using StockWise.Helpers;
+using StockWise.Services;
 
 namespace StockWise
 {
