@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StockWise.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace StockWise.Data
 {
@@ -44,7 +45,7 @@ namespace StockWise.Data
             modelBuilder.Entity<Order>()
                 .HasOne(o=>o.Seller)
                 .WithMany(c=>c.OrdersAsSeller)
-                .HasForeignKey(o=>o.BuyerId)
+                .HasForeignKey(o=>o.SellerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<AppUser>()
@@ -52,6 +53,28 @@ namespace StockWise.Data
                 .WithMany(c => c.Users)
                 .HasForeignKey(u => u.CompanyId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            SeedRoles(modelBuilder);
         }
-    }
+
+        private void SeedRoles(ModelBuilder builder)
+        {
+            List<IdentityRole> roles = new List<IdentityRole>()
+            {
+                new IdentityRole
+                {
+                    Id = "1",
+                    Name = "Manager",
+                    NormalizedName = "MANAGER",
+                },
+                new IdentityRole
+                {
+                    Id = "2",
+                    Name = "Worker",
+                    NormalizedName = "Worker",
+                },
+            };
+            builder.Entity<IdentityRole>().HasData(roles);
+            }
+        }
 }

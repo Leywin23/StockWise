@@ -16,12 +16,14 @@ namespace StockWise.Controllers
         private readonly ITokenService _tokenService;
         private readonly StockWiseDb _context;
         private readonly UserManager<AppUser> _userManager;
+        private readonly SignInManager<AppUser> _signInManager;
 
-        public AccountController(ITokenService tokenService, StockWiseDb context, UserManager<AppUser> userManager)
+        public AccountController(ITokenService tokenService, StockWiseDb context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
         {
             _tokenService = tokenService;
             _context = context;
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         [HttpPost("register")]
@@ -49,8 +51,9 @@ namespace StockWise.Controllers
 
                 if (CreatedUser.Succeeded)
                 {
-                    var roleResult = await _userManager.AddToRoleAsync(newUser, "User");
-                    if (roleResult.Succeeded) {
+                    var roleResult = await _userManager.AddToRoleAsync(newUser, "Worker");
+                    if (roleResult.Succeeded)
+                    {
                         return Ok(new NewUserDto
                         {
                             UserName = userDto.UserName,
@@ -69,9 +72,41 @@ namespace StockWise.Controllers
                 }
 
             }
-            catch (Exception ex) {
-                return StatusCode(500, ex);
-            }   
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    message = "User creation failed.",
+                    detail = ex.Message
+                });
+            }
+        }
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginDto loginDto)
+        {
+            try
+            {
+                var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
+                if (user == null)
+                {
+                    return BadRequest("Email or Password is wrong");
+                }
+                var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
+                if (!result.Succeeded)
+                {
+                    return Unauthorized("Email not found and/or password incorrect");
+                }
+                return Ok(new NewUserDto
+                {
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    Token = _tokenService.CreateToken(user)
+                });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e);
+            }
         }
     }
 }
