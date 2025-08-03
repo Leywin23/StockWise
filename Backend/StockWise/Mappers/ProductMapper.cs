@@ -15,7 +15,6 @@ namespace StockWise.Mappers
                 Description = productDto.Description,
                 ShoppingPrice = productDto.ShoppingPrice,
                 SellingPrice = productDto.SellingPrice, 
-                Stock = productDto.Stock,
                 CategoryId = category.CategoryId,
                 Category = category
             };

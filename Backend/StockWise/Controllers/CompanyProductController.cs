@@ -1,0 +1,91 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using StockWise.Data;
+using StockWise.Dtos;
+using StockWise.Models;
+using System.Security.Claims;
+
+namespace StockWise.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class CompanyProductController : ControllerBase
+    {
+        private readonly StockWiseDb _context;
+
+        public CompanyProductController(StockWiseDb context)
+        {
+            _context = context;
+        }
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetCompanyProducts() {
+
+
+            var userName = User.FindFirst(ClaimTypes.Name).Value;
+            if (string.IsNullOrEmpty(userName)) {
+                return Unauthorized("Username not found in token");
+            }
+            var user = await _context.Users
+                .Include(u => u.Company)
+                .FirstOrDefaultAsync(u => u.UserName == userName);
+            
+            var company = await _context.Companies.FirstOrDefaultAsync(c=>c.Id == user.Company.Id);
+
+            var products = await _context.CompanyProducts.Where(cp=>cp.Company.Id == company.Id).ToListAsync();
+
+            return Ok(products);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> AddCompanyProduct(CreateProductDto productDto)
+        {
+            var userName = User.FindFirst(ClaimTypes.Name).Value;
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized("Username not found in token");
+            }
+
+            var user = await _context.Users
+                .Include(u => u.Company)
+                .FirstOrDefaultAsync(u => u.UserName == userName);
+
+            if (user == null)
+                return Unauthorized("User not found.");
+
+            var company = user.Company;
+
+            if (company == null)
+                return BadRequest("User is not assigned to any company.");
+
+            var productExists = await _context.CompanyProducts
+                .AnyAsync(cp => cp.Company.Id == company.Id &&
+                                (cp.EAN == productDto.EAN || cp.CompanyProductName == productDto.ProductName));
+
+            if (productExists)
+            {
+                return BadRequest("Product is already in company stock.");
+            }
+
+            var newCompanyProduct = new CompanyProduct
+            {
+                CompanyProductName = productDto.ProductName,
+                EAN = productDto.EAN,
+                Image = productDto.Image,
+                Description = productDto.Description,
+                ShoppingPrice = productDto.ShoppingPrice,
+                SellingPrice = productDto.SellingPrice,
+                Stock = productDto.Stock,
+                Company = company
+            };
+
+            await _context.CompanyProducts.AddAsync(newCompanyProduct);
+            await _context.SaveChangesAsync();
+
+            return Ok(newCompanyProduct);
+        }
+    }
+}

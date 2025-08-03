@@ -7,6 +7,7 @@ using StockWise.Dtos;
 using static System.Net.Mime.MediaTypeNames;
 using StockWise.Migrations;
 using StockWise.Mappers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace StockWise.Controllers
 {
@@ -71,6 +72,7 @@ namespace StockWise.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetProducts()
         {
             var products = await _context.Products.Include(p => p.Category).ThenInclude(c => c.Parent).ToListAsync();
@@ -81,7 +83,6 @@ namespace StockWise.Controllers
                 ProductName = p.ProductName,
                 Ean = p.EAN,
                 Description = p.Description,
-                Stock = p.Stock,
                 SellingPrice = p.SellingPrice,
                 ShoppingPrice = p.ShoppingPrice,
                 CategoryString = GetCategoryFullPath(p.Category),

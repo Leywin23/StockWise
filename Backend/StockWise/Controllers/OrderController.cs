@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
@@ -18,9 +19,10 @@ namespace StockWise.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> MakeOrder(CreateOrderDto order)
         {
-            var client = _context.Companies.FirstOrDefault(c=>c.NIP == order.BuyerNIP);
+            var client = User.Identity.Name;
             var seller = _context.Companies.FirstOrDefault(c=>c.NIP == order.SellerNIP);
             if (client == null || seller == null)
             {
@@ -37,8 +39,8 @@ namespace StockWise.Controllers
             {
                 SellerId = seller.Id,
                 Seller = seller,
-                BuyerId = client.Id,
-                Buyer = client,
+                //BuyerId = client.Id,
+                //Buyer = client,
 
                 Status = order.Status,
                 Products = orderedProducts

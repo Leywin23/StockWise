@@ -12,5 +12,6 @@
         public ICollection<Order> OrdersAsBuyer { get; set; }
         public ICollection<Order> OrdersAsSeller { get; set; }
         public ICollection<AppUser> Users {  get; set; }
+        public ICollection<CompanyProduct> CompanyProducts { get; set; }
     }
 }

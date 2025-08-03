@@ -3,86 +3,16 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace StockWise.Migrations
 {
     /// <inheritdoc />
-    public partial class identitybase : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_categories_categories_ParentId",
-                table: "categories");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_inventoryMovement_products_ProductId",
-                table: "inventoryMovement");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_products_categories_CategoryId",
-                table: "products");
-
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_products",
-                table: "products");
-
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_inventoryMovement",
-                table: "inventoryMovement");
-
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_categories",
-                table: "categories");
-
-            migrationBuilder.RenameTable(
-                name: "products",
-                newName: "Products");
-
-            migrationBuilder.RenameTable(
-                name: "inventoryMovement",
-                newName: "InventoryMovement");
-
-            migrationBuilder.RenameTable(
-                name: "categories",
-                newName: "Categories");
-
-            migrationBuilder.RenameIndex(
-                name: "IX_products_CategoryId",
-                table: "Products",
-                newName: "IX_Products_CategoryId");
-
-            migrationBuilder.RenameIndex(
-                name: "IX_inventoryMovement_ProductId",
-                table: "InventoryMovement",
-                newName: "IX_InventoryMovement_ProductId");
-
-            migrationBuilder.RenameIndex(
-                name: "IX_categories_ParentId",
-                table: "Categories",
-                newName: "IX_Categories_ParentId");
-
-            migrationBuilder.AddColumn<int>(
-                name: "OrderId",
-                table: "Products",
-                type: "int",
-                nullable: true);
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_Products",
-                table: "Products",
-                column: "ProductId");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_InventoryMovement",
-                table: "InventoryMovement",
-                column: "Id");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_Categories",
-                table: "Categories",
-                column: "CategoryId");
-
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -98,28 +28,23 @@ namespace StockWise.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AspNetUsers",
+                name: "Categories",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
+                    CategoryId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ParentId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                    table.PrimaryKey("PK_Categories", x => x.CategoryId);
+                    table.ForeignKey(
+                        name: "FK_Categories_Categories_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "Categories",
+                        principalColumn: "CategoryId",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -129,7 +54,7 @@ namespace StockWise.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    NIP = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NIP = table.Column<long>(type: "bigint", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: false)
@@ -158,6 +83,99 @@ namespace StockWise.Migrations
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AspNetUsers",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    CompanyId = table.Column<int>(type: "int", nullable: true),
+                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetUsers_Companies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Companies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CompanyProducts",
+                columns: table => new
+                {
+                    CompanyProductId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CompanyProductName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    EAN = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ShoppingPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    SellingPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CategoryId = table.Column<int>(type: "int", nullable: false),
+                    Stock = table.Column<int>(type: "int", nullable: false),
+                    CompanyId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CompanyProducts", x => x.CompanyProductId);
+                    table.ForeignKey(
+                        name: "FK_CompanyProducts_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "CategoryId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CompanyProducts_Companies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Companies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Orders",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SellerId = table.Column<int>(type: "int", nullable: false),
+                    BuyerId = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Orders", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Orders_Companies_BuyerId",
+                        column: x => x.BuyerId,
+                        principalTable: "Companies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Orders_Companies_SellerId",
+                        column: x => x.SellerId,
+                        principalTable: "Companies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -246,38 +264,67 @@ namespace StockWise.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Orders",
+                name: "InventoryMovement",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    SellerId = table.Column<int>(type: "int", nullable: false),
-                    BuyerId = table.Column<int>(type: "int", nullable: false),
-                    BuyerId1 = table.Column<int>(type: "int", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CompanyProductId = table.Column<int>(type: "int", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Orders", x => x.Id);
+                    table.PrimaryKey("PK_InventoryMovement", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Orders_Companies_BuyerId",
-                        column: x => x.BuyerId,
-                        principalTable: "Companies",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Orders_Companies_BuyerId1",
-                        column: x => x.BuyerId1,
-                        principalTable: "Companies",
-                        principalColumn: "Id",
+                        name: "FK_InventoryMovement_CompanyProducts_CompanyProductId",
+                        column: x => x.CompanyProductId,
+                        principalTable: "CompanyProducts",
+                        principalColumn: "CompanyProductId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Products_OrderId",
-                table: "Products",
-                column: "OrderId");
+            migrationBuilder.CreateTable(
+                name: "Products",
+                columns: table => new
+                {
+                    ProductId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ProductName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    EAN = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ShoppingPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    SellingPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CategoryId = table.Column<int>(type: "int", nullable: false),
+                    OrderId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Products", x => x.ProductId);
+                    table.ForeignKey(
+                        name: "FK_Products_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "CategoryId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Products_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[,]
+                {
+                    { "1", null, "Manager", "MANAGER" },
+                    { "2", null, "Worker", "Worker" }
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -312,6 +359,11 @@ namespace StockWise.Migrations
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_CompanyId",
+                table: "AspNetUsers",
+                column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
@@ -319,66 +371,49 @@ namespace StockWise.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Categories_ParentId",
+                table: "Categories",
+                column: "ParentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CompanyProducts_CategoryId",
+                table: "CompanyProducts",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CompanyProducts_CompanyId",
+                table: "CompanyProducts",
+                column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InventoryMovement_CompanyProductId",
+                table: "InventoryMovement",
+                column: "CompanyProductId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Orders_BuyerId",
                 table: "Orders",
                 column: "BuyerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Orders_BuyerId1",
+                name: "IX_Orders_SellerId",
                 table: "Orders",
-                column: "BuyerId1");
+                column: "SellerId");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Categories_Categories_ParentId",
-                table: "Categories",
-                column: "ParentId",
-                principalTable: "Categories",
-                principalColumn: "CategoryId",
-                onDelete: ReferentialAction.Restrict);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_InventoryMovement_Products_ProductId",
-                table: "InventoryMovement",
-                column: "ProductId",
-                principalTable: "Products",
-                principalColumn: "ProductId",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Products_Categories_CategoryId",
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_CategoryId",
                 table: "Products",
-                column: "CategoryId",
-                principalTable: "Categories",
-                principalColumn: "CategoryId",
-                onDelete: ReferentialAction.Restrict);
+                column: "CategoryId");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Products_Orders_OrderId",
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_OrderId",
                 table: "Products",
-                column: "OrderId",
-                principalTable: "Orders",
-                principalColumn: "Id");
+                column: "OrderId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Categories_Categories_ParentId",
-                table: "Categories");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_InventoryMovement_Products_ProductId",
-                table: "InventoryMovement");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Products_Categories_CategoryId",
-                table: "Products");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Products_Orders_OrderId",
-                table: "Products");
-
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
@@ -395,7 +430,10 @@ namespace StockWise.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Orders");
+                name: "InventoryMovement");
+
+            migrationBuilder.DropTable(
+                name: "Products");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
@@ -404,93 +442,16 @@ namespace StockWise.Migrations
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
+                name: "CompanyProducts");
+
+            migrationBuilder.DropTable(
+                name: "Orders");
+
+            migrationBuilder.DropTable(
+                name: "Categories");
+
+            migrationBuilder.DropTable(
                 name: "Companies");
-
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_Products",
-                table: "Products");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Products_OrderId",
-                table: "Products");
-
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_InventoryMovement",
-                table: "InventoryMovement");
-
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_Categories",
-                table: "Categories");
-
-            migrationBuilder.DropColumn(
-                name: "OrderId",
-                table: "Products");
-
-            migrationBuilder.RenameTable(
-                name: "Products",
-                newName: "products");
-
-            migrationBuilder.RenameTable(
-                name: "InventoryMovement",
-                newName: "inventoryMovement");
-
-            migrationBuilder.RenameTable(
-                name: "Categories",
-                newName: "categories");
-
-            migrationBuilder.RenameIndex(
-                name: "IX_Products_CategoryId",
-                table: "products",
-                newName: "IX_products_CategoryId");
-
-            migrationBuilder.RenameIndex(
-                name: "IX_InventoryMovement_ProductId",
-                table: "inventoryMovement",
-                newName: "IX_inventoryMovement_ProductId");
-
-            migrationBuilder.RenameIndex(
-                name: "IX_Categories_ParentId",
-                table: "categories",
-                newName: "IX_categories_ParentId");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_products",
-                table: "products",
-                column: "ProductId");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_inventoryMovement",
-                table: "inventoryMovement",
-                column: "Id");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_categories",
-                table: "categories",
-                column: "CategoryId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_categories_categories_ParentId",
-                table: "categories",
-                column: "ParentId",
-                principalTable: "categories",
-                principalColumn: "CategoryId",
-                onDelete: ReferentialAction.Restrict);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_inventoryMovement_products_ProductId",
-                table: "inventoryMovement",
-                column: "ProductId",
-                principalTable: "products",
-                principalColumn: "ProductId",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_products_categories_CategoryId",
-                table: "products",
-                column: "CategoryId",
-                principalTable: "categories",
-                principalColumn: "CategoryId",
-                onDelete: ReferentialAction.Restrict);
         }
     }
 }

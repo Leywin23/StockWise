@@ -28,17 +28,31 @@ namespace StockWise
                 });
                 builder.Services.AddRazorPages();
                 builder.Services.AddEndpointsApiExplorer();
-                builder.Services.AddSwaggerGen(options =>
-                    {
-                        options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
-                        {
-                            Name = "Authorization",
-                            In = ParameterLocation.Header,
-                            Type = SecuritySchemeType.Http,
-                            Scheme = "Bearer"
-                        });
-                    }
-                );
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,     // <-- Http, NIE ApiKey
+                    Scheme = "Bearer"                   // <-- wtedy wymagane "Bearer <token>"
+                });
+
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+            });
 
             builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
             {
@@ -96,7 +110,7 @@ namespace StockWise
                     app.UseSwagger();
                     app.UseSwaggerUI();
                 }
-                app.MapControllers();
+                
                 app.UseHttpsRedirection();
                 app.UseStaticFiles();
 
@@ -106,7 +120,7 @@ namespace StockWise
 
                 app.UseAuthentication();
                 app.UseAuthorization();
-
+                app.MapControllers();
                 app.MapRazorPages();
 
                 app.Run();

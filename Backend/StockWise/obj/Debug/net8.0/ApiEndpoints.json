@@ -48,6 +48,32 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "StockWise.Controllers.CompanyProductController",
+    "Method": "GetCompanyProducts",
+    "RelativePath": "api/CompanyProduct",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.CompanyProductController",
+    "Method": "AddCompanyProduct",
+    "RelativePath": "api/CompanyProduct",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productDto",
+        "Type": "StockWise.Dtos.CreateProductDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "StockWise.Controllers.EanController",
     "Method": "GetProductByEan",
     "RelativePath": "api/Ean/{ean}",

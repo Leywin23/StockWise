@@ -11,8 +11,5 @@
         public decimal SellingPrice { get; set; } = 0;
         public int CategoryId {  get; set; }
         public Category Category { get; set; }
-        public int Stock { get; set; } = 0;
-
-        public ICollection<InventoryMovement> InventoryMovements { get; set; }
     }
 }

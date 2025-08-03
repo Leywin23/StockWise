@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace StockWise.Data
 {
-    public class StockWiseDb: IdentityDbContext 
+    public class StockWiseDb: IdentityDbContext<AppUser>
     {
         public StockWiseDb(DbContextOptions<StockWiseDb> options): base(options){}
 
@@ -14,6 +14,7 @@ namespace StockWise.Data
         public DbSet<InventoryMovement> InventoryMovement { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<Company> Companies { get; set; }
+        public DbSet<CompanyProduct> CompanyProducts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,9 +33,9 @@ namespace StockWise.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<InventoryMovement>().
-                HasOne(im => im.Product)
+                HasOne(im => im.CompanyProduct)
                 .WithMany(p => p.InventoryMovements)
-                .HasForeignKey(im => im.ProductId);
+                .HasForeignKey(im => im.CompanyProductId);
 
             modelBuilder.Entity<Order>()
                 .HasOne(o=>o.Buyer)
@@ -53,6 +54,13 @@ namespace StockWise.Data
                 .WithMany(c => c.Users)
                 .HasForeignKey(u => u.CompanyId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CompanyProduct>()
+                .HasOne(cp=>cp.Company)
+                .WithMany(c=>c.CompanyProducts)
+                .HasForeignKey(cp=>cp.CompanyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
 
             SeedRoles(modelBuilder);
         }

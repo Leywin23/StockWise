@@ -25,9 +25,9 @@ namespace StockWise.Controllers
         [HttpGet("{ProductId:int}")]
         public async Task<IActionResult> GetProductMovementHistory(int ProductId)
         {
-            var product = await _context.Products
+            var product = await _context.CompanyProducts
                   .Include(p => p.InventoryMovements)
-                  .FirstOrDefaultAsync(p => p.ProductId == ProductId);
+                  .FirstOrDefaultAsync(p => p.CompanyProductId == ProductId);
 
             if (product == null) return NotFound();
 
@@ -38,22 +38,21 @@ namespace StockWise.Controllers
         [HttpPost]
         public async Task<IActionResult> AddMovement([FromBody] InventoryMovementDto dto)
         {
-            var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == dto.ProductId);
+            var product = await _context.CompanyProducts
+    .FirstOrDefaultAsync(p => p.CompanyProductId == dto.CompanyProductId);
 
-            if (product == null) {
-                return NotFound($"Couldn't find a product with EAN number {dto.ProductId}");
-            }
-
+            if (product == null)
+                return NotFound($"Couldn't find product with ID {dto.CompanyProductId}");
 
             var movement = new InventoryMovement
             {
                 Date = dto.Date,
                 Type = dto.Type.ToLower(),
                 Quantity = dto.Quantity,
-                ProductId = dto.ProductId,
+                CompanyProductId = dto.CompanyProductId,
                 Comment = dto.Comment,
             };
-            
+
             switch (movement.Type?.ToLowerInvariant())
             {
                 case "inbound":
@@ -77,7 +76,7 @@ namespace StockWise.Controllers
             _context.InventoryMovement.Add(movement);
             await _context.SaveChangesAsync();
 
-            await _hubContext.Clients.All.SendAsync("StockUpdated", product.ProductId, product.Stock);
+            await _hubContext.Clients.All.SendAsync("StockUpdated", product.CompanyProductId, product.Stock);
 
             return Ok(movement);
         }
