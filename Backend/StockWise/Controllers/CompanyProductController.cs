@@ -41,7 +41,7 @@ namespace StockWise.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> AddCompanyProduct(CreateProductDto productDto)
+        public async Task<IActionResult> AddCompanyProduct(CreateCompanyProductDto productDto)
         {
             var userName = User.FindFirst(ClaimTypes.Name).Value;
             if (string.IsNullOrEmpty(userName))
@@ -79,8 +79,9 @@ namespace StockWise.Controllers
                 ShoppingPrice = productDto.ShoppingPrice,
                 SellingPrice = productDto.SellingPrice,
                 Stock = productDto.Stock,
-                Company = company
-            };
+                Company = company,
+                IsAvailableForOrder = productDto.IsAvailableForOrder
+    };
 
             await _context.CompanyProducts.AddAsync(newCompanyProduct);
             await _context.SaveChangesAsync();

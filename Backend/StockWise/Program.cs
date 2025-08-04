@@ -25,6 +25,7 @@ namespace StockWise
                 {
                     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
                     options.JsonSerializerOptions.WriteIndented = true;
+                    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
                 });
                 builder.Services.AddRazorPages();
                 builder.Services.AddEndpointsApiExplorer();
@@ -34,8 +35,8 @@ namespace StockWise
                 {
                     Name = "Authorization",
                     In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.Http,     // <-- Http, NIE ApiKey
-                    Scheme = "Bearer"                   // <-- wtedy wymagane "Bearer <token>"
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer"                   
                 });
 
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement

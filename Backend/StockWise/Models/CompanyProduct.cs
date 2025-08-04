@@ -12,6 +12,7 @@
         public int Stock { get; set; } = 0;
         public int CompanyId {  get; set; }
         public Company Company { get; set; }
+        public bool IsAvailableForOrder { get; set; }
 
         public ICollection<InventoryMovement> InventoryMovements { get; set; }
     }

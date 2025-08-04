@@ -67,7 +67,7 @@
     "Parameters": [
       {
         "Name": "productDto",
-        "Type": "StockWise.Dtos.CreateProductDto",
+        "Type": "StockWise.Dtos.CreateCompanyProductDto",
         "IsRequired": true
       }
     ],
@@ -119,6 +119,16 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.OrderController",
+    "Method": "GetOrders",
+    "RelativePath": "api/Order",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {
