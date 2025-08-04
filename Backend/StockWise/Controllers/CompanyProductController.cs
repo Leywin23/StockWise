@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
-using StockWise.Dtos;
+using StockWise.Dtos.CompanyProductDtos;
 using StockWise.Models;
 using System.Security.Claims;
 
@@ -14,10 +15,12 @@ namespace StockWise.Controllers
     public class CompanyProductController : ControllerBase
     {
         private readonly StockWiseDb _context;
+        private readonly UserManager<AppUser> _userManager;
 
-        public CompanyProductController(StockWiseDb context)
+        public CompanyProductController(StockWiseDb context, UserManager<AppUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
         [Authorize]
         [HttpGet]
@@ -87,6 +90,35 @@ namespace StockWise.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(newCompanyProduct);
+        }
+
+        [Authorize]
+        [HttpDelete]
+        public async Task<IActionResult> DeleteCompanyProduct(int ProductId)
+        {
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized("Username not found in token.");
+            }
+            var user = await _userManager.Users.Include(u=>u.Company).ThenInclude(c => c.CompanyProducts).FirstOrDefaultAsync(u=>u.UserName==UserName);
+            if (user == null) {
+                return Unauthorized("User not found.");
+            }
+            var company = user.Company;
+            if (company == null) {
+                return BadRequest("User is not assigned to any company.");
+            }
+
+            var companyProducts = company.CompanyProducts.ToList();
+
+            var ProductToDelete = companyProducts.FirstOrDefault(cp=>cp.CompanyProductId==ProductId);
+            if (ProductToDelete == null) {
+                return NotFound("Product not found");
+            }
+            _context.CompanyProducts.Remove(ProductToDelete);
+            await _context.SaveChangesAsync();
+            return Ok(ProductToDelete);
         }
     }
 }
