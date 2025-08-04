@@ -8,6 +8,7 @@ using static System.Net.Mime.MediaTypeNames;
 using StockWise.Migrations;
 using StockWise.Mappers;
 using Microsoft.AspNetCore.Authorization;
+using StockWise.Dtos.ProductDtos;
 
 namespace StockWise.Controllers
 {

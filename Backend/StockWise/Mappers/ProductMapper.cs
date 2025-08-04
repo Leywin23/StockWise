@@ -1,4 +1,4 @@
-﻿using StockWise.Dtos;
+﻿using StockWise.Dtos.ProductDtos;
 using StockWise.Models;
 
 namespace StockWise.Mappers

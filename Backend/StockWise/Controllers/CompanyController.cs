@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
-using StockWise.Dtos;
+using StockWise.Dtos.CompanyDtos;
 using StockWise.Models;
 
 namespace StockWise.Controllers

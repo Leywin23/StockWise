@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
 using StockWise.Dtos;
+using StockWise.Dtos.AccountDtos;
 using StockWise.Interfaces;
 using StockWise.Models;
 

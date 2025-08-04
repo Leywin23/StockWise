@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using StockWise.Data;
-using StockWise.Dtos;
 using StockWise.Hubs;
 using StockWise.Models;
 using Microsoft.EntityFrameworkCore;
+using StockWise.Dtos.InventoryMovementDtos;
 
 namespace StockWise.Controllers
 {
