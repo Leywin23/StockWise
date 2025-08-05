@@ -9,7 +9,7 @@
     "Parameters": [
       {
         "Name": "loginDto",
-        "Type": "StockWise.Dtos.LoginDto",
+        "Type": "StockWise.Dtos.AccountDtos.LoginDto",
         "IsRequired": true
       }
     ],
@@ -25,7 +25,7 @@
     "Parameters": [
       {
         "Name": "userDto",
-        "Type": "StockWise.Dtos.RegisterDto",
+        "Type": "StockWise.Dtos.AccountDtos.RegisterDto",
         "IsRequired": true
       }
     ],
@@ -41,7 +41,7 @@
     "Parameters": [
       {
         "Name": "companyDto",
-        "Type": "StockWise.Dtos.CreateCompanyDto",
+        "Type": "StockWise.Dtos.CompanyDtos.CreateCompanyDto",
         "IsRequired": true
       }
     ],
@@ -67,7 +67,44 @@
     "Parameters": [
       {
         "Name": "productDto",
-        "Type": "StockWise.Dtos.CreateCompanyProductDto",
+        "Type": "StockWise.Dtos.CompanyProductDtos.CreateCompanyProductDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.CompanyProductController",
+    "Method": "DeleteCompanyProduct",
+    "RelativePath": "api/CompanyProduct",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "ProductId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.CompanyProductController",
+    "Method": "EditCompanyProduct",
+    "RelativePath": "api/CompanyProduct",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "productDto",
+        "Type": "StockWise.Models.CompanyProduct",
         "IsRequired": true
       }
     ],
@@ -99,7 +136,7 @@
     "Parameters": [
       {
         "Name": "dto",
-        "Type": "StockWise.Dtos.InventoryMovementDto",
+        "Type": "StockWise.Dtos.InventoryMovementDtos.InventoryMovementDto",
         "IsRequired": true
       }
     ],
@@ -141,7 +178,7 @@
     "Parameters": [
       {
         "Name": "order",
-        "Type": "StockWise.Dtos.CreateOrderDto",
+        "Type": "StockWise.Dtos.OrderDtos.CreateOrderDto",
         "IsRequired": true
       }
     ],
@@ -167,7 +204,7 @@
     "Parameters": [
       {
         "Name": "productDto",
-        "Type": "StockWise.Dtos.CreateProductDto",
+        "Type": "StockWise.Dtos.ProductDtos.CreateProductDto",
         "IsRequired": true
       }
     ],
@@ -183,7 +220,7 @@
     "Parameters": [
       {
         "Name": "productDto",
-        "Type": "StockWise.Dtos.UpdateProductDto",
+        "Type": "StockWise.Dtos.ProductDtos.UpdateProductDto",
         "IsRequired": true
       }
     ],

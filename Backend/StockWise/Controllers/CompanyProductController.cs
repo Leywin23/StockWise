@@ -101,7 +101,7 @@ namespace StockWise.Controllers
             {
                 return Unauthorized("Username not found in token.");
             }
-            var user = await _userManager.Users.Include(u=>u.Company).ThenInclude(c => c.CompanyProducts).FirstOrDefaultAsync(u=>u.UserName==UserName);
+            var user = await _userManager.Users.Include(u=>u.Company).ThenInclude(c => c.CompanyProducts).FirstOrDefaultAsync(u=>u.UserName==userName);
             if (user == null) {
                 return Unauthorized("User not found.");
             }
@@ -119,6 +119,57 @@ namespace StockWise.Controllers
             _context.CompanyProducts.Remove(ProductToDelete);
             await _context.SaveChangesAsync();
             return Ok(ProductToDelete);
+        }
+
+        [Authorize]
+        [HttpPut]
+        public async Task<IActionResult> EditCompanyProduct(int productId, CompanyProduct productDto)
+        {
+            var userName = User.FindFirst(ClaimTypes.Name).Value;
+            if (string.IsNullOrEmpty(userName)) {
+                return Unauthorized("Username not found in token.");
+            };
+
+            var user = await _userManager.Users
+                .Include(u => u.Company)
+                .ThenInclude(c => c.CompanyProducts)
+                .FirstOrDefaultAsync(u=>u.UserName == userName);
+
+            if (user == null) {
+                return Unauthorized("User not found.");
+            }
+
+            var company = user.Company;
+            if (company == null)
+            {
+                return BadRequest("User is not assigned to any company.");
+            }
+
+            var product = company.CompanyProducts.FirstOrDefault(cp=>cp.CompanyProductId==productId);
+            if (product == null) {
+                return NotFound($"The product with id {productId} does not belong to this company");
+            }
+
+            var duplicate = company.CompanyProducts.Any(cp => cp.CompanyProductId != productId &&
+            (cp.EAN == productDto.EAN || cp.CompanyProductName == productDto.CompanyProductName));
+
+            if (duplicate) {
+                return BadRequest("Another product with the same EAN or name already exists in your company.");
+            }
+
+
+            product.CompanyProductName = productDto.CompanyProductName;
+            product.EAN = productDto.EAN;
+            product.Image = productDto.Image;
+            product.Description = productDto.Description;
+            product.ShoppingPrice = productDto.ShoppingPrice;
+            product.SellingPrice = productDto.SellingPrice;
+            product.Stock = productDto.Stock;
+            product.IsAvailableForOrder = productDto.IsAvailableForOrder;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(product);
         }
     }
 }

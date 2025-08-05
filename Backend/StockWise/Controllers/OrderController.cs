@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
-using StockWise.Dtos;
+using StockWise.Dtos.OrderDtos;
 using StockWise.Models;
 using System.Security.Claims;
 

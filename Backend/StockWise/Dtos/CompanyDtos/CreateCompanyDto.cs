@@ -1,4 +1,4 @@
-﻿namespace StockWise.Dtos
+﻿namespace StockWise.Dtos.CompanyDtos
 {
     public class CreateCompanyDto
     {
