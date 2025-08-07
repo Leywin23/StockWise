@@ -15,5 +15,6 @@
         public bool IsAvailableForOrder { get; set; }
 
         public ICollection<InventoryMovement> InventoryMovements { get; set; }
+
     }
 }

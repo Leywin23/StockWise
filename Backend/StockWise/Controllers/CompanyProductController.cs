@@ -34,14 +34,34 @@ namespace StockWise.Controllers
             var user = await _context.Users
                 .Include(u => u.Company)
                 .FirstOrDefaultAsync(u => u.UserName == userName);
-            
-            var company = await _context.Companies.FirstOrDefaultAsync(c=>c.Id == user.Company.Id);
 
-            var products = await _context.CompanyProducts.Where(cp=>cp.Company.Id == company.Id).ToListAsync();
+            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == user.Company.Id);
+
+            var products = await _context.CompanyProducts.Where(cp => cp.Company.Id == company.Id).ToListAsync();
 
             return Ok(products);
         }
+        [Authorize]
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetCompanyProductById(int productId)
+        {
 
+            var userName = User.FindFirst(ClaimTypes.Name).Value;
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized("Username not found in token");
+            }
+            var user = await _context.Users
+                .Include(u => u.Company)
+                .FirstOrDefaultAsync(u => u.UserName == userName);
+
+            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == user.Company.Id);
+
+            var product = await _context.CompanyProducts.FirstOrDefaultAsync(cp => cp.Company.Id == company.Id);
+
+            return Ok(product);
+
+        }
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> AddCompanyProduct(CreateCompanyProductDto productDto)

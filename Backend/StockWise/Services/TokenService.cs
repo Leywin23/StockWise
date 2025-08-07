@@ -21,8 +21,6 @@ namespace StockWise.Services
         public string CreateToken(AppUser user)
         {
             var claims = new List<Claim>{
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.GivenName, user.UserName),
                 new Claim(ClaimTypes.Name, user.UserName)
             };
 

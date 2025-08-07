@@ -73,6 +73,8 @@ namespace StockWise.Controllers
                 default:
                     return BadRequest("Invalid movement type");
             }
+
+
             _context.InventoryMovement.Add(movement);
             await _context.SaveChangesAsync();
 
