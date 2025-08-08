@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
 using StockWise.Dtos.CompanyDtos;
 using StockWise.Models;
+using System.Security.Claims;
 
 namespace StockWise.Controllers
 {
@@ -12,10 +15,30 @@ namespace StockWise.Controllers
     public class CompanyController : ControllerBase
     {
         private readonly StockWiseDb _context;
+        private readonly UserManager<AppUser> _userManager;
 
-        public CompanyController(StockWiseDb context)
+        public CompanyController(StockWiseDb context, UserManager<AppUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetCompanyData(int id)
+        {
+            var userName = User.FindFirst(ClaimTypes.Name).Value;
+            if (userName == null)
+            {
+                return Unauthorized();
+            }
+            var user = await _userManager.Users.Include(u => u.Company).FirstOrDefaultAsync(x => x.UserName == userName);
+
+            var company = await _context.Companies.FirstOrDefaultAsync(c => c.NIP == user.Company.Id);
+            if (company == null)
+                return BadRequest("User is not assigned to any company.");
+
+            return Ok(company);
         }
 
         [HttpPost]
@@ -72,6 +95,59 @@ namespace StockWise.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(newCompany);
+        }
+
+        [Authorize]
+        [HttpDelete]
+        public async Task<IActionResult> DeleteCompany(int id)
+        {
+            var userName = User.FindFirst(ClaimTypes.Name).Value;
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized("Username not found in token");
+            }
+            var user = await _context.Users
+                .Include(u => u.Company)
+                .FirstOrDefaultAsync(u => u.UserName == userName);
+
+            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == user.Company.Id);
+
+            if (company == null)
+                return BadRequest("User is not assigned to any company.");
+
+            _context.Companies.Remove(company);
+            await _context.SaveChangesAsync();
+            return Ok(company);
+        }
+
+        [Authorize]
+        [HttpPut]
+        public async Task<IActionResult> EditCompany(UpdateCompanyDto companyDto)
+        {
+            var userName = User.FindFirst(ClaimTypes.Name).Value;
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized("Username not found in token");
+            }
+            var user = await _context.Users
+                .Include(u => u.Company)
+                .FirstOrDefaultAsync(u => u.UserName == userName);
+
+            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == user.Company.Id);
+
+            if (company == null)
+                return BadRequest("User is not assigned to any company.");
+
+            company.Name = companyDto.Name;
+            company.Email = companyDto.Email;
+            company.Phone = companyDto.Phone;
+            company.Address = companyDto.Address;
+
+            _context.Companies.Update(company);
+            await _context.SaveChangesAsync();
+
+            return Ok(company);
+
         }
     }
 }
