@@ -36,6 +36,8 @@ namespace StockWise.Controllers
                 .FirstOrDefaultAsync(u => u.UserName == userName);
 
             var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == user.Company.Id);
+            if (company == null)
+                return BadRequest("User is not assigned to any company.");
 
             var products = await _context.CompanyProducts.Where(cp => cp.Company.Id == company.Id).ToListAsync();
 
@@ -56,6 +58,8 @@ namespace StockWise.Controllers
                 .FirstOrDefaultAsync(u => u.UserName == userName);
 
             var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == user.Company.Id);
+            if (company == null)
+                return BadRequest("User is not assigned to any company.");
 
             var product = await _context.CompanyProducts.FirstOrDefaultAsync(cp => cp.Company.Id == company.Id);
 
