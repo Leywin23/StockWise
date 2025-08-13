@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
 using StockWise.Dtos.CompanyProductDtos;
+using StockWise.Dtos.ProductDtos;
+using StockWise.Interfaces;
 using StockWise.Models;
 using System.Security.Claims;
 
@@ -16,12 +18,15 @@ namespace StockWise.Controllers
     {
         private readonly StockWiseDb _context;
         private readonly UserManager<AppUser> _userManager;
+        private readonly ICompanyProductService _companyProductService;
 
-        public CompanyProductController(StockWiseDb context, UserManager<AppUser> userManager)
+        public CompanyProductController(StockWiseDb context, UserManager<AppUser> userManager, ICompanyProductService companyProductService)
         {
             _context = context;
             _userManager = userManager;
+            _companyProductService = companyProductService;
         }
+
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetCompanyProducts() {
@@ -39,10 +44,11 @@ namespace StockWise.Controllers
             if (company == null)
                 return BadRequest("User is not assigned to any company.");
 
-            var products = await _context.CompanyProducts.Where(cp => cp.Company.Id == company.Id).ToListAsync();
+            var products = await _companyProductService.GetCompanyProductsAsync(user);
 
             return Ok(products);
         }
+
         [Authorize]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetCompanyProductById(int productId)
@@ -57,11 +63,7 @@ namespace StockWise.Controllers
                 .Include(u => u.Company)
                 .FirstOrDefaultAsync(u => u.UserName == userName);
 
-            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == user.Company.Id);
-            if (company == null)
-                return BadRequest("User is not assigned to any company.");
-
-            var product = await _context.CompanyProducts.FirstOrDefaultAsync(cp => cp.Company.Id == company.Id);
+            var product = await _companyProductService.GetCompanyProductAsync(user, productId);
 
             return Ok(product);
 
@@ -97,21 +99,7 @@ namespace StockWise.Controllers
                 return BadRequest("Product is already in company stock.");
             }
 
-            var newCompanyProduct = new CompanyProduct
-            {
-                CompanyProductName = productDto.ProductName,
-                EAN = productDto.EAN,
-                Image = productDto.Image,
-                Description = productDto.Description,
-                ShoppingPrice = productDto.ShoppingPrice,
-                SellingPrice = productDto.SellingPrice,
-                Stock = productDto.Stock,
-                Company = company,
-                IsAvailableForOrder = productDto.IsAvailableForOrder
-    };
-
-            await _context.CompanyProducts.AddAsync(newCompanyProduct);
-            await _context.SaveChangesAsync();
+            var newCompanyProduct = await _companyProductService.CreateCompanyProductAsync(company, productDto);
 
             return Ok(newCompanyProduct);
         }
@@ -136,64 +124,37 @@ namespace StockWise.Controllers
 
             var companyProducts = company.CompanyProducts.ToList();
 
-            var ProductToDelete = companyProducts.FirstOrDefault(cp=>cp.CompanyProductId==ProductId);
-            if (ProductToDelete == null) {
-                return NotFound("Product not found");
-            }
-            _context.CompanyProducts.Remove(ProductToDelete);
-            await _context.SaveChangesAsync();
+            var ProductToDelete = await _companyProductService.DeleteCompanyProductAsync(user, ProductId);
             return Ok(ProductToDelete);
         }
 
         [Authorize]
         [HttpPut]
-        public async Task<IActionResult> EditCompanyProduct(int productId, CompanyProduct productDto)
+        public async Task<IActionResult> EditCompanyProduct(int productId, UpdateCompanyProductDto productDto)
         {
-            var userName = User.FindFirst(ClaimTypes.Name).Value;
-            if (string.IsNullOrEmpty(userName)) {
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userName))
                 return Unauthorized("Username not found in token.");
-            };
 
             var user = await _userManager.Users
                 .Include(u => u.Company)
-                .ThenInclude(c => c.CompanyProducts)
-                .FirstOrDefaultAsync(u=>u.UserName == userName);
+                .FirstOrDefaultAsync(u => u.UserName == userName);
 
-            if (user == null) {
+            if (user == null)
                 return Unauthorized("User not found.");
-            }
 
-            var company = user.Company;
-            if (company == null)
+            try
             {
-                return BadRequest("User is not assigned to any company.");
+                var updatedProduct = await _companyProductService.UpdateCompanyProductAsync(productId, user, productDto);
+                if (updatedProduct == null)
+                    return NotFound("Product not found or user not assigned to any company.");
+
+                return Ok(updatedProduct);
             }
-
-            var product = company.CompanyProducts.FirstOrDefault(cp=>cp.CompanyProductId==productId);
-            if (product == null) {
-                return NotFound($"The product with id {productId} does not belong to this company");
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
             }
-
-            var duplicate = company.CompanyProducts.Any(cp => cp.CompanyProductId != productId &&
-            (cp.EAN == productDto.EAN || cp.CompanyProductName == productDto.CompanyProductName));
-
-            if (duplicate) {
-                return BadRequest("Another product with the same EAN or name already exists in your company.");
-            }
-
-
-            product.CompanyProductName = productDto.CompanyProductName;
-            product.EAN = productDto.EAN;
-            product.Image = productDto.Image;
-            product.Description = productDto.Description;
-            product.ShoppingPrice = productDto.ShoppingPrice;
-            product.SellingPrice = productDto.SellingPrice;
-            product.Stock = productDto.Stock;
-            product.IsAvailableForOrder = productDto.IsAvailableForOrder;
-
-            await _context.SaveChangesAsync();
-
-            return Ok(product);
         }
     }
 }

@@ -15,116 +15,120 @@ namespace StockWise
     {
         public static void Main(string[] args)
         {
-                var builder = WebApplication.CreateBuilder(args);
+            var builder = WebApplication.CreateBuilder(args);
 
-                builder.Services.AddDbContext<StockWiseDb>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-                // Add services to the container.
-                builder.Services.AddControllers()
-                .AddJsonOptions(options =>
-                {
-                    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-                    options.JsonSerializerOptions.WriteIndented = true;
-                    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
-                });
-                builder.Services.AddRazorPages();
-                builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(options =>
+            builder.Services.AddDbContext<StockWiseDb>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            // Add services to the container.
+            builder.Services.AddControllers()
+            .AddJsonOptions(options =>
             {
-                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "Bearer"                   
-                });
-
-                options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
+                options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+                options.JsonSerializerOptions.WriteIndented = true;
+                options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+            });
+            builder.Services.AddRazorPages();
+            builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen(options =>
         {
-            new OpenApiSecurityScheme
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] {}
-        }
-    });
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = "Bearer"                   
             });
 
-            builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+{
+    {
+        new OpenApiSecurityScheme
+        {
+            Reference = new OpenApiReference
             {
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireUppercase = true;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequiredLength = 8;
-            }).AddEntityFrameworkStores<StockWiseDb>();
+                Type = ReferenceType.SecurityScheme,
+                Id = "Bearer"
+            }
+        },
+        new string[] {}
+    }
+});
+        });
 
-                builder.Services.AddAuthentication(options =>
+        builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
+        {
+            options.Password.RequireDigit = true;
+            options.Password.RequireLowercase = true;
+            options.Password.RequireUppercase = true;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequiredLength = 8;
+        }).AddEntityFrameworkStores<StockWiseDb>();
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultForbidScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultForbidScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                }).AddJwtBearer(options =>
+                    ValidateIssuer = true,
+                    ValidIssuer = builder.Configuration["JWT:Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = builder.Configuration["JWT:Audience"],
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JWT:SigningKey"]))
+                };
+            });
+
+
+            builder.Services.AddHttpClient();
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
                 {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidIssuer = builder.Configuration["JWT:Issuer"],
-                        ValidateAudience = true,
-                        ValidAudience = builder.Configuration["JWT:Audience"],
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(
-                            System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JWT:SigningKey"]))
-                    };
+                    policy.WithOrigins("http://localhost:3000")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
                 });
+            });
 
+            builder.Services.AddSignalR();
+            builder.Services.AddScoped<ITokenService, TokenService>();
+            builder.Services.AddScoped<ICompanyService, CompanyService>();
+            builder.Services.AddScoped<ICompanyProductService, CompanyProductService>();
+            builder.Services.AddScoped<IEanService, EanService>();
+            builder.Services.AddScoped<IInventoryMovementService, InventoryMovementService>();
 
-                builder.Services.AddHttpClient();
-
-                builder.Services.AddCors(options =>
-                {
-                    options.AddPolicy("AllowFrontend", policy =>
-                    {
-                        policy.WithOrigins("http://localhost:3000")
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials();
-                    });
-                });
-
-                builder.Services.AddSignalR();
-                builder.Services.AddScoped<ITokenService, TokenService>();
-
-                var app = builder.Build();
-                app.MapHub<StockHub>("/stockHub");
-                // Configure the HTTP request pipeline.
-                if (app.Environment.IsDevelopment())
-                {
-                    app.UseSwagger();
-                    app.UseSwaggerUI();
-                }
+            var app = builder.Build();
+            app.MapHub<StockHub>("/stockHub");
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
                 
-                app.UseHttpsRedirection();
-                app.UseStaticFiles();
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
 
-                app.UseCors("AllowFrontend");
+            app.UseCors("AllowFrontend");
 
-                app.UseRouting();
+            app.UseRouting();
 
-                app.UseAuthentication();
-                app.UseAuthorization();
-                app.MapControllers();
-                app.MapRazorPages();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.MapControllers();
+            app.MapRazorPages();
 
-                app.Run();
+            app.Run();
             
          }
     }

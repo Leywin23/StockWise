@@ -7,7 +7,7 @@ using StockWise.Models;
 
 namespace StockWise.Services
 {
-    public class CompanyService
+    public class CompanyService : ICompanyService
     {
         private readonly StockWiseDb _context;
 

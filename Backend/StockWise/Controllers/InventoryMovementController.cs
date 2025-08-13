@@ -6,6 +6,7 @@ using StockWise.Hubs;
 using StockWise.Models;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Dtos.InventoryMovementDtos;
+using StockWise.Interfaces;
 
 namespace StockWise.Controllers
 {
@@ -15,10 +16,12 @@ namespace StockWise.Controllers
     {
         private readonly StockWiseDb _context;
         private readonly IHubContext<StockHub> _hubContext;
-        public InventoryMovementController(StockWiseDb context, IHubContext<StockHub> hubContext)
+        private readonly IInventoryMovementService _inventoryMovementService;
+        public InventoryMovementController(StockWiseDb context, IHubContext<StockHub> hubContext, IInventoryMovementService inventoryMovementService)
         {
             _context = context;
             _hubContext = hubContext;
+            _inventoryMovementService = inventoryMovementService;
         }
 
 
@@ -38,49 +41,16 @@ namespace StockWise.Controllers
         [HttpPost]
         public async Task<IActionResult> AddMovement([FromBody] InventoryMovementDto dto)
         {
-            var product = await _context.CompanyProducts
-    .FirstOrDefaultAsync(p => p.CompanyProductId == dto.CompanyProductId);
-
-            if (product == null)
-                return NotFound($"Couldn't find product with ID {dto.CompanyProductId}");
-
-            var movement = new InventoryMovement
+            var result = await _inventoryMovementService.AddMovementAsync(dto);
+            if (!result.Success)
             {
-                Date = dto.Date,
-                Type = dto.Type.ToLower(),
-                Quantity = dto.Quantity,
-                CompanyProductId = dto.CompanyProductId,
-                Comment = dto.Comment,
-            };
+                if(result.ErrorMessage.Contains("Couldn't find product"))
+                    return NotFound(result.ErrorMessage);
 
-            switch (movement.Type?.ToLowerInvariant())
-            {
-                case "inbound":
-                    product.Stock += movement.Quantity;
-                    break;
-
-                case "outbound":
-                    if (product.Stock < movement.Quantity)
-                        return BadRequest("Stock couldn't be below 0");
-
-                    product.Stock -= movement.Quantity;
-                    break;
-
-                case "adjustment":
-                    product.Stock = movement.Quantity;
-                    break;
-
-                default:
-                    return BadRequest("Invalid movement type");
+                return BadRequest(result.ErrorMessage);
             }
 
-
-            _context.InventoryMovement.Add(movement);
-            await _context.SaveChangesAsync();
-
-            await _hubContext.Clients.All.SendAsync("StockUpdated", product.CompanyProductId, product.Stock);
-
-            return Ok(movement);
+            return Ok(result.Data);
         }
     }
 }

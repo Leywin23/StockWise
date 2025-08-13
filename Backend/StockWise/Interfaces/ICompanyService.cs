@@ -6,9 +6,9 @@ namespace StockWise.Interfaces
 {
     public interface ICompanyService
     {
-        Task<Company?> GetCompanyAsync(string companyId, AppUser user);
-        Task<Company> CreateComapnyAsync(CreateCompanyDto companyDto);
-        Task<Company?> UpdateComapnyAsync(UpdateCompanyDto companyDto, AppUser user);
-        Task? DeleteCompanyAsync(string companyId, AppUser user);
+        Task<Company?> GetCompanyAsync(AppUser user);
+        Task<Company?> CreateCompanyAsync(CreateCompanyDto companyDto);
+        Task<Company?> UpdateCompanyAsync(UpdateCompanyDto companyDto, AppUser user);
+        Task<Company?> DeleteCompanyAsync(AppUser user);
     }
 }

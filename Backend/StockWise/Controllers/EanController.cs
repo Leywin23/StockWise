@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
+using StockWise.Interfaces;
 using StockWise.Models;
 using System.Text.Json;
 
@@ -13,11 +14,13 @@ namespace StockWise.Controllers
     {
         private readonly IHttpClientFactory _httpClient;
         private readonly StockWiseDb _context;
+        private readonly IEanService _eanService;
 
-        public EanController(IHttpClientFactory httpClient, StockWiseDb context)
+        public EanController(IHttpClientFactory httpClient, StockWiseDb context, IEanService eanService)
         {
             _httpClient = httpClient;
             _context = context; 
+            _eanService = eanService;
         }
 
         [HttpGet("{ean}")]
@@ -36,7 +39,7 @@ namespace StockWise.Controllers
                 var json = JsonDocument.Parse(content);
                 var item = json.RootElement.GetProperty("items")[0];
                 var categoryName = item.GetProperty("category").GetString();
-                var category = await EnsureCategoryHierarchyAsync(categoryName);
+                var category = await _eanService.EnsureCategoryHierarchyAsync(categoryName);
 
 
                 var result = new Product
@@ -55,40 +58,6 @@ namespace StockWise.Controllers
                 return StatusCode(500, $"Server Error: {ex.Message}");
             }
 
-        }
-
-
-        private async Task<Category> EnsureCategoryHierarchyAsync(string fullCategoryPath)
-        {
-            var categoryNames = fullCategoryPath.Split(">").Select(s => s.Trim()).ToList();
-            Category? parent = null;
-
-            foreach (var name in categoryNames)
-            {
-                int? parentId = parent?.CategoryId;
-
-                var existing = await _context.Categories
-                    .FirstOrDefaultAsync(c => c.Name == name && c.ParentId == parentId);
-
-                if (existing == null)
-                {
-                    var newCategory = new Category
-                    {
-                        Name = name,
-                        Parent = parent
-                    };
-
-                    _context.Categories.Add(newCategory);
-                    await _context.SaveChangesAsync();
-                    parent = newCategory;
-                }
-                else
-                {
-                    parent = existing;
-                }
-            }
-
-            return parent!;
         }
 
     }

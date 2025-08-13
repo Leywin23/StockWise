@@ -33,6 +33,16 @@
   },
   {
     "ContainingType": "StockWise.Controllers.CompanyController",
+    "Method": "GetCompanyData",
+    "RelativePath": "api/Company",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.CompanyController",
     "Method": "CreateCompany",
     "RelativePath": "api/Company",
     "HttpMethod": "POST",
@@ -42,6 +52,32 @@
       {
         "Name": "companyDto",
         "Type": "StockWise.Dtos.CompanyDtos.CreateCompanyDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.CompanyController",
+    "Method": "DeleteCompany",
+    "RelativePath": "api/Company",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.CompanyController",
+    "Method": "EditCompany",
+    "RelativePath": "api/Company",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "companyDto",
+        "Type": "StockWise.Dtos.CompanyDtos.UpdateCompanyDto",
         "IsRequired": true
       }
     ],
@@ -104,7 +140,28 @@
       },
       {
         "Name": "productDto",
-        "Type": "StockWise.Models.CompanyProduct",
+        "Type": "StockWise.Dtos.CompanyProductDtos.UpdateCompanyProductDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.CompanyProductController",
+    "Method": "GetCompanyProductById",
+    "RelativePath": "api/CompanyProduct/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "id",
+        "Type": "",
         "IsRequired": true
       }
     ],
