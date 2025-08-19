@@ -155,6 +155,7 @@ namespace StockWise.Controllers
             {
                 return BadRequest(ex.Message);
             }
+
         }
     }
 }

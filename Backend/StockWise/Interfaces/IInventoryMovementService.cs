@@ -1,5 +1,5 @@
-﻿using StockWise.Dtos;
-using StockWise.Dtos.InventoryMovementDtos;
+﻿using StockWise.Dtos.InventoryMovementDtos;
+using StockWise.Helpers;
 using StockWise.Models;
 
 namespace StockWise.Interfaces

@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using StockWise.Interfaces;
 using StockWise.Services;
+using StockWise.Helpers;
 
 namespace StockWise
 {
@@ -101,11 +102,14 @@ namespace StockWise
             });
 
             builder.Services.AddSignalR();
+            builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<ICompanyService, CompanyService>();
             builder.Services.AddScoped<ICompanyProductService, CompanyProductService>();
             builder.Services.AddScoped<IEanService, EanService>();
             builder.Services.AddScoped<IInventoryMovementService, InventoryMovementService>();
+            builder.Services.AddTransient<IEmailSenderServicer, EmailSenderService>();
 
             var app = builder.Build();
             app.MapHub<StockHub>("/stockHub");

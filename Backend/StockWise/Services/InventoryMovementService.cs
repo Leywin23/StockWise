@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
-using StockWise.Dtos;
 using StockWise.Dtos.InventoryMovementDtos;
+using StockWise.Helpers;
 using StockWise.Hubs;
 using StockWise.Interfaces;
 using StockWise.Models;
