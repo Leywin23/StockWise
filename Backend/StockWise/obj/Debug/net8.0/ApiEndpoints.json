@@ -32,6 +32,27 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "StockWise.Controllers.AccountController",
+    "Method": "VerifyEmail",
+    "RelativePath": "api/Account/verify-email",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "email",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "code",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "StockWise.Controllers.CompanyController",
     "Method": "GetCompanyData",
     "RelativePath": "api/Company",

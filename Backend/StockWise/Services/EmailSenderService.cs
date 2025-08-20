@@ -23,27 +23,27 @@ namespace StockWise.Services
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(_settings.FromName, _settings.From));
             message.To.Add(MailboxAddress.Parse(to));
+
             message.Subject = subject;
 
-            var builder = new BodyBuilder
-            {
+            var builder = new BodyBuilder {
                 TextBody = StripHtml(body),
                 HtmlBody = body
             };
             message.Body = builder.ToMessageBody();
 
-            using var client = new SmtpClient
+            var client = new SmtpClient
             {
                 Timeout = 10000
             };
 
-            await client.ConnectAsync(_settings.Host,_settings.Port, SecureSocketOptions.StartTls);
+            await client.ConnectAsync(_settings.Host, _settings.Port, SecureSocketOptions.StartTls);
 
             var appPassword = (_settings.Password ?? string.Empty);
-
             await client.AuthenticateAsync(_settings.User, appPassword);
+            client.SendAsync(message);
 
-            await client.SendAsync(message);
+
 
         }
 

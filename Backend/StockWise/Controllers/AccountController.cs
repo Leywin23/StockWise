@@ -17,13 +17,16 @@ namespace StockWise.Controllers
         private readonly StockWiseDb _context;
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
+        private readonly IEmailSenderServicer _emailSenderServicer;
+        private static Dictionary<string, string> _verifyCodes = new Dictionary<string, string>();
 
-        public AccountController(ITokenService tokenService, StockWiseDb context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+        public AccountController(ITokenService tokenService, StockWiseDb context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IEmailSenderServicer emailSenderServicer)
         {
             _tokenService = tokenService;
             _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
+            _emailSenderServicer = emailSenderServicer;
         }
 
         [HttpPost("register")]
@@ -50,7 +53,8 @@ namespace StockWise.Controllers
                 {
                     Email = userDto.Email,
                     UserName = userDto.UserName,
-                    Company = comapany
+                    Company = comapany,
+                    IsEmailConfirmed = false,
                 };
 
                 var CreatedUser = await _userManager.CreateAsync(newUser, userDto.Password);
@@ -60,12 +64,15 @@ namespace StockWise.Controllers
                     var roleResult = await _userManager.AddToRoleAsync(newUser, "Worker");
                     if (roleResult.Succeeded)
                     {
+                        var VerifyCode = GenerateVerifyCode();
+                        _verifyCodes[newUser.Email] = VerifyCode;
+
+                        await _emailSenderServicer.SendEmailAsync(userDto.Email, "Verify Code", VerifyCode);
                         return Ok(new NewUserDto
                         {
                             UserName = userDto.UserName,
                             Email = userDto.Email,
                             CompanyName = comapany.Name,
-                            Token = _tokenService.CreateToken(newUser),
                         });
                     }
                     else
@@ -114,6 +121,40 @@ namespace StockWise.Controllers
             {
                 return StatusCode(500, e);
             }
+        }
+        [HttpPost("verify-email")]
+        public async Task<IActionResult> VerifyEmail(string email, string code)
+        {
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+                return NotFound("Email isn't assigned to any account");
+
+            if (user.IsEmailConfirmed)
+                return BadRequest(new { message = "Email already verified." });
+
+            if (!_verifyCodes.TryGetValue(email, out var storedCode))
+                return BadRequest(new { message = "Verification code not found or expired." });
+
+            user.IsEmailConfirmed = true;
+            var update = await _userManager.UpdateAsync(user);
+            if (!update.Succeeded)
+                return StatusCode(500, update.Errors);
+
+            _verifyCodes.Remove(email);
+
+            return Ok(new { message = "Email verified." });
+
+        }
+
+        public static string GenerateVerifyCode(int length = 6)
+        {
+            var random = new Random();
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(
+                Enumerable.Repeat(chars, length)
+                    .Select(s => s[random.Next(s.Length)])
+                    .ToArray()
+            );
         }
     }
 }
