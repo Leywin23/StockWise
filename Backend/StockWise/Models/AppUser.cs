@@ -6,6 +6,5 @@ namespace StockWise.Models
     {   
         public int? CompanyId { get; set; }
         public Company Company { get; set; }
-        public bool IsEmailConfirmed { get; set; }
     }
 }

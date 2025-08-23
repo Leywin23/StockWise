@@ -101,6 +101,7 @@ namespace StockWise
                 });
             });
 
+            builder.Services.AddMemoryCache();
             builder.Services.AddSignalR();
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
