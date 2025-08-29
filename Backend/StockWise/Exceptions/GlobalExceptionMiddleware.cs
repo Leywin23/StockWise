@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using StockWise.Response;
 using System.Net;
 using System.Text.Json;
 
@@ -50,26 +49,44 @@ namespace StockWise.Exceptions
             }
         }
 
-        private static (int status, string title) MapToStatus(Exception ex)
+        private static (int status, string title) MapToStatus(Exception ex) => ex switch
         {
-            return ex switch
-            {
-                ArgumentException => ((int)HttpStatusCode.BadRequest, "Bad Request"),
-                InvalidOperationException => ((int)HttpStatusCode.BadRequest, "Bad Request"),
+            // 400
+            ArgumentException => ((int)HttpStatusCode.BadRequest, "Bad Request"),
+            InvalidOperationException => ((int)HttpStatusCode.BadRequest, "Bad Request"),
+            NotSupportedException => ((int)HttpStatusCode.BadRequest, "Bad Request"),
+            { } e when e.GetType().FullName == "FluentValidation.ValidationException"
+                => ((int)HttpStatusCode.BadRequest, "Validation Failed"),
 
-                UnauthorizedAccessException => ((int)HttpStatusCode.Unauthorized, "Unauthorized"),
-                SecurityTokenException => ((int)HttpStatusCode.Unauthorized, "Invalid token"),
+            // 401 
+            UnauthorizedAccessException => ((int)HttpStatusCode.Unauthorized, "Unauthorized"),
+            SecurityTokenException => ((int)HttpStatusCode.Unauthorized, "Invalid token"),
 
-                KeyNotFoundException => ((int)HttpStatusCode.NotFound, "Not Found"),
-                { } e when e.GetType().Name.Contains("NoPermission", StringComparison.OrdinalIgnoreCase)
+            // 403 
+            { } e when e.GetType().Name.Contains("NoPermission", StringComparison.OrdinalIgnoreCase)
                 => ((int)HttpStatusCode.Forbidden, "Forbidden"),
 
-                DbUpdateConcurrencyException => ((int)HttpStatusCode.Conflict, "Conflict"),
-                DbUpdateException => ((int)HttpStatusCode.Conflict, "Conflict"),
+            // 404 
+            KeyNotFoundException => ((int)HttpStatusCode.NotFound, "Not Found"),
+            { } e when e.GetType().Name.Contains("NotFound", StringComparison.OrdinalIgnoreCase)
+                => ((int)HttpStatusCode.NotFound, "Not Found"),
 
-                _ => ((int)HttpStatusCode.InternalServerError, "Internal Server Error")
-            };
-        }
+            // 409 –
+            DbUpdateConcurrencyException => ((int)HttpStatusCode.Conflict, "Conflict"),
+            DbUpdateException => ((int)HttpStatusCode.Conflict, "Conflict"),
+
+            // 408 / 499 
+            TimeoutException => ((int)HttpStatusCode.RequestTimeout, "Request Timeout"),
+            TaskCanceledException => ((int)HttpStatusCode.RequestTimeout, "Request Timeout"),
+            OperationCanceledException oce when oce.CancellationToken.IsCancellationRequested
+                => (499, "Client Closed Request"), 
+
+            // 502 
+            HttpRequestException => ((int)HttpStatusCode.BadGateway, "Bad Gateway"),
+
+            // fallback – 500
+            _ => ((int)HttpStatusCode.InternalServerError, "Internal Server Error")
+        };
 
         private void Log(Exception ex, int status) {
             if (status >= 500) _logger.LogError(ex, "Unhandled exception");

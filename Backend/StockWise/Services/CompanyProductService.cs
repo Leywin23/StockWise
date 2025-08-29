@@ -19,14 +19,17 @@ namespace StockWise.Services
         }
         public async Task<CompanyProduct> CreateCompanyProductAsync(Company company, CreateCompanyProductDto productDto)
         {
+            var shoppingPrice = Money.Of(productDto.ShoppingPrice, productDto.Currency.CurrencyCode);
+            var sellingPrice = Money.Of(productDto.SellingPrice, productDto.Currency.CurrencyCode);
+
             var newCompanyProduct = new CompanyProduct
             {
                 CompanyProductName = productDto.ProductName,
                 EAN = productDto.EAN,
                 Image = productDto.Image,
                 Description = productDto.Description,
-                ShoppingPrice = productDto.ShoppingPrice,
-                SellingPrice = productDto.SellingPrice,
+                ShoppingPrice = shoppingPrice,
+                SellingPrice = sellingPrice,
                 Stock = productDto.Stock,
                 Company = company,
                 IsAvailableForOrder = productDto.IsAvailableForOrder
@@ -99,12 +102,15 @@ namespace StockWise.Services
             if (duplicate)
                 throw new InvalidOperationException("Another product with the same EAN or name already exists in your company.");
 
+            var shoppingPrice = Money.Of(companyProductDto.ShoppingPrice, companyProductDto.Currency.CurrencyCode);
+            var sellingPrice = Money.Of(companyProductDto.SellingPrice, companyProductDto.Currency.CurrencyCode);
+
             product.CompanyProductName = companyProductDto.CompanyProductName;
             product.EAN = companyProductDto.Ean;
             product.Image = companyProductDto.Image;
             product.Description = companyProductDto.Description;
-            product.ShoppingPrice = companyProductDto.ShoppingPrice;
-            product.SellingPrice = companyProductDto.SellingPrice;
+            product.ShoppingPrice = shoppingPrice;
+            product.SellingPrice = sellingPrice;
             product.Stock = companyProductDto.Stock;
             product.IsAvailableForOrder = companyProductDto.IsAvailableForOrder;
 

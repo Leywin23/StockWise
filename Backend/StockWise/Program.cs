@@ -9,6 +9,8 @@ using Microsoft.OpenApi.Models;
 using StockWise.Interfaces;
 using StockWise.Services;
 using StockWise.Helpers;
+using StockWise.Filters;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace StockWise
 {
@@ -21,13 +23,21 @@ namespace StockWise
             builder.Services.AddDbContext<StockWiseDb>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             // Add services to the container.
-            builder.Services.AddControllers()
+            builder.Services.AddControllers(options =>
+            {
+                options.Filters.Add<ModelStateValidationFilter>();
+            })
+            .ConfigureApiBehaviorOptions(o =>
+                {
+                    o.SuppressModelStateInvalidFilter = true;
+                })
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
                 options.JsonSerializerOptions.WriteIndented = true;
                 options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
             });
+
             builder.Services.AddRazorPages();
             builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
@@ -111,8 +121,23 @@ namespace StockWise
             builder.Services.AddScoped<IEanService, EanService>();
             builder.Services.AddScoped<IInventoryMovementService, InventoryMovementService>();
             builder.Services.AddTransient<IEmailSenderServicer, EmailSenderService>();
+            builder.Services.AddSingleton<IExchangeRateProvider>(sp =>
+                {
+                    var inner = sp.GetRequiredService<ApiExchangeRateProvider>();
+                    var cache = sp.GetRequiredService<IMemoryCache>();
+                    var logger = sp.GetRequiredService<ILogger<CachedExchangeRateProvider>>();
+                    var ttl = TimeSpan.FromMinutes(10);
+
+                    return new CachedExchangeRateProvider(inner, cache, logger, ttl);
+                }
+            );
+
+            builder.Services.AddSingleton<MoneyConverter>();
 
             var app = builder.Build();
+
+            app.UseHttpsRedirection();
+
             app.MapHub<StockHub>("/stockHub");
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

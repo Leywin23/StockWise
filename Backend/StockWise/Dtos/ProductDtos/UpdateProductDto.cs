@@ -1,4 +1,6 @@
-﻿namespace StockWise.Dtos.ProductDtos
+﻿using StockWise.Models;
+
+namespace StockWise.Dtos.ProductDtos
 {
     public class UpdateProductDto
     {
@@ -7,6 +9,7 @@
         public string ean { get; set; }
         public decimal ShoppingPrice { get; set; } = 0;
         public decimal SellingPrice { get; set; } = 0;
+        public Currency Currency { get; set; }
         public string CategoryName { get; set; }
         public string? image { get; set; }
     }

@@ -1,4 +1,6 @@
-﻿namespace StockWise.Dtos.CompanyProductDtos
+﻿using StockWise.Models;
+
+namespace StockWise.Dtos.CompanyProductDtos
 {
     public class CreateCompanyProductDto
     {
@@ -8,6 +10,7 @@
         public string Description { get; set; }
         public decimal ShoppingPrice { get; set; }
         public decimal SellingPrice { get; set; }
+        public Currency Currency { get; set; }
         public int Stock { get; set; }
         public bool IsAvailableForOrder { get; set; }
     }

@@ -9,7 +9,7 @@
     "Parameters": [
       {
         "Name": "loginDto",
-        "Type": "StockWise.Dtos.AccountDtos.LoginDto",
+        "Type": "StockWise.Dtos.AccountDtos.LoginDataDto",
         "IsRequired": true
       }
     ],
@@ -26,6 +26,48 @@
       {
         "Name": "userDto",
         "Type": "StockWise.Dtos.AccountDtos.RegisterDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.AccountController",
+    "Method": "RestartPassword",
+    "RelativePath": "api/Account/Restart-Password",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "email",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "code",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "newPassword",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.AccountController",
+    "Method": "SendRequestToRestartPassword",
+    "RelativePath": "api/Account/send-reset-password",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "email",
+        "Type": "System.String",
         "IsRequired": true
       }
     ],

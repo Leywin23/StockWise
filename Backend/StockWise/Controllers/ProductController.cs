@@ -79,12 +79,14 @@ namespace StockWise.Controllers
 
             var result = products.Select(p => new ProductDto
             {
+
                 id = p.ProductId,
                 ProductName = p.ProductName,
                 Ean = p.EAN,
                 Description = p.Description,
-                SellingPrice = p.SellingPrice,
-                ShoppingPrice = p.ShoppingPrice,
+                SellingPrice = p.SellingPrice.amount,
+                ShoppingPrice = p.ShoppingPrice.amount,
+                Currency = p.SellingPrice.currency,
                 CategoryString = GetCategoryFullPath(p.Category),
             });
 
@@ -145,12 +147,14 @@ namespace StockWise.Controllers
             {
                 return NotFound("Coundn't find a category with this name");
             }
+            var shoppingPrice = Money.Of(productDto.ShoppingPrice, productDto.Currency.CurrencyCode);
+            var sellingPrice = Money.Of(productDto.SellingPrice, productDto.Currency.CurrencyCode);
 
             productToUpdate.ProductName = productDto.productName;
             productToUpdate.CategoryId = category.CategoryId;
             productToUpdate.Description = productDto.description;
-            productToUpdate.ShoppingPrice = productDto.ShoppingPrice;
-            productToUpdate.SellingPrice = productDto.SellingPrice;
+            productToUpdate.ShoppingPrice = shoppingPrice;
+            productToUpdate.SellingPrice = sellingPrice;
             productToUpdate.Image = productDto.image;
 
             _context.Products.Update(productToUpdate);
