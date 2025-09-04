@@ -2,23 +2,25 @@
 {
     public class Money
     {
-        public decimal amount { get; }
-        public Currency currency { get; }
+        public decimal Amount { get; private set; }
+        public Currency Currency { get; private set; } = default!;
 
-        public Money(decimal Amount, Currency Currency)
+        private Money() { }
+
+        public Money(decimal amount, Currency currency)
         {
-            if (Amount <= 0) throw new ArgumentOutOfRangeException("Amount must be >= 0");
+            if (amount <= 0) throw new ArgumentOutOfRangeException("Amount must be >= 0");
 
-            amount = Amount;
-            currency = Currency;
+            Amount = amount;
+            Currency = currency;
         }
 
-        public static Money Of(decimal Amount, string CurrencyCode)
+        public static Money Of(decimal amount, string currencyCode)
         {
-            var currency = new Currency(CurrencyCode);
-            return new Money(Amount, currency);
+            var Currency = new Currency(currencyCode);
+            return new Money(amount, Currency);
         }
 
-        public override string ToString() => $"{amount}, {currency}";
+        public override string ToString() => $"{Amount}, {Currency}";
     }
 }

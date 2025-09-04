@@ -121,6 +121,7 @@ namespace StockWise
             builder.Services.AddScoped<IEanService, EanService>();
             builder.Services.AddScoped<IInventoryMovementService, InventoryMovementService>();
             builder.Services.AddTransient<IEmailSenderServicer, EmailSenderService>();
+            builder.Services.AddSingleton<ApiExchangeRateProvider>();
             builder.Services.AddSingleton<IExchangeRateProvider>(sp =>
                 {
                     var inner = sp.GetRequiredService<ApiExchangeRateProvider>();

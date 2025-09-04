@@ -174,16 +174,32 @@
   },
   {
     "ContainingType": "StockWise.Controllers.CompanyProductController",
+    "Method": "GetCompanyProductById",
+    "RelativePath": "api/CompanyProduct/{productId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.CompanyProductController",
     "Method": "DeleteCompanyProduct",
-    "RelativePath": "api/CompanyProduct",
+    "RelativePath": "api/CompanyProduct/{productId}",
     "HttpMethod": "DELETE",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "ProductId",
+        "Name": "productId",
         "Type": "System.Int32",
-        "IsRequired": false
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []
@@ -191,7 +207,7 @@
   {
     "ContainingType": "StockWise.Controllers.CompanyProductController",
     "Method": "EditCompanyProduct",
-    "RelativePath": "api/CompanyProduct",
+    "RelativePath": "api/CompanyProduct/{productId}",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -199,7 +215,7 @@
       {
         "Name": "productId",
         "Type": "System.Int32",
-        "IsRequired": false
+        "IsRequired": true
       },
       {
         "Name": "productDto",
@@ -211,8 +227,8 @@
   },
   {
     "ContainingType": "StockWise.Controllers.CompanyProductController",
-    "Method": "GetCompanyProductById",
-    "RelativePath": "api/CompanyProduct/{id}",
+    "Method": "ConvertToAnotherCurrency",
+    "RelativePath": "api/CompanyProduct/{productId}/convert",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -220,12 +236,12 @@
       {
         "Name": "productId",
         "Type": "System.Int32",
-        "IsRequired": false
+        "IsRequired": true
       },
       {
-        "Name": "id",
-        "Type": "",
-        "IsRequired": true
+        "Name": "toCode",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []

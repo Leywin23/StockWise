@@ -84,9 +84,9 @@ namespace StockWise.Controllers
                 ProductName = p.ProductName,
                 Ean = p.EAN,
                 Description = p.Description,
-                SellingPrice = p.SellingPrice.amount,
-                ShoppingPrice = p.ShoppingPrice.amount,
-                Currency = p.SellingPrice.currency,
+                SellingPrice = p.SellingPrice.Amount,
+                ShoppingPrice = p.ShoppingPrice.Amount,
+                Currency = p.SellingPrice.Currency,
                 CategoryString = GetCategoryFullPath(p.Category),
             });
 
@@ -147,8 +147,8 @@ namespace StockWise.Controllers
             {
                 return NotFound("Coundn't find a category with this name");
             }
-            var shoppingPrice = Money.Of(productDto.ShoppingPrice, productDto.Currency.CurrencyCode);
-            var sellingPrice = Money.Of(productDto.SellingPrice, productDto.Currency.CurrencyCode);
+            var shoppingPrice = Money.Of(productDto.ShoppingPrice, productDto.Currency.Code);
+            var sellingPrice = Money.Of(productDto.SellingPrice, productDto.Currency.Code);
 
             productToUpdate.ProductName = productDto.productName;
             productToUpdate.CategoryId = category.CategoryId;

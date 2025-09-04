@@ -280,6 +280,29 @@
             "description": "OK"
           }
         }
+      }
+    },
+    "/api/CompanyProduct/{productId}": {
+      "get": {
+        "tags": [
+          "CompanyProduct"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
       },
       "delete": {
         "tags": [
@@ -287,8 +310,9 @@
         ],
         "parameters": [
           {
-            "name": "ProductId",
-            "in": "query",
+            "name": "productId",
+            "in": "path",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -308,7 +332,8 @@
         "parameters": [
           {
             "name": "productId",
-            "in": "query",
+            "in": "path",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -341,7 +366,7 @@
         }
       }
     },
-    "/api/CompanyProduct/{id}": {
+    "/api/CompanyProduct/{productId}/convert": {
       "get": {
         "tags": [
           "CompanyProduct"
@@ -349,16 +374,16 @@
         "parameters": [
           {
             "name": "productId",
-            "in": "query",
+            "in": "path",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
             }
           },
           {
-            "name": "id",
-            "in": "path",
-            "required": true,
+            "name": "toCode",
+            "in": "query",
             "schema": {
               "type": "string"
             }
@@ -795,7 +820,7 @@
       "Currency": {
         "type": "object",
         "properties": {
-          "currencyCode": {
+          "code": {
             "type": "string",
             "nullable": true
           }

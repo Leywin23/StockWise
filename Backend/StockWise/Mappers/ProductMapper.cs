@@ -7,8 +7,8 @@ namespace StockWise.Mappers
     {
         public static Product ToProductFromCreate(this CreateProductDto productDto, Category category)
         {
-            var shoppingPrice = Money.Of(productDto.ShoppingPrice, productDto.Currency.CurrencyCode);
-            var sellingPrice = Money.Of(productDto.SellingPrice, productDto.Currency.CurrencyCode);
+            var shoppingPrice = Money.Of(productDto.ShoppingPrice, productDto.Currency.Code);
+            var sellingPrice = Money.Of(productDto.SellingPrice, productDto.Currency.Code);
 
             return new Product
             {

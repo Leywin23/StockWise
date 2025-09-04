@@ -61,6 +61,68 @@ namespace StockWise.Data
                 .HasForeignKey(cp=>cp.CompanyId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Product>(b =>
+            {
+                b.OwnsOne(p => p.ShoppingPrice, money =>
+                {
+                    money.Property(m => m.Amount)
+                         .HasColumnType("decimal(18,2)")
+                         .HasColumnName("ShoppingPriceAmount");
+
+                    money.OwnsOne(m => m.Currency, curr =>
+                    {
+                        curr.Property(c => c.Code)
+                            .HasMaxLength(3)
+                            .HasColumnName("ShoppingPriceCurrency");
+                    });
+                });
+
+                b.OwnsOne(p => p.SellingPrice, money =>
+                {
+                    money.Property(m => m.Amount)
+                         .HasColumnType("decimal(18,2)")
+                         .HasColumnName("SellingPriceAmount");
+
+                    money.OwnsOne(m => m.Currency, curr =>
+                    {
+                        curr.Property(c => c.Code)
+                            .HasMaxLength(3)
+                            .HasColumnName("SellingPriceCurrency");
+                    });
+                });
+            });
+
+            modelBuilder.Entity<CompanyProduct>(b =>
+            {
+                b.OwnsOne(p => p.ShoppingPrice, money =>
+                {
+                    money.Property(m => m.Amount)
+                         .HasColumnType("decimal(18,2)")
+                         .HasColumnName("CompanyShoppingPriceAmount");
+
+                    money.OwnsOne(m => m.Currency, curr =>
+                    {
+                        curr.Property(c => c.Code)
+                            .HasMaxLength(3)
+                            .HasColumnName("CompanyShoppingPriceCurrency");
+                    });
+                });
+
+                
+                b.OwnsOne(p => p.SellingPrice, money =>
+                {
+                    money.Property(m => m.Amount)
+                         .HasColumnType("decimal(18,2)")
+                         .HasColumnName("CompanySellingPriceAmount");
+
+                    money.OwnsOne(m => m.Currency, curr =>
+                    {
+                        curr.Property(c => c.Code)
+                            .HasMaxLength(3)
+                            .HasColumnName("CompanySellingPriceCurrency");
+                    });
+                });
+            });
 
             SeedRoles(modelBuilder);
         }

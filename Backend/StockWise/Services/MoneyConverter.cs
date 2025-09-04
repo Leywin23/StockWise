@@ -12,17 +12,23 @@ namespace StockWise.Services
         }
 
         public async Task<Money> ConvertAsync(Money source, string toCode) {
-        
+
+            if (source is null)
+                throw new ArgumentNullException(nameof(source));
+            if (source.Currency is null || string.IsNullOrWhiteSpace(source.Currency.Code))
+                throw new InvalidOperationException("Source Money has no currency code.");
+            if (string.IsNullOrWhiteSpace(toCode))
+                throw new ArgumentException("Target currency code is required.", nameof(toCode));
+
+            var from = source.Currency.Code.Trim().ToUpperInvariant();
             var to = toCode.Trim().ToUpperInvariant();
 
-            if (to == source.currency.CurrencyCode) return source;
+            if (from == to) return source;
 
-            var rate = await _rates.GetRateAsync(source.currency.CurrencyCode, to);
-
-            var result = Math.Round(source.amount * rate, 2);
+            var rate = await _rates.GetRateAsync(from, to);
+            var result = Math.Round(source.Amount * rate, 2);
 
             return Money.Of(result, to);
-
         }
     }
 }
