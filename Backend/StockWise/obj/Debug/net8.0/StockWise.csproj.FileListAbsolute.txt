@@ -359,3 +359,4 @@ C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise\obj\Debug\net8.0\rjsmc
 C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise\obj\Debug\net8.0\staticwebassets.build.json.cache
 C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise\obj\Debug\net8.0\staticwebassets.build.endpoints.json
 C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise\bin\Debug\net8.0\AutoMapper.dll

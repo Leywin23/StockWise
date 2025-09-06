@@ -141,7 +141,7 @@ namespace StockWise.Data
                 {
                     Id = "2",
                     Name = "Worker",
-                    NormalizedName = "Worker",
+                    NormalizedName = "WORKER",
                 },
             };
             builder.Entity<IdentityRole>().HasData(roles);

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -44,7 +45,7 @@ namespace StockWise.Controllers
                 {
                     return BadRequest("User with this email already exist");
                 }
-                var comapany = await _context.Companies.FirstOrDefaultAsync(c=>c.NIP == userDto.CompanyNIP);
+                var comapany = await _context.Companies.FirstOrDefaultAsync(c => c.NIP == userDto.CompanyNIP);
 
                 if (comapany == null) {
                     return NotFound($"There isn't any company with NIP: {userDto.CompanyNIP}");
@@ -116,7 +117,7 @@ namespace StockWise.Controllers
                 {
                     UserName = user.UserName,
                     Email = user.Email,
-                    Token = _tokenService.CreateToken(user)
+                    Token = await _tokenService.CreateToken(user)
                 });
             }
             catch (Exception e)
@@ -134,7 +135,10 @@ namespace StockWise.Controllers
             if (user.EmailConfirmed)
                 return BadRequest(new { message = "Email already verified." });
 
-            if (!_cache.TryGetValue(email, out var storedCode))
+            if (!_cache.TryGetValue(email, out string storedCode))
+                return BadRequest(new { message = "Verification code not found or expired." });
+
+            if(!string.Equals(storedCode, code, StringComparison.Ordinal))
                 return BadRequest(new { message = "Verification code not found or expired." });
 
             user.EmailConfirmed = true;
@@ -159,7 +163,7 @@ namespace StockWise.Controllers
 
             var user = await _userManager.FindByEmailAsync(email);
 
-            if (user != null) 
+            if (user != null)
             {
                 var code = GenerateVerifyCode();
 
@@ -178,24 +182,24 @@ namespace StockWise.Controllers
 
 
         [HttpPost("Restart-Password")]
-        public async Task<IActionResult> RestartPassword(string email,string code, string newPassword)
+        public async Task<IActionResult> RestartPassword(string email, string code, string newPassword)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null) return NotFound("Email isn't assigned to any account");
 
-            if (!_cache.TryGetValue(email, out string storedCode)) return BadRequest(new { message = "Verification code not found or expired." });
-            
-            if(!string.Equals(storedCode, code, StringComparison.Ordinal))
+            var cacheKey = GetResetKey(email);
+            if (!_cache.TryGetValue(cacheKey, out string storedCode))
+                return BadRequest(new { message = "Verification code not found or expired." });
+
+            if (!string.Equals(storedCode, code, StringComparison.Ordinal))
                 return BadRequest(new { message = "Invalid verification code." });
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+            if (!result.Succeeded) return BadRequest(result.Errors);
 
-            if (!result.Succeeded)
-                return BadRequest(result.Errors);
-            _cache.Remove(email);
-
-            return Ok(new { message = "Password has been reset successfully." }); 
+            _cache.Remove(cacheKey);
+            return Ok(new { message = "Password has been reset successfully." });
         }
 
         public static string GenerateVerifyCode(int length = 6)
@@ -207,6 +211,49 @@ namespace StockWise.Controllers
                     .Select(s => s[random.Next(s.Length)])
                     .ToArray()
             );
+        }
+
+        [Authorize(Roles ="Manager")]
+        [HttpPost("approve-user/{userId}")]
+        public async Task<IActionResult> ApproveUser(string userId)
+        {
+            var currentUser = await GetCurrentUserAsync();
+            if (currentUser is null)
+                return Unauthorized();
+
+            if (currentUser.CompanyId is null)
+                return BadRequest("You are not assigned to a company.");
+
+            var userToApprove = await _userManager.Users
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (userToApprove is null)
+                return NotFound("User not found.");
+
+            if (userToApprove.CompanyId != currentUser.CompanyId)
+                return BadRequest("User does not belong to your company.");
+
+            if (userToApprove.CompanyMembershipStatus != CompanyMembershipStatus.Pending)
+                return BadRequest("User is not in Pending status.");
+
+            userToApprove.CompanyMembershipStatus = CompanyMembershipStatus.Approved;
+
+            var result = await _userManager.UpdateAsync(userToApprove);
+            if (!result.Succeeded)
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { errors = result.Errors.Select(e => e.Description) });
+
+            return Ok(new { message = $"User {userToApprove.UserName} approved" });
+        }
+
+        private async Task<AppUser?> GetCurrentUserAsync()
+        {
+            var userName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userName)) return null;
+
+            return await _context.Users
+                .Include(u => u.Company)
+                .FirstOrDefaultAsync(u => u.UserName == userName);
         }
     }
 }

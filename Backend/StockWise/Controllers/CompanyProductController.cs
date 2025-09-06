@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
@@ -18,15 +19,18 @@ namespace StockWise.Controllers
         private readonly StockWiseDb _context;
         private readonly ICompanyProductService _companyProductService;
         private readonly MoneyConverter _moneyConverter;
+        private readonly IMapper _mapper;
 
         public CompanyProductController(
             StockWiseDb context,
             ICompanyProductService companyProductService,
-            MoneyConverter moneyConverter)
+            MoneyConverter moneyConverter,
+            IMapper mapper)
         {
             _context = context;
             _companyProductService = companyProductService;
             _moneyConverter = moneyConverter;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -37,7 +41,8 @@ namespace StockWise.Controllers
             if (user.Company == null) return BadRequest("User is not assigned to any company.");
 
             var products = await _companyProductService.GetCompanyProductsAsync(user);
-            return Ok(products);
+            var productsDto = _mapper.Map<IEnumerable<CompanyProductDto>>(products);
+            return Ok(productsDto);
         }
 
         [HttpGet("{productId:int}")]
@@ -48,7 +53,8 @@ namespace StockWise.Controllers
 
             var product = await _companyProductService.GetCompanyProductAsync(user, productId);
             if (product == null) return NotFound("Product not found.");
-            return Ok(product);
+            var productDto = _mapper.Map<CompanyProductDto>(product);
+            return Ok(productDto);
         }
 
         [HttpPost]
@@ -66,7 +72,8 @@ namespace StockWise.Controllers
             if (productExists) return BadRequest("Product is already in company stock.");
 
             var newCompanyProduct = await _companyProductService.CreateCompanyProductAsync(company, productDto);
-            return Ok(newCompanyProduct);
+            var newCompanyProductDto = _mapper.Map<CompanyProductDto>(newCompanyProduct);
+            return Ok(newCompanyProductDto);
         }
 
         [HttpDelete("{productId:int}")]
@@ -77,6 +84,7 @@ namespace StockWise.Controllers
 
             var deleted = await _companyProductService.DeleteCompanyProductAsync(user, productId);
             if (deleted == null) return NotFound("Product not found.");
+            var deletedProductDto = _mapper.Map<CompanyProductDto>(deleted);
             return Ok(deleted);
         }
 
@@ -90,7 +98,8 @@ namespace StockWise.Controllers
             {
                 var updated = await _companyProductService.UpdateCompanyProductAsync(productId, user, productDto);
                 if (updated == null) return NotFound("Product not found or user not assigned to any company.");
-                return Ok(updated);
+                var updatedDto = _mapper.Map<CompanyProductDto>(updated);
+                return Ok(updatedDto);
             }
             catch (InvalidOperationException ex)
             {
@@ -98,7 +107,7 @@ namespace StockWise.Controllers
             }
         }
 
-        [HttpGet("{productId:int}/convert")] 
+        [HttpGet("{productId:int}/convert")]
         public async Task<IActionResult> ConvertToAnotherCurrency([FromRoute] int productId, [FromQuery] string toCode)
         {
             var user = await GetCurrentUserAsync();

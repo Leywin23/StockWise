@@ -1,16 +1,18 @@
-using StockWise.Data;
-using Microsoft.EntityFrameworkCore;
-using StockWise.Hubs;
-using StockWise.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using StockWise.Interfaces;
-using StockWise.Services;
-using StockWise.Helpers;
+using StockWise.Data;
 using StockWise.Filters;
-using Microsoft.Extensions.Caching.Memory;
+using StockWise.Helpers;
+using StockWise.Hubs;
+using StockWise.Interfaces;
+using StockWise.Models;
+using StockWise.Services;
+using System.Security.Claims;
 
 namespace StockWise
 {
@@ -61,9 +63,8 @@ namespace StockWise
                 Id = "Bearer"
             }
         },
-        new string[] {}
-    }
-});
+            new string[] {}
+        }});
         });
 
         builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
@@ -73,7 +74,9 @@ namespace StockWise
             options.Password.RequireUppercase = true;
             options.Password.RequireNonAlphanumeric = false;
             options.Password.RequiredLength = 8;
-        }).AddEntityFrameworkStores<StockWiseDb>();
+        })
+        .AddRoles<IdentityRole>()           
+        .AddEntityFrameworkStores<StockWiseDb>();
 
             builder.Services.AddAuthentication(options =>
             {
@@ -93,7 +96,10 @@ namespace StockWise
                     ValidAudience = builder.Configuration["JWT:Audience"],
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(
-                        System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JWT:SigningKey"]))
+                        System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JWT:SigningKey"])),
+
+                    NameClaimType = ClaimTypes.Name,
+                    RoleClaimType = ClaimTypes.Role
                 };
             });
 
@@ -114,6 +120,10 @@ namespace StockWise
             builder.Services.AddMemoryCache();
             builder.Services.AddSignalR();
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+            builder.Services.AddAutoMapper(cfg =>
+            {
+                cfg.AddProfile<MappingProfile>();
+            });
 
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<ICompanyService, CompanyService>();

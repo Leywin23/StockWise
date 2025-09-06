@@ -45,7 +45,6 @@ namespace StockWise.Services
             _logger.LogInformation("[CACHE SET] {Key} => {Rate}, TTL={Ttl}", key, rate, _options.AbsoluteExpirationRelativeToNow);
             return rate;
 
-
         }
     }
 }
