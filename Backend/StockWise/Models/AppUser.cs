@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 namespace StockWise.Models
 {
-    public enum CompanyMembershipStatus { Pending, Approved, Rejected}
+    public enum CompanyMembershipStatus { Pending, Approved, Rejected, Suspended }
     public class AppUser : IdentityUser
     {   
         public int? CompanyId { get; set; }

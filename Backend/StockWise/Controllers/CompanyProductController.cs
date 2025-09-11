@@ -46,6 +46,7 @@ namespace StockWise.Controllers
         }
 
         [HttpGet("{productId:int}")]
+        [Authorize(Roles = "Manager,Worker")]
         public async Task<IActionResult> GetCompanyProductById([FromRoute] int productId)
         {
             var user = await GetCurrentUserAsync();

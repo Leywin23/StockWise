@@ -246,6 +246,23 @@ namespace StockWise.Controllers
             return Ok(new { message = $"User {userToApprove.UserName} approved" });
         }
 
+        [Authorize(Roles = "Manager")]
+        [HttpGet("companies/pending")]
+        public async Task<IActionResult> GetAllPending()
+        {
+            var user = await GetCurrentUserAsync();
+            if (user is null) return Unauthorized();
+            if (user.CompanyId is null) return BadRequest("You are not assigned to a company.");
+
+            var pendings = await _context.Users
+                .Where(u => u.CompanyId == user.CompanyId && u.CompanyMembershipStatus == CompanyMembershipStatus.Pending)
+                .ToListAsync();
+
+            if (!pendings.Any()) return NotFound("There aren't any pending users.");
+
+            return Ok(pendings);
+        }
+
         private async Task<AppUser?> GetCurrentUserAsync()
         {
             var userName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
@@ -255,5 +272,100 @@ namespace StockWise.Controllers
                 .Include(u => u.Company)
                 .FirstOrDefaultAsync(u => u.UserName == userName);
         }
+
+        [HttpPost("companies/suspend/{userId}")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> SuspendUserFromCompany(string userId)
+        {
+            var currentUser = await GetCurrentUserAsync();
+            if (currentUser is null) return Unauthorized();
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user.Id == currentUser.Id)
+                return BadRequest("You cannot suspend yourself.");
+
+            if (user is null) return NotFound("User not found");
+            if (user.CompanyId != currentUser.CompanyId) return BadRequest("User isn't aligned to your company");
+            if (user.CompanyMembershipStatus == CompanyMembershipStatus.Suspended)
+                return BadRequest("User is already suspended.");
+
+            user.CompanyMembershipStatus = CompanyMembershipStatus.Suspended;
+            var result = await _userManager.UpdateAsync(user);
+
+            if (!result.Succeeded)
+                return StatusCode(500, result.Errors);
+
+            return Ok(new { message = $"User {user.UserName} has been suspended." });
+        }
+
+        [HttpPost("companies/unsuspend/{userId}")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> UnsuspendUserFromCompany(string userId)
+        {
+            var currentUser = await GetCurrentUserAsync();
+            if (currentUser is null) return Unauthorized();
+            if (currentUser.CompanyId is null) return BadRequest("You are not assigned to a company.");
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user is null) return NotFound("User not found.");
+            if (user.Id == currentUser.Id) return BadRequest("You cannot unsuspend yourself.");
+            if (user.CompanyId != currentUser.CompanyId) return Forbid("User does not belong to your company.");
+            if (user.CompanyMembershipStatus != CompanyMembershipStatus.Suspended)
+                return BadRequest("User is not suspended.");
+
+            user.CompanyMembershipStatus = CompanyMembershipStatus.Approved;
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded) return StatusCode(StatusCodes.Status500InternalServerError, result.Errors);
+
+            return Ok(new { message = $"User {user.UserName} has been unsuspended." });
+        }
+
+        [HttpPost("companies/reject/{userId}")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> RejectUserFromCompany(string userId)
+        {
+            var currentUser = await GetCurrentUserAsync();
+            if (currentUser is null) return Unauthorized();
+            if (currentUser.CompanyId is null) return BadRequest("You are not assigned to a company.");
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user is null) return NotFound("User not found.");
+            if (user.Id == currentUser.Id) return BadRequest("You cannot reject yourself.");
+            if (user.CompanyId != currentUser.CompanyId) return Forbid("User does not belong to your company.");
+
+            if (user.CompanyMembershipStatus == CompanyMembershipStatus.Rejected)
+                return BadRequest("User is already rejected.");
+            if (user.CompanyMembershipStatus != CompanyMembershipStatus.Pending)
+                return BadRequest("Only users in Pending status can be rejected.");
+
+            user.CompanyMembershipStatus = CompanyMembershipStatus.Rejected;
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded) return StatusCode(StatusCodes.Status500InternalServerError, result.Errors);
+
+            return Ok(new { message = $"User {user.UserName} has been rejected." });
+        }
+
+        [HttpPost("companies/change/{companyNIP}")]
+        [Authorize(Roles = "Worker")]
+        public async Task<IActionResult> ChangeUserCompany([FromRoute] long companyNIP)
+        {
+            var currentUser = await GetCurrentUserAsync();
+            if (currentUser is null) return Unauthorized();
+
+            var company = await _context.Companies.FirstOrDefaultAsync(c => c.NIP == companyNIP);
+            if (company is null) return NotFound("Company with this NIP not found.");
+
+            if (currentUser.CompanyId == company.Id)
+                return BadRequest("You are already assigned to this company.");
+
+            currentUser.CompanyId = company.Id;
+            currentUser.Company = company;
+            currentUser.CompanyMembershipStatus = CompanyMembershipStatus.Pending;
+
+            var result = await _userManager.UpdateAsync(currentUser);
+            if (!result.Succeeded) return StatusCode(StatusCodes.Status500InternalServerError, result.Errors);
+
+            return Ok(new { message = $"User {currentUser.UserName} has changed company to {company.Name} (pending approval)." });
+        }
+
     }
 }
