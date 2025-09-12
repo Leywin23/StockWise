@@ -94,22 +94,8 @@ namespace StockWise.Data
 
             modelBuilder.Entity<CompanyProduct>(b =>
             {
-                b.OwnsOne(p => p.ShoppingPrice, money =>
-                {
-                    money.Property(m => m.Amount)
-                         .HasColumnType("decimal(18,2)")
-                         .HasColumnName("CompanyShoppingPriceAmount");
-
-                    money.OwnsOne(m => m.Currency, curr =>
-                    {
-                        curr.Property(c => c.Code)
-                            .HasMaxLength(3)
-                            .HasColumnName("CompanyShoppingPriceCurrency");
-                    });
-                });
-
                 
-                b.OwnsOne(p => p.SellingPrice, money =>
+                b.OwnsOne(p => p.Price, money =>
                 {
                     money.Property(m => m.Amount)
                          .HasColumnType("decimal(18,2)")

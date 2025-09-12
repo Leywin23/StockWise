@@ -195,6 +195,8 @@ namespace StockWise.Services
             product.Stock = companyProductDto.Stock;
             product.IsAvailableForOrder = companyProductDto.IsAvailableForOrder;
 
+
+
             await _context.SaveChangesAsync();
 
             return product;
