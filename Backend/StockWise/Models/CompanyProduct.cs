@@ -7,8 +7,7 @@
         public string EAN { get; set; }
         public string? Image { get; set; }
         public string Description { get; set; }
-        public Money ShoppingPrice { get; set; }
-        public Money SellingPrice { get; set; }
+        public Money Price { get; set; }
         public int Stock { get; set; } = 0;
         public int CompanyId {  get; set; }
         public Company Company { get; set; }

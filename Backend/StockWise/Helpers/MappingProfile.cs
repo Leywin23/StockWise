@@ -16,8 +16,7 @@ namespace StockWise.Helpers
                 .ForMember(dest => dest.EAN, opt => opt.MapFrom(src => src.EAN))
                 .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.Image))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
-                .ForMember(dest => dest.ShoppingPrice, opt => opt.MapFrom(src => src.ShoppingPrice))
-                .ForMember(dest => dest.SellingPrice, opt => opt.MapFrom(src => src.SellingPrice))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price))
                 .ForMember(dest => dest.Stock, opt => opt.MapFrom(src => src.Stock))
                 .ForMember(dest => dest.IsAvailableForOrder, opt => opt.MapFrom(src => src.IsAvailableForOrder));
 

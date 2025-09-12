@@ -34,6 +34,7 @@ namespace StockWise.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Manager,Worker")]
         public async Task<IActionResult> GetCompanyProducts()
         {
             var user = await GetCurrentUserAsync();
@@ -59,6 +60,7 @@ namespace StockWise.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Manager,Worker")]
         public async Task<IActionResult> AddCompanyProduct([FromBody] CreateCompanyProductDto productDto)
         {
             var user = await GetCurrentUserAsync();
@@ -78,6 +80,7 @@ namespace StockWise.Controllers
         }
 
         [HttpDelete("{productId:int}")]
+        [Authorize(Roles = "Manager,Worker")]
         public async Task<IActionResult> DeleteCompanyProduct([FromRoute] int productId)
         {
             var user = await GetCurrentUserAsync();
@@ -90,6 +93,7 @@ namespace StockWise.Controllers
         }
 
         [HttpPut("{productId:int}")]
+        [Authorize(Roles = "Manager,Worker")]
         public async Task<IActionResult> EditCompanyProduct([FromRoute] int productId, [FromBody] UpdateCompanyProductDto productDto)
         {
             var user = await GetCurrentUserAsync();
@@ -109,6 +113,7 @@ namespace StockWise.Controllers
         }
 
         [HttpGet("{productId:int}/convert")]
+        [Authorize(Roles = "Manager,Worker")]
         public async Task<IActionResult> ConvertToAnotherCurrency([FromRoute] int productId, [FromQuery] string toCode)
         {
             var user = await GetCurrentUserAsync();
@@ -119,7 +124,7 @@ namespace StockWise.Controllers
 
             if (string.IsNullOrWhiteSpace(toCode)) return BadRequest("Target currency code is required.");
 
-            var convertedPrice = await _moneyConverter.ConvertAsync(product.SellingPrice, toCode);
+            var convertedPrice = await _moneyConverter.ConvertAsync(product.Price, toCode);
             return Ok(convertedPrice);
         }
 

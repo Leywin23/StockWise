@@ -7,8 +7,7 @@ namespace StockWise.Dtos.CompanyProductDtos
         public string CompanyProductName { get; set; }
         public string Description { get; set; }
         public string Ean { get; set; }
-        public decimal ShoppingPrice { get; set; } = 0;
-        public decimal SellingPrice { get; set; } = 0;
+        public decimal Price { get; set; }
         public Currency Currency { get; set; }
         public string CategoryName { get; set; }
         public string? Image { get; set; }
