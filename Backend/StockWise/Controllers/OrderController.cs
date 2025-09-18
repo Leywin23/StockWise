@@ -76,6 +76,60 @@ namespace StockWise.Controllers
             return Ok(orders);
         }
 
+        [Authorize]
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetOrder(int id)
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null) {
+                return Unauthorized("User not found");
+            }
+
+            var order = await _context.Orders
+                .Include(o=>o.Seller)
+                .Include(o=>o.Buyer)
+                .Include(o=>o.ProductsWithQuantity)
+                .ThenInclude(op=>op.CompanyProduct)
+                .FirstOrDefaultAsync(o=>o.Id == id);
+
+            if(order == null)
+            {
+                return NotFound("Product not found");
+            }
+
+            var result = new OrderListDto
+            {
+                Id = order.Id,
+                Status = order.Status,
+                CreatedAt = order.CreatedAt,
+                UserNameWhoMadeOrder = order.UserNameWhoMadeOrder,
+                Seller = new CompanyMiniDto
+                {
+                    Id = order.Seller.Id,
+                    Name = order.Seller.Name,
+                    NIP = order.Seller.NIP
+                },
+                Buyer = new CompanyMiniDto
+                {
+                    Id = order.Buyer.Id,
+                    Name = order.Buyer.Name,
+                    NIP = order.Buyer.NIP
+                },
+                ProductsWithQuantity = order.ProductsWithQuantity.Select(p => new ProductWithQuantityDto
+                {
+                    Product = new CompanyProductMiniDto
+                    {
+                        Id = p.CompanyProductId,
+                        CompanyProductName = p.CompanyProduct.CompanyProductName,
+                        EAN = p.CompanyProduct.EAN,
+                        Price = p.CompanyProduct.Price,
+                    },
+                    Quantity = p.Quantity,
+                }).ToList(),
+            };
+            
+            return Ok(result);
+        }
 
         [HttpPost]
         [Authorize]
@@ -160,6 +214,16 @@ namespace StockWise.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(order);
+        }
+
+        private async Task<AppUser?> GetCurrentUserAsync()
+        {
+            var userName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userName)) return null;
+
+            return await _context.Users
+                .Include(u => u.Company)
+                .FirstOrDefaultAsync(u => u.UserName == userName);
         }
     }
 }
