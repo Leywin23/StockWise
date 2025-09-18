@@ -26,20 +26,52 @@ namespace StockWise.Controllers
         [HttpGet]
         public async Task<IActionResult> GetOrders()
         {
-            var userName = User.FindFirst(ClaimTypes.Name).Value;
-            var user = await _userManager.Users.Include(u=>u.Company).FirstOrDefaultAsync(u => u.UserName == userName);
-            if (user == null)
-            {
-                return NotFound("User not found");
-            }
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+            var user = await _userManager.Users
+                .Include(u => u.Company)
+                .FirstOrDefaultAsync(u => u.UserName == userName);
 
-            var company = await _context.Companies.FirstOrDefaultAsync(c => c.NIP == user.Company.NIP);
-            if (company == null)
-            {
-                return BadRequest("User does not belong to any company.");
-            }
+            if (user == null) return NotFound("User not found");
+            if (user.Company == null) return BadRequest("User does not belong to any company.");
 
-            var orders = await _context.Orders.Where(o => o.BuyerId == company.Id|| o.SellerId == company.Id).ToListAsync();
+            var companyNip = user.Company.NIP;
+
+            var orders = await _context.Orders
+                .AsNoTracking()
+                .Where(o => o.Seller.NIP == companyNip || o.Buyer.NIP == companyNip)
+                .Select(o => new OrderListDto
+                {
+                    Id = o.Id,
+                    Status = o.Status,
+                    CreatedAt = o.CreatedAt,
+                    UserNameWhoMadeOrder = o.UserNameWhoMadeOrder,
+                    Seller = new CompanyMiniDto
+                    {
+                        Id = o.SellerId,
+                        Name = o.Seller.Name,
+                        NIP = o.Seller.NIP
+                    },
+                    Buyer = new CompanyMiniDto
+                    {
+                        Id = o.BuyerId,
+                        Name = o.Buyer.Name,
+                        NIP = o.Buyer.NIP
+                    },
+                    ProductsWithQuantity = o.ProductsWithQuantity
+                        .Select(op => new ProductWithQuantityDto
+                        {
+                            Product = new CompanyProductMiniDto
+                            {
+                                Id = op.CompanyProduct.CompanyProductId,
+                                CompanyProductName = op.CompanyProduct.CompanyProductName,
+                                EAN = op.CompanyProduct.EAN,
+                                Price = op.CompanyProduct.Price 
+                            },
+                            Quantity = op.Quantity
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
 
             return Ok(orders);
         }
@@ -49,6 +81,13 @@ namespace StockWise.Controllers
         [Authorize]
         public async Task<IActionResult> MakeOrder([FromBody] CreateOrderDto order)
         {
+            foreach (var kvp in order.ProductsEANWithQuantity) {
+                if(kvp.Value < 0)
+                {
+                    return BadRequest("Quantity must be greater than 0");
+                }
+            }
+
             var client = User.FindFirst(ClaimTypes.Name).Value;
             var user = await _userManager.Users.Include(u => u.Company).FirstOrDefaultAsync(u => u.UserName == client);
 
@@ -72,28 +111,39 @@ namespace StockWise.Controllers
                 return NotFound("Seller not found.");
             }
 
-            List<CompanyProduct> orderedProducts = await _context.CompanyProducts.Where(p=>order.ProductsEAN.Contains(p.EAN)).ToListAsync();
-            if (orderedProducts.Count != order.ProductsEAN.Count)
+            Dictionary<CompanyProduct, int> orderedProducts = await _context.CompanyProducts.Where(p => order.ProductsEANWithQuantity.Keys.Contains(p.EAN)).ToDictionaryAsync(
+                p=>p,
+                p => order.ProductsEANWithQuantity[p.EAN]
+                );
+
+            if (orderedProducts.Count != order.ProductsEANWithQuantity.Count)
             {
                 return BadRequest("Some products were not found.");
             }
 
-            var unavailable = orderedProducts.Where(p=>!p.IsAvailableForOrder).ToList();
+            var unavailable = orderedProducts.Where(p=>!p.Key.IsAvailableForOrder).ToList();
 
             if (unavailable.Any()) {
-                var unavailableDetails = unavailable.Select(p=> $"Name: `{p.CompanyProductName}`, EAN: {p.EAN}").ToList();
+                var unavailableDetails = unavailable.Select(p=> $"Name: `{p.Key.CompanyProductName}`, EAN: {p.Key.EAN}").ToList();
 
                 return BadRequest(new
                 {
                     Message = "Some products are not available for order.",
                     Products = unavailable.Select(p => new {
-                        p.CompanyProductName,
-                        p.EAN,
-                        p.Description
+                        p.Key.CompanyProductName,
+                        p.Key.EAN,
+                        p.Key.Description
                     })
                 });
             }
 
+            var productsWithQuantity = orderedProducts
+            .Select(kvp => new OrderProduct
+            {
+                CompanyProductId = kvp.Key.CompanyProductId,
+                Quantity = kvp.Value
+            })
+            .ToList();
 
             var newOrder = new Order
             {
@@ -102,7 +152,8 @@ namespace StockWise.Controllers
                 BuyerId = buyer.Id,
                 Buyer = buyer,
                 CreatedAt = DateTime.Now,
-                Products = orderedProducts
+                ProductsWithQuantity = productsWithQuantity,
+                UserNameWhoMadeOrder = user.UserName
             };
 
             await _context.Orders.AddAsync(newOrder);

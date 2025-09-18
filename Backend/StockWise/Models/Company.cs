@@ -8,6 +8,7 @@
         public string Address { get; set; }
         public string Email {  get; set; }
         public string Phone { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public ICollection<Order> OrdersAsBuyer { get; set; }
         public ICollection<Order> OrdersAsSeller { get; set; }

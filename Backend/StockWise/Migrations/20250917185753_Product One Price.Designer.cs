@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StockWise.Data;
 
@@ -11,9 +12,11 @@ using StockWise.Data;
 namespace StockWise.Migrations
 {
     [DbContext(typeof(StockWiseDb))]
-    partial class StockWiseDbModelSnapshot : ModelSnapshot
+    [Migration("20250917185753_Product One Price")]
+    partial class ProductOnePrice
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -328,12 +331,17 @@ namespace StockWise.Migrations
                     b.Property<bool>("IsAvailableForOrder")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("OrderId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Stock")
                         .HasColumnType("int");
 
                     b.HasKey("CompanyProductId");
 
                     b.HasIndex("CompanyId");
+
+                    b.HasIndex("OrderId");
 
                     b.ToTable("CompanyProducts");
                 });
@@ -390,10 +398,6 @@ namespace StockWise.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserNameWhoMadeOrder")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("BuyerId");
@@ -401,24 +405,6 @@ namespace StockWise.Migrations
                     b.HasIndex("SellerId");
 
                     b.ToTable("Orders");
-                });
-
-            modelBuilder.Entity("StockWise.Models.OrderProduct", b =>
-                {
-                    b.Property<int>("OrderId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CompanyProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.HasKey("OrderId", "CompanyProductId");
-
-                    b.HasIndex("CompanyProductId");
-
-                    b.ToTable("OrderProduct");
                 });
 
             modelBuilder.Entity("StockWise.Models.Product", b =>
@@ -533,6 +519,10 @@ namespace StockWise.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("StockWise.Models.Order", null)
+                        .WithMany("Products")
+                        .HasForeignKey("OrderId");
+
                     b.OwnsOne("StockWise.Models.Money", "Price", b1 =>
                         {
                             b1.Property<int>("CompanyProductId")
@@ -540,7 +530,7 @@ namespace StockWise.Migrations
 
                             b1.Property<decimal>("Amount")
                                 .HasColumnType("decimal(18,2)")
-                                .HasColumnName("CompanyPriceAmount");
+                                .HasColumnName("CompanygPriceAmount");
 
                             b1.HasKey("CompanyProductId");
 
@@ -608,25 +598,6 @@ namespace StockWise.Migrations
                     b.Navigation("Seller");
                 });
 
-            modelBuilder.Entity("StockWise.Models.OrderProduct", b =>
-                {
-                    b.HasOne("StockWise.Models.CompanyProduct", "CompanyProduct")
-                        .WithMany()
-                        .HasForeignKey("CompanyProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("StockWise.Models.Order", "OrderTable")
-                        .WithMany("ProductsWithQuantity")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CompanyProduct");
-
-                    b.Navigation("OrderTable");
-                });
-
             modelBuilder.Entity("StockWise.Models.Product", b =>
                 {
                     b.HasOne("StockWise.Models.Category", "Category")
@@ -635,14 +606,14 @@ namespace StockWise.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.OwnsOne("StockWise.Models.Money", "SellingPrice", b1 =>
+                    b.OwnsOne("StockWise.Models.Money", "Price", b1 =>
                         {
                             b1.Property<int>("ProductId")
                                 .HasColumnType("int");
 
                             b1.Property<decimal>("Amount")
                                 .HasColumnType("decimal(18,2)")
-                                .HasColumnName("SellingPriceAmount");
+                                .HasColumnName("PriceAmount");
 
                             b1.HasKey("ProductId");
 
@@ -660,46 +631,7 @@ namespace StockWise.Migrations
                                         .IsRequired()
                                         .HasMaxLength(3)
                                         .HasColumnType("nvarchar(3)")
-                                        .HasColumnName("SellingPriceCurrency");
-
-                                    b2.HasKey("MoneyProductId");
-
-                                    b2.ToTable("Products");
-
-                                    b2.WithOwner()
-                                        .HasForeignKey("MoneyProductId");
-                                });
-
-                            b1.Navigation("Currency")
-                                .IsRequired();
-                        });
-
-                    b.OwnsOne("StockWise.Models.Money", "ShoppingPrice", b1 =>
-                        {
-                            b1.Property<int>("ProductId")
-                                .HasColumnType("int");
-
-                            b1.Property<decimal>("Amount")
-                                .HasColumnType("decimal(18,2)")
-                                .HasColumnName("ShoppingPriceAmount");
-
-                            b1.HasKey("ProductId");
-
-                            b1.ToTable("Products");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ProductId");
-
-                            b1.OwnsOne("StockWise.Models.Currency", "Currency", b2 =>
-                                {
-                                    b2.Property<int>("MoneyProductId")
-                                        .HasColumnType("int");
-
-                                    b2.Property<string>("Code")
-                                        .IsRequired()
-                                        .HasMaxLength(3)
-                                        .HasColumnType("nvarchar(3)")
-                                        .HasColumnName("ShoppingPriceCurrency");
+                                        .HasColumnName("PriceCurrency");
 
                                     b2.HasKey("MoneyProductId");
 
@@ -715,10 +647,7 @@ namespace StockWise.Migrations
 
                     b.Navigation("Category");
 
-                    b.Navigation("SellingPrice")
-                        .IsRequired();
-
-                    b.Navigation("ShoppingPrice")
+                    b.Navigation("Price")
                         .IsRequired();
                 });
 
@@ -747,7 +676,7 @@ namespace StockWise.Migrations
 
             modelBuilder.Entity("StockWise.Models.Order", b =>
                 {
-                    b.Navigation("ProductsWithQuantity");
+                    b.Navigation("Products");
                 });
 #pragma warning restore 612, 618
         }

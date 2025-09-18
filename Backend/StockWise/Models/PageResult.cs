@@ -8,7 +8,5 @@
         public SortDir SortDir { get; set; }
         public string SortBy { get; set; } = string.Empty;
         public List<T> Items { get; set; } = new();
-
-
     }
 }

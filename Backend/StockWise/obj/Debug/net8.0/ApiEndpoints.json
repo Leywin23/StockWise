@@ -17,6 +17,80 @@
   },
   {
     "ContainingType": "StockWise.Controllers.AccountController",
+    "Method": "ChangeUserCompany",
+    "RelativePath": "api/Account/companies/change/{companyNIP}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "companyNIP",
+        "Type": "System.Int64",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.AccountController",
+    "Method": "GetAllPending",
+    "RelativePath": "api/Account/companies/pending",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.AccountController",
+    "Method": "RejectUserFromCompany",
+    "RelativePath": "api/Account/companies/reject/{userId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.AccountController",
+    "Method": "SuspendUserFromCompany",
+    "RelativePath": "api/Account/companies/suspend/{userId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.AccountController",
+    "Method": "UnsuspendUserFromCompany",
+    "RelativePath": "api/Account/companies/unsuspend/{userId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.AccountController",
     "Method": "Login",
     "RelativePath": "api/Account/login",
     "HttpMethod": "POST",
@@ -112,13 +186,64 @@
   },
   {
     "ContainingType": "StockWise.Controllers.CompanyController",
-    "Method": "GetCompanyData",
+    "Method": "GetAllCompaniesData",
     "RelativePath": "api/Company",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
+    "Parameters": [
+      {
+        "Name": "Page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "PageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "WithOrdersAsBuyer",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      },
+      {
+        "Name": "WithOrdersAsSeller",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      },
+      {
+        "Name": "WithCompanyUsers",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      },
+      {
+        "Name": "WithCompanyProducts",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      },
+      {
+        "Name": "SortedBy",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "SortDir",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "StockWise.Models.PageResult\u00601[[StockWise.Dtos.CompanyDtos.CompanyDto, StockWise, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
     "ContainingType": "StockWise.Controllers.CompanyController",
@@ -163,13 +288,64 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "StockWise.Controllers.CompanyController",
+    "Method": "GetCompanyData",
+    "RelativePath": "api/Company/me",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "StockWise.Controllers.CompanyProductController",
     "Method": "GetCompanyProducts",
     "RelativePath": "api/CompanyProduct",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "Page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "PageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "Stock",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "IsAvailableForOrder",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      },
+      {
+        "Name": "MinTotal",
+        "Type": "System.Nullable\u00601[[System.Decimal, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "MaxTotal",
+        "Type": "System.Nullable\u00601[[System.Decimal, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "SortedBy",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "SortDir",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": []
   },
   {

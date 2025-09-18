@@ -183,7 +183,108 @@
         }
       }
     },
-    "/api/Company": {
+    "/api/Account/companies/pending": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Account/companies/suspend/{userId}": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Account/companies/unsuspend/{userId}": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Account/companies/reject/{userId}": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Account/companies/change/{companyNIP}": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "parameters": [
+          {
+            "name": "companyNIP",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Company/me": {
       "get": {
         "tags": [
           "Company"
@@ -191,6 +292,95 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Company": {
+      "get": {
+        "tags": [
+          "Company"
+        ],
+        "parameters": [
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "WithOrdersAsBuyer",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "WithOrdersAsSeller",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "WithCompanyUsers",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "WithCompanyProducts",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "SortedBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SortDir",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SortDir"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyDtoPageResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyDtoPageResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyDtoPageResult"
+                }
+              }
+            }
           }
         }
       },
@@ -267,6 +457,69 @@
       "get": {
         "tags": [
           "CompanyProduct"
+        ],
+        "parameters": [
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Stock",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "IsAvailableForOrder",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "MinTotal",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "MaxTotal",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "SortedBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SortDir",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SortDir"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -687,6 +940,64 @@
   },
   "components": {
     "schemas": {
+      "CompanyDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "nip": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CompanyDtoPageResult": {
+        "type": "object",
+        "properties": {
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sortDir": {
+            "$ref": "#/components/schemas/SortDir"
+          },
+          "sortBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompanyDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateCompanyDto": {
         "type": "object",
         "properties": {
@@ -732,11 +1043,7 @@
             "type": "string",
             "nullable": true
           },
-          "shoppingPrice": {
-            "type": "number",
-            "format": "double"
-          },
-          "sellingPrice": {
+          "price": {
             "type": "number",
             "format": "double"
           },
@@ -760,10 +1067,6 @@
             "type": "string",
             "nullable": true
           },
-          "buyerNIP": {
-            "type": "integer",
-            "format": "int64"
-          },
           "sellerNIP": {
             "type": "integer",
             "format": "int64"
@@ -780,20 +1083,13 @@
             "type": "string",
             "nullable": true
           },
-          "status": {
-            "type": "string",
-            "nullable": true
-          },
-          "productsEAN": {
-            "type": "array",
-            "items": {
-              "type": "string"
+          "productsEANWithQuantity": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
             },
             "nullable": true
-          },
-          "quantity": {
-            "type": "integer",
-            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -911,6 +1207,14 @@
         },
         "additionalProperties": false
       },
+      "SortDir": {
+        "enum": [
+          0,
+          1
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
       "UpdateCompanyDto": {
         "type": "object",
         "properties": {
@@ -948,11 +1252,7 @@
             "type": "string",
             "nullable": true
           },
-          "shoppingPrice": {
-            "type": "number",
-            "format": "double"
-          },
-          "sellingPrice": {
+          "price": {
             "type": "number",
             "format": "double"
           },

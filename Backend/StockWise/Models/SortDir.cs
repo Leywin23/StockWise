@@ -1,6 +1,8 @@
 ﻿namespace StockWise.Models
 {
-    public class SortDir
+    public enum SortDir
     {
+        Desc,
+        Asc
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
 using StockWise.Interfaces;
@@ -41,6 +42,12 @@ namespace StockWise.Controllers
                 var categoryName = item.GetProperty("category").GetString();
                 var category = await _eanService.EnsureCategoryHierarchyAsync(categoryName);
 
+                decimal lowest = 0m, highest = 0m;
+                if(item.TryGetProperty("lowest_recorded_price", out var lowEl) && lowEl.ValueKind == JsonValueKind.Number) 
+                    lowest = lowEl.GetDecimal();
+
+                if(item.TryGetProperty("highest_recorded_price", out var highEl) && highEl.ValueKind == JsonValueKind.Number)
+                    highest = highEl.GetDecimal();
 
                 var result = new Product
                 {
@@ -48,8 +55,11 @@ namespace StockWise.Controllers
                     Category = category,
                     Description = item.GetProperty("description").GetString(),
                     Image = item.TryGetProperty("images", out var images) && images.GetArrayLength() > 0 ? images[0].GetString() : null,
-                    EAN = ean
+                    EAN = ean,
+                    ShoppingPrice = Money.Of(lowest, "EUR"),
+                    SellingPrice = Money.Of(highest,"EUR")
                 };
+
                 await _context.Products.AddAsync(result);
                 await _context.SaveChangesAsync();
                 return Ok(result);

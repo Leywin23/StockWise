@@ -21,6 +21,10 @@ namespace StockWise.Helpers
                 .ForMember(dest => dest.IsAvailableForOrder, opt => opt.MapFrom(src => src.IsAvailableForOrder));
 
             CreateMap<Company, CompanyDto>();
+
+            CreateMap(typeof(PageResult<>), typeof(PageResult<>));
+
+            CreateMap<CompanyProductDto, CompanyProduct>();
         }
     }
 }

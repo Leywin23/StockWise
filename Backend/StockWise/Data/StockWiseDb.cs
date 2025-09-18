@@ -49,6 +49,25 @@ namespace StockWise.Data
                 .HasForeignKey(o=>o.SellerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<OrderProduct>()
+     .HasKey(op => new { op.OrderId, op.CompanyProductId });
+
+            modelBuilder.Entity<Order>()
+                .HasMany(o => o.ProductsWithQuantity)
+                .WithOne(op => op.OrderTable)
+                .HasForeignKey(op => op.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<OrderProduct>()
+                .HasOne(op => op.CompanyProduct)
+                .WithMany()                                   
+                .HasForeignKey(op => op.CompanyProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<OrderProduct>()
+                .Property(op => op.Quantity)
+                .IsRequired();
+
             modelBuilder.Entity<AppUser>()
                 .HasOne(u => u.Company)
                 .WithMany(c => c.Users)
@@ -99,13 +118,13 @@ namespace StockWise.Data
                 {
                     money.Property(m => m.Amount)
                          .HasColumnType("decimal(18,2)")
-                         .HasColumnName("CompanySellingPriceAmount");
+                         .HasColumnName("CompanyPriceAmount");
 
                     money.OwnsOne(m => m.Currency, curr =>
                     {
                         curr.Property(c => c.Code)
                             .HasMaxLength(3)
-                            .HasColumnName("CompanySellingPriceCurrency");
+                            .HasColumnName("CompanyPriceCurrency");
                     });
                 });
             });

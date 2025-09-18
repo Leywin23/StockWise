@@ -35,13 +35,13 @@ namespace StockWise.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Manager,Worker")]
-        public async Task<IActionResult> GetCompanyProducts()
+        public async Task<IActionResult> GetCompanyProducts([FromQuery] CompanyProductQueryParams q)
         {
             var user = await GetCurrentUserAsync();
             if (user == null) return Unauthorized("User not found.");
             if (user.Company == null) return BadRequest("User is not assigned to any company.");
 
-            var products = await _companyProductService.GetCompanyProductsAsync(user);
+            var products = await _companyProductService.GetCompanyProductsAsync(user, q);
             var productsDto = _mapper.Map<IEnumerable<CompanyProductDto>>(products);
             return Ok(productsDto);
         }

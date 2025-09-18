@@ -82,9 +82,9 @@ namespace StockWise.Services
         }
 
         public async Task<PageResult<CompanyProduct>> GetCompanyProductsAsync(
-    AppUser user,
-    CompanyProductQueryParams q,
-    bool withDetails = false)
+        AppUser user,
+        CompanyProductQueryParams q,
+        bool withDetails = false)
         {
             if (q.Page <= 0) q.Page = 1;
             if (q.PageSize <= 0) q.PageSize = 10;
@@ -194,8 +194,6 @@ namespace StockWise.Services
             product.Price = Price;
             product.Stock = companyProductDto.Stock;
             product.IsAvailableForOrder = companyProductDto.IsAvailableForOrder;
-
-
 
             await _context.SaveChangesAsync();
 

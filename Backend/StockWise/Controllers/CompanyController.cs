@@ -31,7 +31,7 @@ namespace StockWise.Controllers
         }
 
         [Authorize]
-        [HttpGet]
+        [HttpGet("me")]
         public async Task<IActionResult> GetCompanyData()
         {
             var user = await GetCurrentUserAsync();
@@ -43,6 +43,15 @@ namespace StockWise.Controllers
             var companyDto = _mapper.Map<CompanyDto>(company);
 
             return Ok(companyDto);
+        }
+
+
+
+        [HttpGet]
+        public async Task<ActionResult<PageResult<CompanyDto>>> GetAllCompaniesData([FromQuery] CompanyQueryParams q)
+        {
+            var companiesData = await _companyService.GetAllCompanyAsync(q);
+            return Ok(companiesData);
         }
 
         [HttpPost]

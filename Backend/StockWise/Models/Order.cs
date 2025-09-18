@@ -10,7 +10,7 @@
         public Company Buyer { get; set; }
         public string Status { get; set; } = "Pending";
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        public List<CompanyProduct> Products { get; set; }
+        public string UserNameWhoMadeOrder { get; set; }
+        public List<OrderProduct> ProductsWithQuantity { get; set; } = new List<OrderProduct>();
     }
 }

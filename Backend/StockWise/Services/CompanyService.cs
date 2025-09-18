@@ -76,6 +76,59 @@ namespace StockWise.Services
         {
             return await _context.Companies.FirstOrDefaultAsync(c => c.Id == user.Company.Id);
         }
+
+        public async Task<PageResult<Company>> GetAllCompanyAsync(CompanyQueryParams q)
+        {
+            q.Page = q.Page <= 0 ? 1 : q.Page;
+            q.PageSize = q.PageSize switch
+            {
+                <= 0 => 10,
+                > 100 => 100,
+                _ => q.PageSize
+            };
+
+            var query = _context.Companies.AsNoTracking();
+
+            if (q.WithOrdersAsBuyer) query = query.Include(c => c.OrdersAsBuyer);
+            if (q.WithOrdersAsSeller) query = query.Include(c => c.OrdersAsSeller);
+            if (q.WithCompanyProducts) query = query.Include(c => c.CompanyProducts);
+            if (q.WithCompanyUsers) query = query.Include(c => c.Users);
+
+            query = q.SortedBy switch
+            {
+                "Name" => q.SortDir == SortDir.Desc
+                    ? query.OrderByDescending(c => c.Name)
+                    : query.OrderBy(c => c.Name),
+
+                "CreatedAt" => q.SortDir == SortDir.Desc
+                    ? query.OrderByDescending(c => c.CreatedAt)
+                    : query.OrderBy(c => c.CreatedAt),
+
+                _ => q.SortDir == SortDir.Desc
+                    ? query.OrderByDescending(c => c.Id)
+                    : query.OrderBy(c => c.Id)
+            };
+
+            query = query.AsSplitQuery();
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((q.Page - 1) * q.PageSize)
+                .Take(q.PageSize)
+                .ToListAsync();
+
+            return new PageResult<Company>
+            {
+                Page = q.Page,
+                PageSize = q.PageSize,
+                TotalCount = totalCount,
+                SortBy = q.SortedBy ?? nameof(Company.Id),
+                SortDir = q.SortDir,
+                Items = items
+            };
+        }
+
     }
 
 }

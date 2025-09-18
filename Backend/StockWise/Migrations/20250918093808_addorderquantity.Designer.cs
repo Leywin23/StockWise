@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StockWise.Data;
 
@@ -11,9 +12,11 @@ using StockWise.Data;
 namespace StockWise.Migrations
 {
     [DbContext(typeof(StockWiseDb))]
-    partial class StockWiseDbModelSnapshot : ModelSnapshot
+    [Migration("20250918093808_addorderquantity")]
+    partial class addorderquantity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -328,12 +331,17 @@ namespace StockWise.Migrations
                     b.Property<bool>("IsAvailableForOrder")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("OrderId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Stock")
                         .HasColumnType("int");
 
                     b.HasKey("CompanyProductId");
 
                     b.HasIndex("CompanyId");
+
+                    b.HasIndex("OrderId");
 
                     b.ToTable("CompanyProducts");
                 });
@@ -383,6 +391,9 @@ namespace StockWise.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
                     b.Property<int>("SellerId")
                         .HasColumnType("int");
 
@@ -401,24 +412,6 @@ namespace StockWise.Migrations
                     b.HasIndex("SellerId");
 
                     b.ToTable("Orders");
-                });
-
-            modelBuilder.Entity("StockWise.Models.OrderProduct", b =>
-                {
-                    b.Property<int>("OrderId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CompanyProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.HasKey("OrderId", "CompanyProductId");
-
-                    b.HasIndex("CompanyProductId");
-
-                    b.ToTable("OrderProduct");
                 });
 
             modelBuilder.Entity("StockWise.Models.Product", b =>
@@ -533,6 +526,10 @@ namespace StockWise.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("StockWise.Models.Order", null)
+                        .WithMany("Products")
+                        .HasForeignKey("OrderId");
+
                     b.OwnsOne("StockWise.Models.Money", "Price", b1 =>
                         {
                             b1.Property<int>("CompanyProductId")
@@ -606,25 +603,6 @@ namespace StockWise.Migrations
                     b.Navigation("Buyer");
 
                     b.Navigation("Seller");
-                });
-
-            modelBuilder.Entity("StockWise.Models.OrderProduct", b =>
-                {
-                    b.HasOne("StockWise.Models.CompanyProduct", "CompanyProduct")
-                        .WithMany()
-                        .HasForeignKey("CompanyProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("StockWise.Models.Order", "OrderTable")
-                        .WithMany("ProductsWithQuantity")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CompanyProduct");
-
-                    b.Navigation("OrderTable");
                 });
 
             modelBuilder.Entity("StockWise.Models.Product", b =>
@@ -747,7 +725,7 @@ namespace StockWise.Migrations
 
             modelBuilder.Entity("StockWise.Models.Order", b =>
                 {
-                    b.Navigation("ProductsWithQuantity");
+                    b.Navigation("Products");
                 });
 #pragma warning restore 612, 618
         }
