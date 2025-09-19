@@ -1106,6 +1106,10 @@
             "type": "string",
             "nullable": true
           },
+          "currency": {
+            "type": "string",
+            "nullable": true
+          },
           "productsEANWithQuantity": {
             "type": "object",
             "additionalProperties": {

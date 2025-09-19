@@ -12,5 +12,6 @@
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string UserNameWhoMadeOrder { get; set; }
         public List<OrderProduct> ProductsWithQuantity { get; set; } = new List<OrderProduct>();
+        public Money TotalPrice { get; set; }
     }
 }

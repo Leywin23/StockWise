@@ -128,6 +128,22 @@ namespace StockWise.Data
                     });
                 });
             });
+            modelBuilder.Entity<Order>(b =>
+            {
+                b.OwnsOne(o => o.TotalPrice, money =>
+                {
+                    money.Property(m => m.Amount)
+                    .HasColumnType("decimal(18,2)")
+                    .HasColumnName("OrderTotalPriceAmount");
+
+                    money.OwnsOne(o => o.Currency, curr =>
+                    {
+                        curr.Property(c => c.Code)
+                        .HasMaxLength(3)
+                        .HasColumnName("OrderTotalPriceCurrency");
+                    });
+                });
+            });
 
             SeedRoles(modelBuilder);
         }

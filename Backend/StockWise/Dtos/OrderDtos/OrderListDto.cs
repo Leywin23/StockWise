@@ -13,6 +13,7 @@ namespace StockWise.Dtos.OrderDtos
         public CompanyMiniDto Buyer { get; set; }
         public string UserNameWhoMadeOrder { get; set; }
         public List<ProductWithQuantityDto> ProductsWithQuantity { get; set; }
+        public Money TotalPrice { get; set; }
     }
     public class CompanyMiniDto
     {

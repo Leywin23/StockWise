@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
 using StockWise.Dtos.OrderDtos;
 using StockWise.Models;
+using StockWise.Services;
 using System.Security.Claims;
 
 namespace StockWise.Controllers
@@ -16,10 +17,12 @@ namespace StockWise.Controllers
     {
         private readonly StockWiseDb _context;
         private readonly UserManager<AppUser> _userManager;
-        public OrderController(StockWiseDb context, UserManager<AppUser> userManager)
+        private readonly MoneyConverter _moneyConverter;
+        public OrderController(StockWiseDb context, UserManager<AppUser> userManager, MoneyConverter moneyConverter)
         {
             _context = context;
             _userManager = userManager;
+            _moneyConverter = moneyConverter;
         }
 
         [Authorize]
@@ -45,6 +48,7 @@ namespace StockWise.Controllers
                     Status = o.Status,
                     CreatedAt = o.CreatedAt,
                     UserNameWhoMadeOrder = o.UserNameWhoMadeOrder,
+                    TotalPrice = o.TotalPrice,
                     Seller = new CompanyMiniDto
                     {
                         Id = o.SellerId,
@@ -103,6 +107,7 @@ namespace StockWise.Controllers
                 Status = order.Status,
                 CreatedAt = order.CreatedAt,
                 UserNameWhoMadeOrder = order.UserNameWhoMadeOrder,
+                TotalPrice = order.TotalPrice,
                 Seller = new CompanyMiniDto
                 {
                     Id = order.Seller.Id,
@@ -191,6 +196,7 @@ namespace StockWise.Controllers
                 });
             }
 
+
             var productsWithQuantity = orderedProducts
             .Select(kvp => new OrderProduct
             {
@@ -198,6 +204,15 @@ namespace StockWise.Controllers
                 Quantity = kvp.Value
             })
             .ToList();
+
+            var total = 0.0m;
+            foreach (var kvp in orderedProducts)
+            {
+                var price = await _moneyConverter.ConvertAsync(kvp.Key.Price, order.Currency);
+                total += price.Amount * kvp.Value;
+            }
+
+            var totalPrice = Money.Of(total, order.Currency);
 
             var newOrder = new Order
             {
@@ -207,7 +222,8 @@ namespace StockWise.Controllers
                 Buyer = buyer,
                 CreatedAt = DateTime.Now,
                 ProductsWithQuantity = productsWithQuantity,
-                UserNameWhoMadeOrder = user.UserName
+                UserNameWhoMadeOrder = user.UserName,
+                TotalPrice = totalPrice
             };
 
             await _context.Orders.AddAsync(newOrder);
