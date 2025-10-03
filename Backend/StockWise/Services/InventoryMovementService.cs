@@ -25,7 +25,7 @@ namespace StockWise.Services
             .FirstOrDefaultAsync(p => p.CompanyProductId == dto.CompanyProductId);
 
             if (product == null)
-                return ServiceResult<InventoryMovement>.Fail($"Couldn't find product with ID {dto.CompanyProductId}");
+                return ServiceResult<InventoryMovement>.NotFound($"Couldn't find product with ID {dto.CompanyProductId}");
 
             var movement = new InventoryMovement
             {
@@ -44,7 +44,7 @@ namespace StockWise.Services
 
                 case "outbound":
                     if (product.Stock < movement.Quantity)
-                        return ServiceResult<InventoryMovement>.Fail("Stock couldn't be below 0");
+                        return ServiceResult<InventoryMovement>.BadRequest("Stock couldn't be below 0");
 
                     product.Stock -= movement.Quantity;
                     break;

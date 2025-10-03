@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
 using StockWise.Dtos.OrderDtos;
+using StockWise.Interfaces;
 using StockWise.Models;
 using StockWise.Services;
 using System.Security.Claims;
@@ -18,11 +19,13 @@ namespace StockWise.Controllers
         private readonly StockWiseDb _context;
         private readonly UserManager<AppUser> _userManager;
         private readonly MoneyConverter _moneyConverter;
-        public OrderController(StockWiseDb context, UserManager<AppUser> userManager, MoneyConverter moneyConverter)
+        private readonly IOrderService _orderService;
+        public OrderController(StockWiseDb context, UserManager<AppUser> userManager, MoneyConverter moneyConverter, IOrderService orderService)
         {
             _context = context;
             _userManager = userManager;
             _moneyConverter = moneyConverter;
+            _orderService = orderService;
         }
 
         [Authorize]
@@ -140,96 +143,11 @@ namespace StockWise.Controllers
         [Authorize]
         public async Task<IActionResult> MakeOrder([FromBody] CreateOrderDto order)
         {
-            foreach (var kvp in order.ProductsEANWithQuantity) {
-                if(kvp.Value < 0)
-                {
-                    return BadRequest("Quantity must be greater than 0");
-                }
-            }
-
             var client = User.FindFirst(ClaimTypes.Name).Value;
             var user = await _userManager.Users.Include(u => u.Company).FirstOrDefaultAsync(u => u.UserName == client);
 
-
-            if (user == null) {
-                return NotFound("User not found");
-            }
-
-            if (user.Company == null)
-            {
-                return BadRequest("User does not belong to any company.");
-            }
-
-            var buyer = await _context.Companies.FirstOrDefaultAsync(c=>c.NIP== user.Company.NIP);
-            
-
-            var seller = await _context.Companies.FirstOrDefaultAsync(c=>c.NIP == order.SellerNIP);
-
-            if (seller == null)
-            {
-                return NotFound("Seller not found.");
-            }
-
-            Dictionary<CompanyProduct, int> orderedProducts = await _context.CompanyProducts.Where(p => order.ProductsEANWithQuantity.Keys.Contains(p.EAN)).ToDictionaryAsync(
-                p=>p,
-                p => order.ProductsEANWithQuantity[p.EAN]
-                );
-
-            if (orderedProducts.Count != order.ProductsEANWithQuantity.Count)
-            {
-                return BadRequest("Some products were not found.");
-            }
-
-            var unavailable = orderedProducts.Where(p=>!p.Key.IsAvailableForOrder).ToList();
-
-            if (unavailable.Any()) {
-                var unavailableDetails = unavailable.Select(p=> $"Name: `{p.Key.CompanyProductName}`, EAN: {p.Key.EAN}").ToList();
-
-                return BadRequest(new
-                {
-                    Message = "Some products are not available for order.",
-                    Products = unavailable.Select(p => new {
-                        p.Key.CompanyProductName,
-                        p.Key.EAN,
-                        p.Key.Description
-                    })
-                });
-            }
-
-
-            var productsWithQuantity = orderedProducts
-            .Select(kvp => new OrderProduct
-            {
-                CompanyProductId = kvp.Key.CompanyProductId,
-                Quantity = kvp.Value
-            })
-            .ToList();
-
-            var total = 0.0m;
-            foreach (var kvp in orderedProducts)
-            {
-                var price = await _moneyConverter.ConvertAsync(kvp.Key.Price, order.Currency);
-                total += price.Amount * kvp.Value;
-            }
-
-            var totalPrice = Money.Of(total, order.Currency);
-
-            var newOrder = new Order
-            {
-                SellerId = seller.Id,
-                Seller = seller,
-                BuyerId = buyer.Id,
-                Buyer = buyer,
-                CreatedAt = DateTime.Now,
-                ProductsWithQuantity = productsWithQuantity,
-                UserNameWhoMadeOrder = user.UserName,
-                TotalPrice = totalPrice
-            };
-
-            await _context.Orders.AddAsync(newOrder);
-            await _context.SaveChangesAsync();
-
-            return Ok(order);
+            var orderResult = await _orderService.MakeOrderAsync(order, user);
+            return Ok(orderResult);
         }
 
         [HttpDelete]
@@ -320,7 +238,7 @@ namespace StockWise.Controllers
 
             if (order == null) return NotFound($"Order with id: {id} not found.");
             if (order.Buyer?.Id != company.Id) return Forbid("Only the buyer's company can edit this order.");
-            if (!string.Equals(order.Status, "Pending", StringComparison.OrdinalIgnoreCase))
+            if (order.Status != OrderStatus.Pending)
                 return Conflict($"Order status is {order.Status}. Only 'Pending' orders can be edited");
 
             var requestedEANs = dto.ProductsEANWithQuantity.Keys

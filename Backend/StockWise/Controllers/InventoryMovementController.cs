@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using StockWise.Data;
-using StockWise.Hubs;
-using StockWise.Models;
 using Microsoft.EntityFrameworkCore;
+using StockWise.Data;
 using StockWise.Dtos.InventoryMovementDtos;
+using StockWise.Helpers;
+using StockWise.Hubs;
 using StockWise.Interfaces;
+using StockWise.Models;
 
 namespace StockWise.Controllers
 {
@@ -39,18 +40,25 @@ namespace StockWise.Controllers
         }
 
         [HttpPost]
+        [HttpPost]
         public async Task<IActionResult> AddMovement([FromBody] InventoryMovementDto dto)
         {
             var result = await _inventoryMovementService.AddMovementAsync(dto);
-            if (!result.Success)
-            {
-                if(result.ErrorMessage.Contains("Couldn't find product"))
-                    return NotFound(result.ErrorMessage);
 
-                return BadRequest(result.ErrorMessage);
+            if (!result.IsSuccess)
+            {
+                return result.Error switch
+                {
+                    ErrorKind.NotFound => NotFound(result.Message),
+                    ErrorKind.BadRequest => BadRequest(result.Message),
+                    ErrorKind.Unauthorized => Unauthorized(result.Message),
+                    ErrorKind.Forbidden => Forbid(result.Message),
+                    ErrorKind.Conflict => Conflict(result.Message),
+                    _ => StatusCode(StatusCodes.Status500InternalServerError, result.Message)
+                };
             }
 
-            return Ok(result.Data);
+            return Ok(result.Value);
         }
     }
 }
