@@ -22,6 +22,109 @@ namespace StockWise.Services
             _moneyConverter = moneyConverter;
         }
 
+        public async Task<ServiceResult<List<OrderListDto>>> GetOrdersAsync(AppUser user)
+        {
+            if (user == null)
+                return ServiceResult<List<OrderListDto>>.NotFound("User not found");
+
+            if (user.Company == null)
+                return ServiceResult<List<OrderListDto>>.BadRequest("User does not belong to any company.");
+
+            var companyNip = user.Company.NIP;
+
+            var order = await _context.Orders
+                .AsNoTracking()
+                .Where(o => o.Seller.NIP == companyNip || o.Buyer.NIP == companyNip)
+                .Select(o => new OrderListDto
+                {
+                    Id = o.Id,
+                    Status = o.Status,
+                    CreatedAt = o.CreatedAt,
+                    UserNameWhoMadeOrder = o.UserNameWhoMadeOrder,
+                    TotalPrice = o.TotalPrice,
+                    Seller = new CompanyMiniDto
+                    {
+                        Id = o.SellerId,
+                        Name = o.Seller.Name,
+                        NIP = o.Seller.NIP
+                    },
+                    Buyer = new CompanyMiniDto
+                    {
+                        Id = o.BuyerId,
+                        Name = o.Buyer.Name,
+                        NIP = o.Buyer.NIP
+                    },
+                    ProductsWithQuantity = o.ProductsWithQuantity
+                        .Select(op => new ProductWithQuantityDto
+                        {
+                            Product = new CompanyProductMiniDto
+                            {
+                                Id = op.CompanyProduct.CompanyProductId,
+                                CompanyProductName = op.CompanyProduct.CompanyProductName,
+                                EAN = op.CompanyProduct.EAN,
+                                Price = op.CompanyProduct.Price
+                            },
+                            Quantity = op.Quantity
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            if (order == null)
+                return ServiceResult<List<OrderListDto>>.NotFound("No order found for this company.");
+
+            return ServiceResult<List<OrderListDto>>.Ok(order);
+        }
+
+        public async Task<ServiceResult<OrderListDto>> GetOrderAsync(AppUser user, int id)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Seller)
+                .Include(o => o.Buyer)
+                .Include(o => o.ProductsWithQuantity)
+                .ThenInclude(op => op.CompanyProduct)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order == null)
+            {
+                return ServiceResult<OrderListDto>.NotFound("Product not found");
+            }
+
+            var result = new OrderListDto
+            {
+                Id = order.Id,
+                Status = order.Status,
+                CreatedAt = order.CreatedAt,
+                UserNameWhoMadeOrder = order.UserNameWhoMadeOrder,
+                TotalPrice = order.TotalPrice,
+                Seller = new CompanyMiniDto
+                {
+                    Id = order.Seller.Id,
+                    Name = order.Seller.Name,
+                    NIP = order.Seller.NIP
+                },
+                Buyer = new CompanyMiniDto
+                {
+                    Id = order.Buyer.Id,
+                    Name = order.Buyer.Name,
+                    NIP = order.Buyer.NIP
+                },
+                ProductsWithQuantity = order.ProductsWithQuantity.Select(p => new ProductWithQuantityDto
+                {
+                    Product = new CompanyProductMiniDto
+                    {
+                        Id = p.CompanyProductId,
+                        CompanyProductName = p.CompanyProduct.CompanyProductName,
+                        EAN = p.CompanyProduct.EAN,
+                        Price = p.CompanyProduct.Price,
+                    },
+                    Quantity = p.Quantity,
+                }).ToList(),
+            };
+
+            return ServiceResult<OrderListDto>.Ok(result);
+        }
+
         public async Task<ServiceResult<OrderListDto>> MakeOrderAsync(CreateOrderDto order, AppUser user)
         {
             foreach (var kvp in order.ProductsEANWithQuantity)
@@ -150,6 +253,76 @@ namespace StockWise.Services
                 };
 
             return ServiceResult<OrderListDto>.Ok(result);
+        }
+
+        public async Task<ServiceResult<OrderListDto>> DeleteOrderAsync(AppUser user, int id)
+        {
+            if (user?.Company == null)
+                return ServiceResult<OrderListDto>.BadRequest("User does not belong to any company.");
+
+            var companyNip = user.Company.NIP;
+
+            var order = await _context.Orders
+                .Include(o => o.Buyer)
+                .Include(o => o.Seller)
+                .Include(o => o.ProductsWithQuantity)
+                    .ThenInclude(p => p.CompanyProduct)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order == null)
+                return ServiceResult<OrderListDto>.NotFound($"Order with id: {id} not found");
+
+            if (order.Seller?.NIP != companyNip && order.Buyer?.NIP != companyNip)
+                return ServiceResult<OrderListDto>.Unauthorized("You cannot delete orders of another company.");
+
+            var dto = new OrderListDto
+            {
+                Id = order.Id,
+                Status = order.Status,
+                CreatedAt = order.CreatedAt,
+                UserNameWhoMadeOrder = order.UserNameWhoMadeOrder,
+                TotalPrice = order.TotalPrice,
+                Buyer = order.Buyer == null ? null : new CompanyMiniDto
+                {
+                    Id = order.Buyer.Id,
+                    Name = order.Buyer.Name,
+                    NIP = order.Buyer.NIP
+                },
+                Seller = order.Seller == null ? null : new CompanyMiniDto
+                {
+                    Id = order.Seller.Id,
+                    Name = order.Seller.Name,
+                    NIP = order.Seller.NIP
+                },
+                ProductsWithQuantity = order.ProductsWithQuantity
+                    .Select(p => new ProductWithQuantityDto
+                    {
+                        Product = p.CompanyProduct == null ? null : new CompanyProductMiniDto
+                        {
+                            Id = p.CompanyProductId,
+                            CompanyProductName = p.CompanyProduct.CompanyProductName,
+                            EAN = p.CompanyProduct.EAN,
+                            Price = p.CompanyProduct.Price,
+                        },
+                        Quantity = p.Quantity,
+                    })
+                    .ToList(),
+            };
+
+            _context.Orders.Remove(order);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                return ServiceResult<OrderListDto>.BadRequest(
+                    "Cannot delete order due to related records. Ensure cascade delete or remove order items first. " +
+                    ex.GetBaseException().Message);
+            }
+
+            return ServiceResult<OrderListDto>.Ok(dto);
         }
 
         public async Task<ServiceResult<OrderListDto>> UpdateOrderAsync(int id, UpdateOrderDto dto, AppUser user, CancellationToken ct = default)
