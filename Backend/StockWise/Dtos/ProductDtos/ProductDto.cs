@@ -4,7 +4,7 @@ namespace StockWise.Dtos.ProductDtos
 {
     public class ProductDto
     {
-        public int id { get; set; }
+        public int Id { get; set; }
         public string ProductName { get; set; }
         public string Ean { get; set; }
         public string Description { get; set; }

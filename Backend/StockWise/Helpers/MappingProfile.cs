@@ -2,6 +2,7 @@
 using StockWise.Models;
 using StockWise.Dtos.CompanyProductDtos;
 using StockWise.Dtos.CompanyDtos;
+using StockWise.Dtos.ProductDtos;
 
 namespace StockWise.Helpers
 {
@@ -25,6 +26,7 @@ namespace StockWise.Helpers
             CreateMap(typeof(PageResult<>), typeof(PageResult<>));
 
             CreateMap<CompanyProductDto, CompanyProduct>();
+            CreateMap<Product, ProductDto>();
         }
     }
 }

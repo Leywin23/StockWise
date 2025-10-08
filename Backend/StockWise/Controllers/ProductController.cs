@@ -8,6 +8,8 @@ using StockWise.Migrations;
 using StockWise.Mappers;
 using Microsoft.AspNetCore.Authorization;
 using StockWise.Dtos.ProductDtos;
+using AutoMapper;
+using StockWise.Interfaces;
 
 namespace StockWise.Controllers
 {
@@ -16,9 +18,13 @@ namespace StockWise.Controllers
     public class ProductController : ControllerBase
     {
         private readonly StockWiseDb _context;
-        public ProductController(StockWiseDb context)
+        private readonly IMapper _mapper;
+        private readonly IProductService _productService;
+        public ProductController(StockWiseDb context, IMapper mapper, IProductService productService)
         {
             _context = context;
+            _mapper = mapper;
+            _productService = productService;
         }
 
         [HttpGet("{id:int}")]
@@ -29,66 +35,16 @@ namespace StockWise.Controllers
                 return BadRequest();
             }
 
-            var product = await _context.Products
-                .Include(p => p.Category)
-                .ThenInclude(c => c.Parent)
-                .FirstOrDefaultAsync(p => p.ProductId == id);
-
-            if (product == null)
-            {
-                return NotFound();
-            }
-
-            var categoryFullPath = GetCategoryFullPath(product.Category);
-
-            var result = new
-            {
-                Product = product,
-                CategoryPath = categoryFullPath,
-            };
+            var result = await _productService.GetProductById(id);
 
             return Ok(result);
-        }
-
-        private string GetCategoryFullPath(Models.Category category)
-        {
-            var names = new List<string>();
-            var current = category;
-
-            while (current != null)
-            {
-                names.Add(current.Name);
-                if (current.Parent == null && current.ParentId != null)
-                {
-                    current = _context.Categories.FirstOrDefault(c => c.CategoryId == current.ParentId);
-                }
-                else
-                {
-                    current = current.Parent;
-                }
-            }
-            names.Reverse();
-            return string.Join(" > ", names);
         }
 
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> GetProducts()
         {
-            var products = await _context.Products.Include(p => p.Category).ThenInclude(c => c.Parent).ToListAsync();
-
-            var result = products.Select(p => new ProductDto
-            {
-
-                id = p.ProductId,
-                ProductName = p.ProductName,
-                Ean = p.EAN,
-                Description = p.Description,
-                SellingPrice = p.SellingPrice.Amount,
-                ShoppingPrice = p.ShoppingPrice.Amount,
-                Currency = p.SellingPrice.Currency,
-                CategoryString = GetCategoryFullPath(p.Category),
-            });
+            var result = await _productService.GetProducts();
 
             return Ok(result);
         }
@@ -100,24 +56,9 @@ namespace StockWise.Controllers
             {
                 return BadRequest();
             }
-            if (productDto == null) {
-                return BadRequest("Product data is required.");
-            }
+            var product = await _productService.AddProduct(productDto);
 
-            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Name == productDto.Category);
-
-            if (category == null) {
-                category = new Models.Category { Name = productDto.Category };
-                _context.Categories.Add(category);
-                await _context.SaveChangesAsync();
-            }
-
-            var product = productDto.ToProductFromCreate(category);
-
-            await _context.Products.AddAsync(product);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetProductById), new { id = product.ProductId }, product);
+            return Ok(product);
         }
 
         [HttpDelete("{id}")]
@@ -126,39 +67,18 @@ namespace StockWise.Controllers
             if (!ModelState.IsValid) {
                 return BadRequest();
             }
-            var productToDelete = await _context.Products.FindAsync(id);
-            if (productToDelete == null) {
-                return NotFound($"Couldn't find a product with given id: {id}");
-            }
-            _context.Products.Remove(productToDelete);
-            await _context.SaveChangesAsync();
+            var productToDelete = await _productService.DeleteProduct(id);
             return Ok(productToDelete);
         }
 
         [HttpPut]
         public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductDto productDto)
         {
-            var productToUpdate = await _context.Products.FirstOrDefaultAsync(x => x.EAN == productDto.ean);
-            if (productToUpdate == null)
-                return NotFound("Couldn't find a product");
-
-            var category = await _context.Categories.FirstOrDefaultAsync(x => x.Name == productDto.CategoryName);
-            if (category == null)
+            if (!ModelState.IsValid)
             {
-                return NotFound("Coundn't find a category with this name");
+                return BadRequest();
             }
-            var shoppingPrice = Money.Of(productDto.ShoppingPrice, productDto.Currency.Code);
-            var sellingPrice = Money.Of(productDto.SellingPrice, productDto.Currency.Code);
-
-            productToUpdate.ProductName = productDto.productName;
-            productToUpdate.CategoryId = category.CategoryId;
-            productToUpdate.Description = productDto.description;
-            productToUpdate.ShoppingPrice = shoppingPrice;
-            productToUpdate.SellingPrice = sellingPrice;
-            productToUpdate.Image = productDto.image;
-
-            _context.Products.Update(productToUpdate);
-            await _context.SaveChangesAsync();
+            var productToUpdate = await _productService.UpdateProduct(productDto);
             return Ok(productToUpdate);
         }
     }
