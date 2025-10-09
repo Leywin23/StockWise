@@ -34,8 +34,6 @@ namespace StockWise.Services
 
             var result = new ProductDto
             {
-
-                Id = product.ProductId,
                 ProductName = product.ProductName,
                 Ean = product.EAN,
                 Description = product.Description,
@@ -57,7 +55,6 @@ namespace StockWise.Services
 
             var result = products.Select(p => new ProductDto
                 {
-                    Id = p.ProductId,
                     ProductName = p.ProductName,
                     Ean = p.EAN,
                     Description = p.Description,
@@ -132,7 +129,7 @@ namespace StockWise.Services
             productToUpdate.Description = productDto.Description;
             productToUpdate.ShoppingPrice = shoppingPrice;
             productToUpdate.SellingPrice = sellingPrice;
-            productToUpdate.Image = productDto.image;
+            productToUpdate.Image = productDto.Image;
 
             _context.Products.Update(productToUpdate);
             await _context.SaveChangesAsync();

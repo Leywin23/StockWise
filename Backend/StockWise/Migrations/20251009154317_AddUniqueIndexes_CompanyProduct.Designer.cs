@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StockWise.Data;
 
@@ -11,9 +12,11 @@ using StockWise.Data;
 namespace StockWise.Migrations
 {
     [DbContext(typeof(StockWiseDb))]
-    partial class StockWiseDbModelSnapshot : ModelSnapshot
+    [Migration("20251009154317_AddUniqueIndexes_CompanyProduct")]
+    partial class AddUniqueIndexes_CompanyProduct
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -309,9 +312,6 @@ namespace StockWise.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CompanyProductId"));
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
                     b.Property<int>("CompanyId")
                         .HasColumnType("int");
 
@@ -339,8 +339,6 @@ namespace StockWise.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("CompanyProductId");
-
-                    b.HasIndex("CategoryId");
 
                     b.HasIndex("CompanyId", "CompanyProductName")
                         .IsUnique()
@@ -543,12 +541,6 @@ namespace StockWise.Migrations
 
             modelBuilder.Entity("StockWise.Models.CompanyProduct", b =>
                 {
-                    b.HasOne("StockWise.Models.Category", "Category")
-                        .WithMany("CompanyProducts")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("StockWise.Models.Company", "Company")
                         .WithMany("CompanyProducts")
                         .HasForeignKey("CompanyId")
@@ -593,8 +585,6 @@ namespace StockWise.Migrations
                             b1.Navigation("Currency")
                                 .IsRequired();
                         });
-
-                    b.Navigation("Category");
 
                     b.Navigation("Company");
 
@@ -791,8 +781,6 @@ namespace StockWise.Migrations
             modelBuilder.Entity("StockWise.Models.Category", b =>
                 {
                     b.Navigation("Children");
-
-                    b.Navigation("CompanyProducts");
 
                     b.Navigation("Products");
                 });

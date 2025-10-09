@@ -31,6 +31,11 @@ namespace StockWise.Data
                 .WithMany(c => c.Products)
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<CompanyProduct>().
+                HasOne(p=>p.Category)
+                .WithMany(c=>c.CompanyProducts)
+                .HasForeignKey(p=>p.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<InventoryMovement>().
                 HasOne(im => im.CompanyProduct)
@@ -113,7 +118,6 @@ namespace StockWise.Data
 
             modelBuilder.Entity<CompanyProduct>(b =>
             {
-                
                 b.OwnsOne(p => p.Price, money =>
                 {
                     money.Property(m => m.Amount)
@@ -127,6 +131,22 @@ namespace StockWise.Data
                             .HasColumnName("CompanyPriceCurrency");
                     });
                 });
+
+                b.Property(p => p.CompanyProductName)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                b.Property(p => p.EAN)
+                    .IsRequired()
+                    .HasMaxLength(32);
+
+                b.HasIndex(p => new { p.CompanyId, p.EAN })
+                    .IsUnique()
+                    .HasDatabaseName("IX_CompanyProduct_CompanyId_EAN");
+
+                b.HasIndex(p => new { p.CompanyId, p.CompanyProductName })
+                    .IsUnique()
+                    .HasDatabaseName("IX_CompanyProduct_CompanyId_Name");
             });
             modelBuilder.Entity<Order>(b =>
             {

@@ -18,12 +18,12 @@ namespace StockWise.Services
             _settings = options.Value;
         }
 
-        public async Task SendEmailAsync(string to, string subject, string body)
+        public async Task SendEmailAsync(string to, string subject, string body, CancellationToken ct = default)
         {
             var message = new MimeMessage();
+
             message.From.Add(new MailboxAddress(_settings.FromName, _settings.From));
             message.To.Add(MailboxAddress.Parse(to));
-
             message.Subject = subject;
 
             var builder = new BodyBuilder {
@@ -41,9 +41,10 @@ namespace StockWise.Services
 
             var appPassword = (_settings.Password ?? string.Empty);
             await client.AuthenticateAsync(_settings.User, appPassword);
-            client.SendAsync(message);
 
+            await client.SendAsync(message);
 
+            await client.DisconnectAsync(true, ct);
 
         }
 

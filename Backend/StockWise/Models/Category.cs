@@ -12,5 +12,6 @@ namespace StockWise.Models
         public Category? Parent { get; set; }
         public List<Category>? Children { get; set; }
         public List<Product>? Products { get; set; }
+        public List<CompanyProduct>? CompanyProducts { get; set; }
     }
 }

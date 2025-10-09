@@ -12,6 +12,8 @@
         public int CompanyId {  get; set; }
         public Company Company { get; set; }
         public bool IsAvailableForOrder { get; set; }
+        public int CategoryId {  get; set; }
+        public Category Category { get; set; }
 
         public ICollection<InventoryMovement> InventoryMovements { get; set; }
 

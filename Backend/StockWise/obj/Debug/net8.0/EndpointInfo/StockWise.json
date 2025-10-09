@@ -1108,25 +1108,38 @@
         "additionalProperties": false
       },
       "CreateCompanyProductDto": {
+        "required": [
+          "category",
+          "companyProductName",
+          "currency",
+          "description",
+          "ean"
+        ],
         "type": "object",
         "properties": {
-          "productName": {
-            "type": "string",
-            "nullable": true
+          "companyProductName": {
+            "minLength": 1,
+            "type": "string"
           },
           "ean": {
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "type": "string"
           },
           "image": {
             "type": "string",
             "nullable": true
           },
           "description": {
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "type": "string"
+          },
+          "category": {
+            "minLength": 1,
+            "type": "string"
           },
           "price": {
+            "maximum": 79228162514264337593543950335,
+            "minimum": 0,
             "type": "number",
             "format": "double"
           },
@@ -1134,6 +1147,8 @@
             "$ref": "#/components/schemas/Currency"
           },
           "stock": {
+            "maximum": 2147483647,
+            "minimum": 0,
             "type": "integer",
             "format": "int32"
           },
@@ -1182,29 +1197,43 @@
         "additionalProperties": false
       },
       "CreateProductDto": {
+        "required": [
+          "category",
+          "currency",
+          "description",
+          "ean",
+          "productName"
+        ],
         "type": "object",
         "properties": {
           "productName": {
-            "type": "string",
-            "nullable": true
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string"
           },
           "ean": {
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "pattern": "^\\d{8}$|^\\d{13}$",
+            "type": "string"
           },
           "image": {
+            "maxLength": 512,
+            "minLength": 0,
             "type": "string",
             "nullable": true
           },
           "description": {
-            "type": "string",
-            "nullable": true
+            "maxLength": 2000,
+            "minLength": 0,
+            "type": "string"
           },
           "shoppingPrice": {
+            "minimum": 0,
             "type": "number",
             "format": "double"
           },
           "sellingPrice": {
+            "minimum": 0,
             "type": "number",
             "format": "double"
           },
@@ -1212,12 +1241,8 @@
             "$ref": "#/components/schemas/Currency"
           },
           "category": {
-            "type": "string",
-            "nullable": true
-          },
-          "stock": {
-            "type": "integer",
-            "format": "int32"
+            "minLength": 1,
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -1383,36 +1408,50 @@
         "additionalProperties": false
       },
       "UpdateProductDto": {
+        "required": [
+          "category",
+          "currency",
+          "description",
+          "ean",
+          "productName"
+        ],
         "type": "object",
         "properties": {
           "productName": {
-            "type": "string",
-            "nullable": true
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string"
           },
           "description": {
-            "type": "string",
-            "nullable": true
+            "maxLength": 2000,
+            "minLength": 0,
+            "type": "string"
           },
           "ean": {
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "pattern": "^\\d{8}$|^\\d{13}$",
+            "type": "string"
           },
           "shoppingPrice": {
+            "minimum": 0,
             "type": "number",
             "format": "double"
           },
           "sellingPrice": {
+            "minimum": 0,
             "type": "number",
             "format": "double"
           },
           "currency": {
             "$ref": "#/components/schemas/Currency"
           },
-          "categoryName": {
-            "type": "string",
-            "nullable": true
+          "category": {
+            "minLength": 1,
+            "type": "string"
           },
           "image": {
+            "maxLength": 512,
+            "minLength": 0,
             "type": "string",
             "nullable": true
           }

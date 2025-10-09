@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using StockWise.Data;
+using StockWise.Exceptions;
 using StockWise.Filters;
 using StockWise.Helpers;
 using StockWise.Hubs;
@@ -149,27 +150,28 @@ namespace StockWise
 
             var app = builder.Build();
 
-            app.UseHttpsRedirection();
-
-            app.MapHub<StockHub>("/stockHub");
+            app.UseMiddleware<GlobalExceptionMiddleware>();
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-                
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-            app.UseCors("AllowFrontend");
-
             app.UseRouting();
+
+            app.UseCors("AllowFrontend");
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.MapHub<StockHub>("/stockHub");
             app.MapControllers();
             app.MapRazorPages();
+
 
             app.Run();
             

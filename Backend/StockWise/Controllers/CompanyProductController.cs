@@ -1,11 +1,15 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
 using StockWise.Dtos.CompanyProductDtos;
 using StockWise.Dtos.ProductDtos;
+using StockWise.Helpers;
 using StockWise.Interfaces;
+using StockWise.Mappers;
 using StockWise.Models;
 using StockWise.Services;
 
@@ -38,7 +42,7 @@ namespace StockWise.Controllers
         public async Task<IActionResult> GetCompanyProducts([FromQuery] CompanyProductQueryParams q)
         {
             var user = await GetCurrentUserAsync();
-            if (user == null) return Unauthorized("User not found.");
+            if (user == null) return Unauthorized(ApiError.From(new Exception("User not found."), StatusCodes.Status401Unauthorized, HttpContext));
             if (user.Company == null) return BadRequest("User is not assigned to any company.");
 
             var products = await _companyProductService.GetCompanyProductsAsync(user, q);
@@ -51,32 +55,31 @@ namespace StockWise.Controllers
         public async Task<IActionResult> GetCompanyProductById([FromRoute] int productId)
         {
             var user = await GetCurrentUserAsync();
-            if (user == null) return Unauthorized("User not found.");
+            if (user == null) return Unauthorized(ApiError.From(new Exception("User not found."), StatusCodes.Status401Unauthorized, HttpContext));
 
-            var product = await _companyProductService.GetCompanyProductAsync(user, productId);
-            if (product == null) return NotFound("Product not found.");
-            var productDto = _mapper.Map<CompanyProductDto>(product);
-            return Ok(productDto);
+            var result = await _companyProductService.GetCompanyProductAsyncById(user, productId);
+            if (result.IsSuccess)
+            {
+                var dto = _mapper.Map<CompanyProductDto>(result);
+                return Ok(dto);
+            }
+            return this.ToActionResult(result);
         }
 
         [HttpPost]
-        [Authorize(Roles = "Manager,Worker")]
-        public async Task<IActionResult> AddCompanyProduct([FromBody] CreateCompanyProductDto productDto)
+        [Authorize]
+        public async Task<IActionResult> AddCompanyProduct([FromBody] CreateCompanyProductDto dto)
         {
             var user = await GetCurrentUserAsync();
-            if (user == null) return Unauthorized("User not found.");
-            var company = user.Company;
-            if (company == null) return BadRequest("User is not assigned to any company.");
+            if (user == null)
+                return Unauthorized(ApiError.From(new Exception("User not found."), StatusCodes.Status401Unauthorized, HttpContext));
 
-            var productExists = await _context.CompanyProducts
-                .AnyAsync(cp => cp.Company.Id == company.Id &&
-                                (cp.EAN == productDto.EAN ||
-                                 cp.CompanyProductName == productDto.ProductName));
-            if (productExists) return BadRequest("Product is already in company stock.");
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
 
-            var newCompanyProduct = await _companyProductService.CreateCompanyProductAsync(company, productDto);
-            var newCompanyProductDto = _mapper.Map<CompanyProductDto>(newCompanyProduct);
-            return Ok(newCompanyProductDto);
+            var productDto = await _companyProductService.CreateCompanyProductAsync(dto, user);
+
+            return this.ToActionResult(productDto);
         }
 
         [HttpDelete("{productId:int}")]
@@ -89,7 +92,7 @@ namespace StockWise.Controllers
             var deleted = await _companyProductService.DeleteCompanyProductAsync(user, productId);
             if (deleted == null) return NotFound("Product not found.");
             var deletedProductDto = _mapper.Map<CompanyProductDto>(deleted);
-            return Ok(deleted);
+            return Ok(deletedProductDto);
         }
 
         [HttpPut("{productId:int}")]
@@ -97,19 +100,13 @@ namespace StockWise.Controllers
         public async Task<IActionResult> EditCompanyProduct([FromRoute] int productId, [FromBody] UpdateCompanyProductDto productDto)
         {
             var user = await GetCurrentUserAsync();
-            if (user == null) return Unauthorized("User not found.");
 
-            try
-            {
-                var updated = await _companyProductService.UpdateCompanyProductAsync(productId, user, productDto);
-                if (updated == null) return NotFound("Product not found or user not assigned to any company.");
-                var updatedDto = _mapper.Map<CompanyProductDto>(updated);
-                return Ok(updatedDto);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            if (user == null) 
+                return Unauthorized(ApiError.From(new Exception("User not found."), StatusCodes.Status404NotFound, HttpContext));
+
+            var result = await _companyProductService.UpdateCompanyProductAsync(productId, user, productDto);
+
+            return this.ToActionResult(result);
         }
 
         [HttpGet("{productId:int}/convert")]
@@ -119,12 +116,15 @@ namespace StockWise.Controllers
             var user = await GetCurrentUserAsync();
             if (user == null) return Unauthorized("User not found.");
 
-            var product = await _companyProductService.GetCompanyProductAsync(user, productId);
-            if (product == null) return NotFound("Product not found.");
+
 
             if (string.IsNullOrWhiteSpace(toCode)) return BadRequest("Target currency code is required.");
 
-            var convertedPrice = await _moneyConverter.ConvertAsync(product.Price, toCode);
+            var result = await _companyProductService.GetCompanyProductAsyncById(user, productId);
+            if(!result.IsSuccess)
+                return this.ToActionResult(result);
+
+            var convertedPrice = await _moneyConverter.ConvertAsync(result.Value.Price, toCode);
             return Ok(convertedPrice);
         }
 

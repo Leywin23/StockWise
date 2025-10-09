@@ -60,8 +60,10 @@ namespace StockWise.Controllers
         [Authorize]
         public async Task<IActionResult> MakeOrder([FromBody] CreateOrderDto order)
         {
-            var client = User.FindFirst(ClaimTypes.Name).Value;
-            var user = await _userManager.Users.Include(u => u.Company).FirstOrDefaultAsync(u => u.UserName == client);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var user = await _userManager.GetUserAsync(User); 
+            if (user == null) return Unauthorized("Invalid user.");
 
             var orderResult = await _orderService.MakeOrderAsync(order, user);
             return Ok(orderResult);

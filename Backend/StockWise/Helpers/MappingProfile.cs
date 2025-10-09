@@ -6,27 +6,32 @@ using StockWise.Dtos.ProductDtos;
 
 namespace StockWise.Helpers
 {
-    public class MappingProfile: Profile
+    public class MappingProfile : Profile
     {
         public MappingProfile()
         {
+            // DTO -> Encja (CREATE)
+            CreateMap<CreateCompanyProductDto, CompanyProduct>()
+                // nazwa jest już zgodna, mapowanie jawne opcjonalne:
+                .ForMember(d => d.CompanyProductName, opt => opt.MapFrom(s => s.CompanyProductName))
+
+                // owned type: Price
+                .ForPath(d => d.Price.Amount, opt => opt.MapFrom(s => s.Price))
+                .ForPath(d => d.Price.Currency.Code, opt => opt.MapFrom(s => s.Currency.Code))
+
+                // te pola ustawiamy ręcznie w akcji:
+                .ForMember(d => d.CompanyId, opt => opt.Ignore())
+                .ForMember(d => d.Company, opt => opt.Ignore())
+                .ForMember(d => d.CategoryId, opt => opt.Ignore())
+                .ForMember(d => d.Category, opt => opt.Ignore());
+
+            // Reszta mapowań (jak u Ciebie)
             CreateMap<CompanyProduct, CompanyProductDto>();
-
-            CreateMap<CompanyProduct, CompanyProductDto>()
-                .ForMember(dest => dest.CompanyProductName, opt => opt.MapFrom(src=>src.CompanyProductName))
-                .ForMember(dest => dest.EAN, opt => opt.MapFrom(src => src.EAN))
-                .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.Image))
-                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
-                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price))
-                .ForMember(dest => dest.Stock, opt => opt.MapFrom(src => src.Stock))
-                .ForMember(dest => dest.IsAvailableForOrder, opt => opt.MapFrom(src => src.IsAvailableForOrder));
-
             CreateMap<Company, CompanyDto>();
-
             CreateMap(typeof(PageResult<>), typeof(PageResult<>));
-
             CreateMap<CompanyProductDto, CompanyProduct>();
             CreateMap<Product, ProductDto>();
+            CreateMap<CompanyProduct, CreateCompanyProductDto>();
         }
     }
 }

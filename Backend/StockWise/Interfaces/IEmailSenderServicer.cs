@@ -5,7 +5,7 @@ namespace StockWise.Interfaces
 {
     public interface IEmailSenderServicer
     {
-        Task SendEmailAsync(string to, string subject, string body);
+        Task SendEmailAsync(string to, string subject, string body, CancellationToken ct = default);
 
     }
 }

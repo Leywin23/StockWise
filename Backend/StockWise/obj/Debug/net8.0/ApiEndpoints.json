@@ -357,7 +357,7 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "productDto",
+        "Name": "dto",
         "Type": "StockWise.Dtos.CompanyProductDtos.CreateCompanyProductDto",
         "IsRequired": true
       }
