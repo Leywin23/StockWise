@@ -48,7 +48,8 @@ namespace StockWise.Services
 
             IQueryable<CompanyProduct> query = _context.CompanyProducts
                 .AsNoTracking()
-                .Where(cp => cp.CompanyId == companyId);
+                .Where(cp => cp.CompanyId == companyId)
+                .Include(cp=>cp.Category);
 
             if (q.Stock > 0)
                 query = query.Where(cp => cp.Stock >= q.Stock);
@@ -116,17 +117,19 @@ namespace StockWise.Services
                 Items = items
             };
 
+
             return ServiceResult<PageResult<CompanyProduct>>.Ok(page);
         }
-        public async Task<ServiceResult<CompanyProduct>> GetCompanyProductAsyncById(AppUser user, int companyProductId, bool withDetails = false)
+        public async Task<ServiceResult<CompanyProductDto>> GetCompanyProductAsyncById(AppUser user, int companyProductId, bool withDetails = false)
         {
-            if (user?.Company == null) return ServiceResult<CompanyProduct>.Forbidden("User is not assigned to any company.");
+            if (user?.Company == null) return ServiceResult<CompanyProductDto>.Forbidden("User is not assigned to any company.");
 
             var companyId = user.CompanyId.Value;
 
             IQueryable<CompanyProduct> query = _context.CompanyProducts
                 .AsNoTracking()
-                .Where(cp => cp.CompanyProductId == companyProductId && cp.CompanyId == companyId);
+                .Where(cp => cp.CompanyProductId == companyProductId && cp.CompanyId == companyId)
+                .Include(cp=>cp.Category);
 
             if (withDetails)
             {
@@ -138,9 +141,10 @@ namespace StockWise.Services
             var product = await query.FirstOrDefaultAsync();
 
             if (product == null)
-                return ServiceResult<CompanyProduct>.NotFound("Product not found.");
+                return ServiceResult<CompanyProductDto>.NotFound("Product not found.");
 
-            return ServiceResult<CompanyProduct>.Ok(product);
+            var dto = _mapper.Map<CompanyProductDto>(product);
+            return ServiceResult<CompanyProductDto>.Ok(dto);
         }
 
         public async Task<ServiceResult<CompanyProductDto>> CreateCompanyProductAsync(CreateCompanyProductDto dto, AppUser user)

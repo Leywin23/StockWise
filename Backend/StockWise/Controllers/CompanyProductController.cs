@@ -46,8 +46,8 @@ namespace StockWise.Controllers
             if (user.Company == null) return BadRequest("User is not assigned to any company.");
 
             var products = await _companyProductService.GetCompanyProductsAsync(user, q);
-            var productsDto = _mapper.Map<IEnumerable<CompanyProductDto>>(products);
-            return Ok(productsDto);
+
+            return Ok(products);
         }
 
         [HttpGet("{productId:int}")]
@@ -58,11 +58,7 @@ namespace StockWise.Controllers
             if (user == null) return Unauthorized(ApiError.From(new Exception("User not found."), StatusCodes.Status401Unauthorized, HttpContext));
 
             var result = await _companyProductService.GetCompanyProductAsyncById(user, productId);
-            if (result.IsSuccess)
-            {
-                var dto = _mapper.Map<CompanyProductDto>(result);
-                return Ok(dto);
-            }
+
             return this.ToActionResult(result);
         }
 
