@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
 using StockWise.Dtos.CompanyDtos;
+using StockWise.Helpers;
 using StockWise.Interfaces;
 using StockWise.Models;
 using System.Security.Claims;
@@ -35,34 +36,36 @@ namespace StockWise.Controllers
         public async Task<IActionResult> GetCompanyData()
         {
             var user = await GetCurrentUserAsync();
-            if (user == null) return Unauthorized("User not found");
+            if (user == null) return Unauthorized(ApiError.From(new Exception("User not found."), StatusCodes.Status401Unauthorized, HttpContext));
 
-            var company = await _companyService.GetCompanyAsync(user);
-            if (company == null) return NotFound("Company not found");
+            var companyDto = await _companyService.GetCompanyAsync(user);
 
-            var companyDto = _mapper.Map<CompanyDto>(company);
+            return this.ToActionResult(companyDto);
+        }
+        [Authorize]
+        [HttpGet("me/advanced")]
+        public async Task<IActionResult> GetAdvancedCompanyData()
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null) return Unauthorized(ApiError.From(new Exception("User not found."), StatusCodes.Status401Unauthorized, HttpContext));
 
-            return Ok(companyDto);
+            var companyData = await _companyService.GetAdvancedCompanyDataAsync(user);
+            return this.ToActionResult(companyData);
         }
 
 
-
         [HttpGet]
-        public async Task<ActionResult<PageResult<CompanyDto>>> GetAllCompaniesData([FromQuery] CompanyQueryParams q)
+        public async Task<IActionResult> GetAllCompaniesData([FromQuery] CompanyQueryParams q)
         {
             var companiesData = await _companyService.GetAllCompanyAsync(q);
-            return Ok(companiesData);
+            return this.ToActionResult(companiesData);
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateCompany(CreateCompanyDto companyDto)
         {
-            var newCompany = await _companyService.CreateCompanyAsync(companyDto);
-            if (newCompany == null)
-                return BadRequest("Company already exists");
-
-            var newCompanyDto = _mapper.Map<CompanyDto>(newCompany);
-            return Ok(newCompanyDto);
+            var newCompanyDto = await _companyService.CreateCompanyAsync(companyDto);
+            return this.ToActionResult(newCompanyDto);
         }
 
         [Authorize]
@@ -70,15 +73,10 @@ namespace StockWise.Controllers
         public async Task<IActionResult> DeleteCompany()
         {
             var user = await GetCurrentUserAsync();
-            if (user == null) return Unauthorized("User not found");
+            if (user == null) return Unauthorized(ApiError.From(new Exception("User not found"), StatusCodes.Status401Unauthorized, HttpContext));
 
-            var company = await _companyService.DeleteCompanyAsync(user);
-            if (company == null)
-                return NotFound("Company not found");
-
-            var companyDto = _mapper.Map<CompanyDto>(company);
-
-            return Ok(companyDto);
+            var companyDto = await _companyService.DeleteCompanyAsync(user);
+            return this.ToActionResult(companyDto);
         }
 
         [Authorize]
@@ -86,14 +84,11 @@ namespace StockWise.Controllers
         public async Task<IActionResult> EditCompany(UpdateCompanyDto companyDto)
         {
             var user = await GetCurrentUserAsync();
-            if (user == null) return Unauthorized("User not found");
+            if (user == null) return Unauthorized(ApiError.From(new Exception("User not found"), StatusCodes.Status401Unauthorized, HttpContext));
 
-            var updatedCompany = await _companyService.UpdateCompanyAsync(companyDto, user);
-            if (updatedCompany == null)
-                return BadRequest("User is not assigned to any company.");
-
-            var updatedCompanyDto = _mapper.Map<CompanyDto>(updatedCompany);
-            return Ok(updatedCompanyDto);
+            var updatedCompanyDto = await _companyService.UpdateCompanyAsync(companyDto, user);
+            
+            return this.ToActionResult(updatedCompanyDto);
         }
 
         private async Task<AppUser?> GetCurrentUserAsync()

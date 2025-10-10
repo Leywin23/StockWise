@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
-using StockWise.Models;
-using StockWise.Dtos.CompanyProductDtos;
+using StockWise.Dtos.AccountDtos;
 using StockWise.Dtos.CompanyDtos;
+using StockWise.Dtos.CompanyProductDtos;
+using StockWise.Dtos.OrderDtos;
 using StockWise.Dtos.ProductDtos;
+using StockWise.Models;
 
 namespace StockWise.Helpers
 {
@@ -29,6 +31,18 @@ namespace StockWise.Helpers
 
             CreateMap<Product, ProductDto>();
             CreateMap<CompanyProduct, CreateCompanyProductDto>();
+
+            CreateMap<AppUser, CompanyUserDto>();
+            CreateMap<Company, CompanyMiniDto>();
+            CreateMap<Order, OrderSummaryDto>()
+                .ForMember(d => d.TotalAmount, o => o.MapFrom(s => s.TotalPrice.Amount))
+                .ForMember(d => d.TotalCurrencyCode, o => o.MapFrom(s => s.TotalPrice.Currency.Code))
+                .ForMember(d => d.Counterparty, o => o.Ignore());
+
+            CreateMap<Company, AdvancedCompanyDto>()
+                .ForMember(d => d.OrdersAsBuyer, o => o.Ignore())
+                .ForMember(d => d.OrdersAsSeller, o => o.Ignore())
+                .ForMember(d => d.Users, o => o.Ignore());
         }
     }
 }

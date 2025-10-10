@@ -1,22 +1,111 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
+using StockWise.Dtos.AccountDtos;
 using StockWise.Dtos.CompanyDtos;
+using StockWise.Dtos.OrderDtos;
+using StockWise.Helpers;
 using StockWise.Interfaces;
 using StockWise.Models;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace StockWise.Services
 {
     public class CompanyService : ICompanyService
     {
         private readonly StockWiseDb _context;
-
-        public CompanyService(StockWiseDb context)
+        private readonly IMapper _mapper;
+        public CompanyService(StockWiseDb context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
-        public async Task<Company?> CreateCompanyAsync(CreateCompanyDto companyDto)
+        public async Task<ServiceResult<CompanyDto>> GetCompanyAsync(AppUser user)
+        {
+            var company = await GetUserCompanyAsync(user);
+            if (company == null) return ServiceResult<CompanyDto>.NotFound("User is not assigned to any company");
+            var companyDto = _mapper.Map<CompanyDto>(company);
+            return ServiceResult<CompanyDto>.Ok(companyDto);
+        }
+
+        public async Task<ServiceResult<AdvancedCompanyDto>> GetAdvancedCompanyDataAsync(AppUser user)
+        {
+            if(user?.CompanyId is null)
+                return ServiceResult<AdvancedCompanyDto>.Forbidden("User is not assigned to any company");
+
+            var companyId = user.CompanyId.Value;
+
+            var company = await _context.Companies
+                .Where(c => c.Id == companyId)
+                .AsNoTracking()
+                .ProjectTo<AdvancedCompanyDto>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync();
+
+            if (company == null)
+                return ServiceResult<AdvancedCompanyDto>.NotFound("User is not assigned to any company");
+
+            var ordersAsBuyer = await _context.Orders
+                .Where(o => o.BuyerId == companyId)
+                .AsNoTracking()
+                .Select(o => new OrderSummaryDto
+                {
+                    Id = o.Id,
+                    CreatedAt = o.CreatedAt,
+                    TotalAmount = o.TotalPrice.Amount,
+                    TotalCurrencyCode = o.TotalPrice.Currency.Code,
+                    UserNameWhoMadeOrder = o.UserNameWhoMadeOrder,
+                    Counterparty = new CompanyMiniDto
+                    {
+                        Id = o.SellerId,
+                        Name = o.Seller.Name,
+                        NIP = o.Seller.NIP,
+                    }
+                })
+                .ToListAsync();
+
+            var ordersAsSeller = await _context.Orders
+                .Where(o => o.SellerId == companyId)
+                .AsNoTracking()
+                .Select(o => new OrderSummaryDto
+                {
+                    Id = o.Id,
+                    CreatedAt = o.CreatedAt,
+                    Status = o.Status,
+                    TotalAmount = o.TotalPrice.Amount,
+                    TotalCurrencyCode = o.TotalPrice.Currency.Code,
+                    UserNameWhoMadeOrder = o.UserNameWhoMadeOrder,
+                    Counterparty = new CompanyMiniDto
+                    {
+                        Id = o.BuyerId,
+                        Name = o.Buyer.Name,
+                        NIP = o.Buyer.NIP,
+                    }
+
+                })
+                .ToListAsync();
+
+            var users = await _context.Users
+                .Where(u => u.CompanyId == companyId)
+                .AsNoTracking()
+                .Select(u => new CompanyUserDto
+                {
+                    UserName = u.UserName,
+                    Email = u.Email,
+                    CompanyMembershipStatus = u.CompanyMembershipStatus,
+                })
+                .ToListAsync();
+
+            company.OrdersAsBuyer = ordersAsBuyer;
+            company.OrdersAsSeller = ordersAsSeller;
+            company.Users = users;
+
+            return ServiceResult<AdvancedCompanyDto>.Ok(company);
+        }
+
+        public async Task<ServiceResult<CompanyDto>> CreateCompanyAsync(CreateCompanyDto companyDto)
         {
             var exists = await _context.Companies.AnyAsync(c =>
                 c.NIP == companyDto.NIP ||
@@ -24,7 +113,7 @@ namespace StockWise.Services
                 c.Phone == companyDto.Phone ||
                 c.Name == companyDto.Name);
 
-            if (exists) return null;
+            if (exists) return ServiceResult<CompanyDto>.Conflict("Company with this data already exist");
 
             var newCompany = new Company
             {
@@ -38,28 +127,28 @@ namespace StockWise.Services
             await _context.Companies.AddAsync(newCompany);
             await _context.SaveChangesAsync();
 
-            return newCompany;
+            var newCompanyDto = _mapper.Map<CompanyDto>(newCompany);
+
+            return ServiceResult<CompanyDto>.Ok(newCompanyDto);
         }
 
-        public async Task<Company?> DeleteCompanyAsync(AppUser user)
+        public async Task<ServiceResult<CompanyDto>> DeleteCompanyAsync(AppUser user)
         {
             var company = await GetUserCompanyAsync(user);
-            if (company == null) return null;
+            if (company == null) return ServiceResult<CompanyDto>.NotFound("User is not assigned to any company");
 
             _context.Companies.Remove(company);
             await _context.SaveChangesAsync();
-            return company;
+
+            var companyDto = _mapper.Map<CompanyDto>(company);
+            return ServiceResult<CompanyDto>.Ok(companyDto);
         }
 
-        public async Task<Company?> GetCompanyAsync(AppUser user)
-        {
-            return await GetUserCompanyAsync(user);
-        }
 
-        public async Task<Company?> UpdateCompanyAsync(UpdateCompanyDto companyDto, AppUser user)
+        public async Task<ServiceResult<CompanyDto>> UpdateCompanyAsync(UpdateCompanyDto companyDto, AppUser user)
         {
             var company = await GetUserCompanyAsync(user);
-            if (company == null) return null;
+            if (company == null) return ServiceResult<CompanyDto>.NotFound("User is not assigned to any company");
 
             company.Name = companyDto.Name;
             company.Email = companyDto.Email;
@@ -69,7 +158,9 @@ namespace StockWise.Services
             _context.Companies.Update(company);
             await _context.SaveChangesAsync();
 
-            return company;
+            var updatedCompanyDto = _mapper.Map<CompanyDto>(company);
+
+            return ServiceResult<CompanyDto>.Ok(updatedCompanyDto);
         }
 
         private async Task<Company?> GetUserCompanyAsync(AppUser user)
@@ -77,12 +168,12 @@ namespace StockWise.Services
             return await _context.Companies.FirstOrDefaultAsync(c => c.Id == user.Company.Id);
         }
 
-        public async Task<PageResult<Company>> GetAllCompanyAsync(CompanyQueryParams q)
+        public async Task<ServiceResult<PageResult<Company>>> GetAllCompanyAsync(CompanyQueryParams q)
         {
             q.Page = q.Page <= 0 ? 1 : q.Page;
             q.PageSize = q.PageSize switch
             {
-                <= 0 => 10,
+                <= 10 => 10,
                 > 100 => 100,
                 _ => q.PageSize
             };
@@ -118,7 +209,7 @@ namespace StockWise.Services
                 .Take(q.PageSize)
                 .ToListAsync();
 
-            return new PageResult<Company>
+            var result = new PageResult<Company>
             {
                 Page = q.Page,
                 PageSize = q.PageSize,
@@ -127,6 +218,8 @@ namespace StockWise.Services
                 SortDir = q.SortDir,
                 Items = items
             };
+
+            return ServiceResult<PageResult<Company>>.Ok(result);
         }
 
     }
