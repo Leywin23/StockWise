@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
 using StockWise.Dtos.CompanyDtos;
 using StockWise.Dtos.CompanyProductDtos;
+using StockWise.Dtos.InventoryMovementDtos;
 using StockWise.Dtos.ProductDtos;
 using StockWise.Helpers;
 using StockWise.Interfaces;
@@ -15,11 +16,13 @@ namespace StockWise.Services
     {
         private readonly StockWiseDb _context;
         private readonly IMapper _mapper;
+        private readonly IInventoryMovementService _inventoryMovementService;
 
-        public CompanyProductService(StockWiseDb context, IMapper mapper)
+        public CompanyProductService(StockWiseDb context, IMapper mapper, IInventoryMovementService inventoryMovementService)
         {
             _context = context;
             _mapper = mapper;
+            _inventoryMovementService = inventoryMovementService;
         }
         public async Task<ServiceResult<PageResult<CompanyProduct>>> GetCompanyProductsAsync(
         AppUser user,
@@ -49,7 +52,8 @@ namespace StockWise.Services
             IQueryable<CompanyProduct> query = _context.CompanyProducts
                 .AsNoTracking()
                 .Where(cp => cp.CompanyId == companyId)
-                .Include(cp=>cp.Category);
+                .Include(cp => cp.Category)
+                .Include(cp => cp.InventoryMovements);
 
             if (q.Stock > 0)
                 query = query.Where(cp => cp.Stock >= q.Stock);
@@ -186,10 +190,32 @@ namespace StockWise.Services
             var product = _mapper.Map<CompanyProduct>(dto);
             product.CompanyId = companyId;
             product.CategoryId = category.CategoryId;
+            product.InventoryMovements = new List<InventoryMovement>();
+
+            await using var tx = await _context.Database.BeginTransactionAsync();
 
             _context.CompanyProducts.Add(product);
             await _context.SaveChangesAsync();
 
+            var movementDto = new InventoryMovementDto
+            {
+                Date = DateTime.Now,
+                Type = "inbound",
+                CompanyProductId = product.CompanyProductId,
+                Quantity = product.Stock,
+            };
+
+            
+            var movementResult = await _inventoryMovementService.AddMovementAsync(movementDto);
+
+            if (movementResult == null || !movementResult.IsSuccess)
+            {
+                await tx.RollbackAsync();
+                var errMsg = movementResult?.Error.ToString() ?? "Unknown error";
+                return ServiceResult<CompanyProductDto>.BadRequest($"Failed to create inventory movement:{errMsg}");
+            }
+
+            await tx.CommitAsync();
 
             var productDto = _mapper.Map<CompanyProductDto>(product);
             return ServiceResult<CompanyProductDto>.Ok(productDto);
