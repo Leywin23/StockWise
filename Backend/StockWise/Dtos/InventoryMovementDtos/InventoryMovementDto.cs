@@ -1,10 +1,12 @@
-﻿namespace StockWise.Dtos.InventoryMovementDtos
+﻿using StockWise.Models;
+
+namespace StockWise.Dtos.InventoryMovementDtos
 {
     public class InventoryMovementDto
     {
         public int CompanyProductId { get; set; }
         public DateTime Date { get; set; }
-        public string Type { get; set; }
+        public MovementType Type { get; set; }
         public int Quantity { get; set; }
         public string? Comment { get; set; }
     }

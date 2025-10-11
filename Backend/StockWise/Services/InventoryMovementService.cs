@@ -30,26 +30,26 @@ namespace StockWise.Services
             var movement = new InventoryMovement
             {
                 Date = dto.Date,
-                Type = dto.Type.ToLower(),
+                Type = dto.Type,
                 Quantity = dto.Quantity,
                 CompanyProductId = dto.CompanyProductId,
                 Comment = dto.Comment,
             };
 
-            switch (movement.Type?.ToLowerInvariant())
+            switch (movement.Type)
             {
-                case "inbound":
+                case MovementType.Inbound:
                     product.Stock += movement.Quantity;
                     break;
 
-                case "outbound":
+                case MovementType.Outbound:
                     if (product.Stock < movement.Quantity)
                         return ServiceResult<InventoryMovement>.BadRequest("Stock couldn't be below 0");
 
                     product.Stock -= movement.Quantity;
                     break;
 
-                case "adjustment":
+                case MovementType.Adjustment:
                     product.Stock = movement.Quantity;
                     break;
 

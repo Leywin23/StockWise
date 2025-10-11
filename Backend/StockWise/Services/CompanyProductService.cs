@@ -200,7 +200,7 @@ namespace StockWise.Services
             var movementDto = new InventoryMovementDto
             {
                 Date = DateTime.Now,
-                Type = "inbound",
+                Type = MovementType.Inbound,
                 CompanyProductId = product.CompanyProductId,
                 Quantity = product.Stock,
             };
