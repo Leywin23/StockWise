@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Net;
 using System.Text.Json;
@@ -25,7 +26,7 @@ namespace StockWise.Exceptions
             catch (Exception ex)
             {
                 var (status, title) = MapToStatus(ex);
-                Log(ex, status);
+                Log(ex, status, title, context);
 
                 var apiError = ApiError.From(
                     ex: ShouldExposeDetailToClient(status) ? ex : new Exception("Unexpected error."),
@@ -85,12 +86,23 @@ namespace StockWise.Exceptions
             HttpRequestException => ((int)HttpStatusCode.BadGateway, "Bad Gateway"),
 
             // fallback – 500
+            AutoMapperMappingException => (StatusCodes.Status500InternalServerError, "Mapping Error"),
             _ => ((int)HttpStatusCode.InternalServerError, "Internal Server Error")
+
         };
 
-        private void Log(Exception ex, int status) {
-            if (status >= 500) _logger.LogError(ex, "Unhandled exception");
-            else _logger.LogWarning(ex, "Handled domain/application exception");
+        private void Log(Exception ex, int status, string title, HttpContext ctx)
+        {
+            var traceId = ctx.TraceIdentifier;
+
+            if (status >= 500)
+            {
+                _logger.LogError(ex, "{Title}. Status={Status}. TraceId={TraceId}", title, status, traceId);
+            }
+            else
+            {
+                _logger.LogWarning(ex, "{Title}. Status={Status}. TraceId={TraceId}", title, status, traceId);
+            }
         }
 
         private static bool ShouldExposeDetailToClient(int status) => status < 500;
