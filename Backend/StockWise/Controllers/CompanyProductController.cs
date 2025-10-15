@@ -7,11 +7,13 @@ using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
 using StockWise.Dtos.CompanyProductDtos;
 using StockWise.Dtos.ProductDtos;
-using StockWise.Helpers;
+using StockWise.Extensions;
 using StockWise.Interfaces;
 using StockWise.Mappers;
 using StockWise.Models;
 using StockWise.Services;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace StockWise.Controllers
 {
@@ -24,24 +26,27 @@ namespace StockWise.Controllers
         private readonly ICompanyProductService _companyProductService;
         private readonly MoneyConverter _moneyConverter;
         private readonly IMapper _mapper;
+        private readonly ICurrentUserService _curr;
 
         public CompanyProductController(
             StockWiseDb context,
             ICompanyProductService companyProductService,
             MoneyConverter moneyConverter,
-            IMapper mapper)
+            IMapper mapper,
+            ICurrentUserService curr)
         {
             _context = context;
             _companyProductService = companyProductService;
             _moneyConverter = moneyConverter;
             _mapper = mapper;
+            _curr = curr;
         }
 
         [HttpGet]
         [Authorize(Roles = "Manager,Worker")]
-        public async Task<IActionResult> GetCompanyProducts([FromQuery] CompanyProductQueryParams q)
+        public async Task<IActionResult> GetCompanyProducts([FromQuery] CompanyProductQueryParams q, CancellationToken ct = default)
         {
-            var user = await GetCurrentUserAsync();
+            var user = await _curr.EnsureAsync(ct);
             if (user == null) return Unauthorized(ApiError.From(new Exception("User not found."), StatusCodes.Status401Unauthorized, HttpContext));
             if (user.Company == null) return BadRequest("User is not assigned to any company.");
 
@@ -126,12 +131,20 @@ namespace StockWise.Controllers
 
         private async Task<AppUser?> GetCurrentUserAsync()
         {
-            var userName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
-            if (string.IsNullOrEmpty(userName)) return null;
+            var user = User;
+            if(!User.Identity.IsAuthenticated)
+            {
+                throw new UnauthorizedAccessException("User is not autheticated");
+            }
+            var userId = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
+            ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return null;
 
             return await _context.Users
                 .Include(u => u.Company)
-                .FirstOrDefaultAsync(u => u.UserName == userName);
+                .FirstOrDefaultAsync(u => u.Id == userId);
         }
     }
 }

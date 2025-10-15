@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using StockWise.Helpers;
 
-namespace StockWise.Helpers
+namespace StockWise.Extensions
 {
     public static class ErrorKindHttpExtensions
     {

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
 using StockWise.Dtos.CompanyDtos;
-using StockWise.Helpers;
+using StockWise.Extensions;
 using StockWise.Interfaces;
 using StockWise.Models;
 using System.Security.Claims;

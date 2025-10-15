@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using StockWise.Helpers;
 
-namespace StockWise.Helpers
+namespace StockWise.Extensions
 {
     public static class ServiceResultExtensions
     {

@@ -41,6 +41,7 @@ namespace StockWise.Middleware
                         };
                     }
                 }
+
             }
             await _next(ctx);
         }
