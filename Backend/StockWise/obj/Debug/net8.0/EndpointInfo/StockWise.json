@@ -67,6 +67,18 @@
         }
       }
     },
+    "/api/Account": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Account/verify-email": {
       "post": {
         "tags": [

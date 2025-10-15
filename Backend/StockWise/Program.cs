@@ -11,6 +11,7 @@ using StockWise.Filters;
 using StockWise.Helpers;
 using StockWise.Hubs;
 using StockWise.Interfaces;
+using StockWise.Middleware;
 using StockWise.Models;
 using StockWise.Services;
 using System.Security.Claims;
@@ -145,7 +146,7 @@ namespace StockWise
                     return new CachedExchangeRateProvider(inner, cache, logger, ttl);
                 }
             );
-
+            builder.Services.AddHostedService<RevokedTokensCleanup>();
             builder.Services.AddSingleton<MoneyConverter>();
 
             var app = builder.Build();
@@ -165,6 +166,7 @@ namespace StockWise
             app.UseCors("AllowFrontend");
 
             app.UseAuthentication();
+            app.UseMiddleware<JwtRevocationMiddleware>();
             app.UseAuthorization();
 
             app.MapHub<StockHub>("/stockHub");

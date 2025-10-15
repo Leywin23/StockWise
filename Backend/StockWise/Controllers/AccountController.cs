@@ -6,8 +6,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using StockWise.Data;
 using StockWise.Dtos.AccountDtos;
+using StockWise.Helpers;
 using StockWise.Interfaces;
 using StockWise.Models;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace StockWise.Controllers
 {
@@ -125,6 +128,38 @@ namespace StockWise.Controllers
                 return StatusCode(500, e);
             }
         }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Logout(CancellationToken ct)
+        {
+            var jti = User.FindFirstValue(JwtRegisteredClaimNames.Jti);
+            if (string.IsNullOrEmpty(jti))
+                return Unauthorized(ApiError.From(new Exception("Token has no jti"), StatusCodes.Status401Unauthorized, HttpContext));
+
+            var expUnix = User.FindFirstValue(JwtRegisteredClaimNames.Exp);
+            if (!long.TryParse(expUnix, out var expUnixLong))
+                return Unauthorized(ApiError.From(new Exception("Token has no exp."), StatusCodes.Status401Unauthorized, HttpContext));
+
+            var expUtc = DateTimeOffset.FromUnixTimeSeconds(expUnixLong).UtcDateTime;
+
+            var already = await _context.RevokedTokens.AsNoTracking().AnyAsync(t => t.Jti == jti, ct);
+            if (!already)
+            {
+                var revoked = new RevokedToken
+                {
+                    Jti = jti,
+                    ExpiresAtUtc = expUtc,
+                    Reason = "logout",
+                    UserId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                };
+                _context.RevokedTokens.Add(revoked);
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok(new { detail = "Logged out, Token revoked" });
+        }
+
         [HttpPost("verify-email")]
         public async Task<IActionResult> VerifyEmail(string email, string code)
         {

@@ -23,8 +23,12 @@ namespace StockWise.Services
 
         public async Task<string> CreateToken(AppUser user)
         {
+            var now = DateTime.UtcNow;
+            var jti = Guid.NewGuid().ToString("N");
             var claims = new List<Claim>{
-                new Claim(ClaimTypes.Name, user.UserName)
+                new(JwtRegisteredClaimNames.Sub, user.Id),
+                new(JwtRegisteredClaimNames.Jti, jti),
+                new(JwtRegisteredClaimNames.Iat, new DateTimeOffset(now).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
             };
 
             var roles = await _userManager.GetRolesAsync(user);
@@ -35,7 +39,9 @@ namespace StockWise.Services
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddDays(7),
+                Expires = now.AddDays(7),
+                IssuedAt = now,
+                NotBefore = now,
                 SigningCredentials = creds,
                 Issuer = _config["JWT:Issuer"],
                 Audience = _config["JWT:Audience"]

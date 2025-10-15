@@ -1,6 +1,16 @@
 [
   {
     "ContainingType": "StockWise.Controllers.AccountController",
+    "Method": "Logout",
+    "RelativePath": "api/Account",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.AccountController",
     "Method": "ApproveUser",
     "RelativePath": "api/Account/approve-user/{userId}",
     "HttpMethod": "POST",

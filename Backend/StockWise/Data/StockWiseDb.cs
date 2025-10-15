@@ -15,6 +15,7 @@ namespace StockWise.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<CompanyProduct> CompanyProducts { get; set; }
+        public DbSet<RevokedToken> RevokedTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -163,6 +164,14 @@ namespace StockWise.Data
                         .HasColumnName("OrderTotalPriceCurrency");
                     });
                 });
+            });
+
+            modelBuilder.Entity<RevokedToken>(rt =>
+            {
+                rt.HasIndex(x => x.Jti).IsUnique();
+                rt.Property(x => x.Jti).IsRequired().HasMaxLength(64);
+                rt.Property(x => x.ExpiresAtUtc).IsRequired();
+                rt.Property(x => x.RevokedAtUtc).IsRequired();
             });
 
             SeedRoles(modelBuilder);
