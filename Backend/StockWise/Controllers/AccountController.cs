@@ -6,9 +6,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using StockWise.Data;
 using StockWise.Dtos.AccountDtos;
+using StockWise.Extensions;
 using StockWise.Helpers;
 using StockWise.Interfaces;
 using StockWise.Models;
+using StockWise.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
@@ -24,7 +26,8 @@ namespace StockWise.Controllers
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IEmailSenderServicer _emailSenderServicer;
         private readonly IMemoryCache _cache;
-        public AccountController(ITokenService tokenService, StockWiseDb context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IEmailSenderServicer emailSenderServicer, IMemoryCache cache)
+        private readonly IAccountService _accountService;
+        public AccountController(ITokenService tokenService, StockWiseDb context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IEmailSenderServicer emailSenderServicer, IMemoryCache cache, IAccountService accountService)
         {
             _tokenService = tokenService;
             _context = context;
@@ -32,6 +35,7 @@ namespace StockWise.Controllers
             _signInManager = signInManager;
             _emailSenderServicer = emailSenderServicer;
             _cache = cache;
+            _accountService = accountService;
         }
 
         [HttpPost("register")]
@@ -129,7 +133,7 @@ namespace StockWise.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("logout")]
         [Authorize]
         public async Task<IActionResult> Logout(CancellationToken ct)
         {
@@ -400,6 +404,17 @@ namespace StockWise.Controllers
             if (!result.Succeeded) return StatusCode(StatusCodes.Status500InternalServerError, result.Errors);
 
             return Ok(new { message = $"User {currentUser.UserName} has changed company to {company.Name} (pending approval)." });
+        }
+
+        [HttpPost("CompanyWithUser")]
+        public async Task<IActionResult> CreateCompanyWithAccount(CreateCompanyWithAccountDto dto)
+        {
+            if(!ModelState.IsValid)
+            {
+                return BadRequest(ApiError.From(new Exception("Bad Request"), StatusCodes.Status400BadRequest, HttpContext));
+            }
+            var result = await _accountService.CreateCompanyWithAccountAsync(dto);
+            return this.ToActionResult(result);
         }
 
     }

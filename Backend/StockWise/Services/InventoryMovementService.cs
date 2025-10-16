@@ -64,15 +64,16 @@ namespace StockWise.Services
             return ServiceResult<InventoryMovement>.Ok(movement);
         }
 
-        public async Task<ICollection<InventoryMovement>> GetProductMovementHistoryAsync(int ProductId)
+        public async Task<ServiceResult<ICollection<InventoryMovement>>> GetProductMovementHistoryAsync(int productId)
         {
-            var product = await _context.CompanyProducts
-                  .Include(p => p.InventoryMovements)
-                  .FirstOrDefaultAsync(p => p.CompanyProductId == ProductId);
+            var movements = await _context.InventoryMovement
+            .Where(m => m.CompanyProductId == productId)
+            .ToListAsync();
 
-            if (product == null) return null;
+            if (movements.Count == 0)
+                return ServiceResult<ICollection<InventoryMovement>>.NotFound("No movements found for this product");
 
-            return product.InventoryMovements;
+            return ServiceResult<ICollection<InventoryMovement>>.Ok(movements);
         }
 
 

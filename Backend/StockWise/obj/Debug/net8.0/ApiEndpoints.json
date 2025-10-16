@@ -1,16 +1,6 @@
 [
   {
     "ContainingType": "StockWise.Controllers.AccountController",
-    "Method": "Logout",
-    "RelativePath": "api/Account",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "StockWise.Controllers.AccountController",
     "Method": "ApproveUser",
     "RelativePath": "api/Account/approve-user/{userId}",
     "HttpMethod": "POST",
@@ -101,6 +91,22 @@
   },
   {
     "ContainingType": "StockWise.Controllers.AccountController",
+    "Method": "CreateCompanyWithAccount",
+    "RelativePath": "api/Account/CompanyWithUser",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "StockWise.Dtos.AccountDtos.CreateCompanyWithAccountDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.AccountController",
     "Method": "Login",
     "RelativePath": "api/Account/login",
     "HttpMethod": "POST",
@@ -113,6 +119,16 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.AccountController",
+    "Method": "Logout",
+    "RelativePath": "api/Account/logout",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {

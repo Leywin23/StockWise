@@ -6,7 +6,7 @@ namespace StockWise.Interfaces
 {
     public interface IInventoryMovementService
     {
-        Task<ICollection<InventoryMovement>> GetProductMovementHistoryAsync(int ProductId);
+        Task<ServiceResult<ICollection<InventoryMovement>>> GetProductMovementHistoryAsync(int ProductId);
         Task<ServiceResult<InventoryMovement>> AddMovementAsync(InventoryMovementDto dto);
     }
 }

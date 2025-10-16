@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
 using StockWise.Dtos.InventoryMovementDtos;
+using StockWise.Extensions;
 using StockWise.Helpers;
 using StockWise.Hubs;
 using StockWise.Interfaces;
@@ -29,14 +30,10 @@ namespace StockWise.Controllers
         [HttpGet("{ProductId:int}")]
         public async Task<IActionResult> GetProductMovementHistory(int ProductId)
         {
-            var product = await _context.CompanyProducts
-                  .Include(p => p.InventoryMovements)
-                  .FirstOrDefaultAsync(p => p.CompanyProductId == ProductId);
+            
+            var product = await _inventoryMovementService.GetProductMovementHistoryAsync(ProductId);
 
-            if (product == null) return NotFound();
-
-
-            return Ok(product.InventoryMovements);
+            return this.ToActionResult(product);
         }
 
         [HttpPost]
@@ -45,20 +42,8 @@ namespace StockWise.Controllers
         {
             var result = await _inventoryMovementService.AddMovementAsync(dto);
 
-            if (!result.IsSuccess)
-            {
-                return result.Error switch
-                {
-                    ErrorKind.NotFound => NotFound(result.Message),
-                    ErrorKind.BadRequest => BadRequest(result.Message),
-                    ErrorKind.Unauthorized => Unauthorized(result.Message),
-                    ErrorKind.Forbidden => Forbid(result.Message),
-                    ErrorKind.Conflict => Conflict(result.Message),
-                    _ => StatusCode(StatusCodes.Status500InternalServerError, result.Message)
-                };
-            }
-
-            return Ok(result.Value);
+            return this.ToActionResult(result);
         }
+
     }
 }

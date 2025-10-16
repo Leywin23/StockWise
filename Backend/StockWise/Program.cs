@@ -78,7 +78,8 @@ namespace StockWise
             options.Password.RequiredLength = 8;
         })
         .AddRoles<IdentityRole>()           
-        .AddEntityFrameworkStores<StockWiseDb>();
+        .AddEntityFrameworkStores<StockWiseDb>()
+        .AddDefaultTokenProviders();
 
             builder.Services.AddAuthentication(options =>
             {
@@ -135,6 +136,7 @@ namespace StockWise
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+            builder.Services.AddScoped<IAccountService, AccountService>();
             builder.Services.AddTransient<IEmailSenderServicer, EmailSenderService>();
             builder.Services.AddSingleton<ApiExchangeRateProvider>();
             builder.Services.AddSingleton<IExchangeRateProvider>(sp =>

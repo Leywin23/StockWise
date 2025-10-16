@@ -17,7 +17,8 @@ namespace StockWise.Helpers
     {
         public static ServiceResult<T> Ok(T value) 
             => new(true, value, ErrorKind.None);
-        public static ServiceResult<T> BadRequest(string m, object? d = null) => new(false, default, ErrorKind.BadRequest, m, d);
+        public static ServiceResult<T> BadRequest(string m, object? d = null)
+            => new(false, default, ErrorKind.BadRequest, m, d);
         public static ServiceResult<T> Unauthorized(string m)
             => new(false, default, ErrorKind.Unauthorized, m);
         public static ServiceResult<T> Forbidden(string m)

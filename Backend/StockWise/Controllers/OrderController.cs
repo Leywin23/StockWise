@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
 using StockWise.Dtos.OrderDtos;
+using StockWise.Extensions;
 using StockWise.Interfaces;
 using StockWise.Models;
 using StockWise.Services;
@@ -20,22 +21,21 @@ namespace StockWise.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly MoneyConverter _moneyConverter;
         private readonly IOrderService _orderService;
-        public OrderController(StockWiseDb context, UserManager<AppUser> userManager, MoneyConverter moneyConverter, IOrderService orderService)
+        private readonly ICurrentUserService _currentUserService;
+        public OrderController(StockWiseDb context, UserManager<AppUser> userManager, MoneyConverter moneyConverter, IOrderService orderService, ICurrentUserService currentUserService)
         {
             _context = context;
             _userManager = userManager;
             _moneyConverter = moneyConverter;
             _orderService = orderService;
+            _currentUserService = currentUserService;
         }
 
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetOrders()
         {
-            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
-            var user = await _userManager.Users
-                .Include(u => u.Company)
-                .FirstOrDefaultAsync(u => u.UserName == userName);
+            var user = await _currentUserService.EnsureAsync();
 
             var orders = await _orderService.GetOrdersAsync(user);
 
@@ -46,7 +46,7 @@ namespace StockWise.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetOrder(int id)
         {
-            var user = await GetCurrentUserAsync();
+            var user = await _currentUserService.EnsureAsync();
             if (user == null) {
                 return Unauthorized("User not found");
             }
@@ -62,47 +62,41 @@ namespace StockWise.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var user = await _userManager.GetUserAsync(User); 
-            if (user == null) return Unauthorized("Invalid user.");
+            var user = await _currentUserService.EnsureAsync();
+            if (user == null) return Unauthorized(ApiError.From(new Exception("Invalid user"), StatusCodes.Status401Unauthorized, HttpContext));
 
             var orderResult = await _orderService.MakeOrderAsync(order, user);
-            return Ok(orderResult);
+            return this.ToActionResult(orderResult);
         }
 
         [HttpDelete]
         [Authorize]
         public async Task<IActionResult> DeleteOrderAsync(int id)
         {
-            var user = await GetCurrentUserAsync();
+            var user = await _currentUserService.EnsureAsync();
             if (user == null)
             {
-                return NotFound("User not found");
+                return NotFound(ApiError.From(new Exception("Invalid user"), StatusCodes.Status401Unauthorized, HttpContext));
             }
 
             var result = await _orderService.DeleteOrderAsync(user, id);
 
-            return Ok(result);
+            return this.ToActionResult(result);
         }
 
         [Authorize]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateOrder(int id, [FromBody] UpdateOrderDto dto)
         {
-            var user = await GetCurrentUserAsync();
-            
+            var user = await _currentUserService.EnsureAsync();
+            if (user == null)
+            {
+                return NotFound(ApiError.From(new Exception("Invalid user"), StatusCodes.Status401Unauthorized, HttpContext));
+            }
             var result = await _orderService.UpdateOrderAsync(id, dto, user, default);
 
-            return Ok(result);
+            return this.ToActionResult(result);
         }
 
-        private async Task<AppUser?> GetCurrentUserAsync()
-        {
-            var userName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
-            if (string.IsNullOrEmpty(userName)) return null;
-
-            return await _context.Users
-                .Include(u => u.Company)
-                .FirstOrDefaultAsync(u => u.UserName == userName);
-        }
     }
 }
