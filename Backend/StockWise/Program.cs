@@ -150,6 +150,7 @@ namespace StockWise
                 }
             );
             builder.Services.AddHostedService<RevokedTokensCleanup>();
+            builder.Services.AddHostedService<UnverifiedCompanyCleanup>();
             builder.Services.AddSingleton<MoneyConverter>();
 
             var app = builder.Build();

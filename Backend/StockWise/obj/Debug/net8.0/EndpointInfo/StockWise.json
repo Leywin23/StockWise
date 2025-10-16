@@ -1161,6 +1161,10 @@
             "type": "integer",
             "format": "int64"
           },
+          "companyEmail": {
+            "type": "string",
+            "nullable": true
+          },
           "address": {
             "type": "string",
             "nullable": true

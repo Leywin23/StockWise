@@ -122,6 +122,7 @@ namespace StockWise.Services
                 Address = companyDto.Address,
                 Email = companyDto.Email,
                 Phone = companyDto.Phone,
+                Verified = true
             };
 
             await _context.Companies.AddAsync(newCompany);

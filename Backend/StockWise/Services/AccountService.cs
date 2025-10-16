@@ -70,8 +70,8 @@ namespace StockWise.Services
 
             try
             {
-                var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
-
+                var emailToken = GenerateVerifydCode();
+                _cache.Set(newUser.Email, emailToken, TimeSpan.FromMinutes(10));
                 await _emailSenderServicer.SendEmailAsync(
                     newUser.Email!,
                     "Confirm your email",
@@ -163,11 +163,13 @@ namespace StockWise.Services
             return ServiceResult<string>.Ok("Logged out successfully. Token has been revoked.");
         }
 
-        public async Task<ServiceResult<string>> VerifyEmailAsync(string email, string code)
+        public async Task<ServiceResult<string>> VerifyEmailAsync(string email, string code, CancellationToken ct = default)
         {
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Email == email);
-            if (user == null)
-                return ServiceResult<string>.NotFound("Email isn't assigned to any account");
+            var user = await _userManager.Users
+            .Include(u => u.Company)
+            .FirstOrDefaultAsync(u => u.Email == email);
+            if (user is null)
+                return ServiceResult<string>.NotFound("Email isn't assigned to any account.");
 
             if (user.EmailConfirmed)
                 return ServiceResult<string>.BadRequest("Email already verified.");
@@ -179,19 +181,21 @@ namespace StockWise.Services
                 return ServiceResult<string>.BadRequest("Verification code not found or expired.");
 
             user.EmailConfirmed = true;
-            try
-            {
-                var update = await _userManager.UpdateAsync(user);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<string>.ServerError(ex.Message);
-            }
-
+            var update = await _userManager.UpdateAsync(user);
+            if (!update.Succeeded)
+                return ServiceResult<string>.ServerError("Failed to update user email confirmation.");
 
             _cache.Remove(email);
 
-            return ServiceResult<string>.Ok("Email verified.");
+            var isManager = await _userManager.IsInRoleAsync(user, "Manager");
+            if (isManager && user.Company!= null)
+            {
+                user.Company.Verified = true;
+                _context.Companies.Update(user.Company);
+                await _context.SaveChangesAsync(ct);
+            }
+
+            return ServiceResult<string>.Ok("Email verified successfully.");
         }
         public async Task<ServiceResult<string>> RestartPassword(string email, string code, string newPassword)
         {
@@ -402,10 +406,11 @@ namespace StockWise.Services
             {
                 Name = dto.CompanyName,
                 NIP = dto.NIP,
-                Email = dto.Email,
+                Email = dto.CompanyEmail,
                 Address = dto.Address,
                 Phone = dto.Phone,
                 CreatedAt = DateTime.Now,
+                Verified = false
             };
             var companyResult = await _context.Companies.AddAsync(newCompany);
             await _context.SaveChangesAsync(ct);
@@ -438,7 +443,8 @@ namespace StockWise.Services
 
             try
             {
-                var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+                var emailToken = GenerateVerifydCode();
+                _cache.Set(newUser.Email, emailToken, TimeSpan.FromMinutes(10));
                 await _emailSenderServicer.SendEmailAsync(dto.Email, "Confirm your email",
                     $"Your confirmation token: {Uri.EscapeDataString(emailToken)}", ct);
             }
@@ -452,6 +458,7 @@ namespace StockWise.Services
                 Email = newUser.Email,
                 CompanyName = newCompany.Name,
                 NIP = newCompany.NIP,
+                CompanyEmail = newCompany.Email,
                 Address = newCompany.Address,
                 Phone = newCompany.Phone,
             };

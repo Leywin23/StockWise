@@ -19,6 +19,6 @@ namespace StockWise.Interfaces
         Task<ServiceResult<string>> RestartPassword(string email, string code, string newPassword);
         Task<ServiceResult<string>> SuspendUserFromCompany(string userId, AppUser currentUser);
         Task<ServiceResult<string>> UnsuspendUserFromCompany(string userId, AppUser currentUser);
-        Task<ServiceResult<string>> VerifyEmailAsync(string email, string code);
+        Task<ServiceResult<string>> VerifyEmailAsync(string email, string code, CancellationToken ct = default);
     }
 }
