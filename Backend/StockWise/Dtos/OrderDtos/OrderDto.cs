@@ -6,7 +6,7 @@ namespace StockWise.Dtos.OrderDtos
     {
         public Company Seller { get; set; }
         public Company Buyer { get; set; }
-        public string Status { get; set; } = "Pending";
+        public OrderStatus Status { get; set; } = OrderStatus.Pending;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string UserNameWhoMadeOrder { get; set; }
         public List<OrderProduct> ProductsWithQuantity { get; set; } = new List<OrderProduct>();

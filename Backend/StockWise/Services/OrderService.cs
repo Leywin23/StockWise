@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
 using StockWise.Dtos.CompanyDtos;
+using StockWise.Dtos.CompanyProductDtos;
 using StockWise.Dtos.OrderDtos;
 using StockWise.Helpers;
 using StockWise.Interfaces;
@@ -16,11 +18,15 @@ namespace StockWise.Services
     {
         private readonly StockWiseDb _context;
         private readonly MoneyConverter _moneyConverter;
+        private readonly ICompanyProductService _companyProductService;
+        private readonly IMapper _mapper;
 
-        public OrderService(StockWiseDb context, MoneyConverter moneyConverter)
+        public OrderService(StockWiseDb context, MoneyConverter moneyConverter, ICompanyProductService companyProductService, IMapper mapper)
         {
             _context = context;
             _moneyConverter = moneyConverter;
+            _companyProductService = companyProductService;
+            _mapper = mapper;
         }
 
         public async Task<ServiceResult<List<OrderListDto>>> GetOrdersAsync(AppUser user)
@@ -510,6 +516,106 @@ namespace StockWise.Services
                 await tx.RollbackAsync(ct);
                 return ServiceResult<OrderListDto>.ServerError($"Server error: {ex.Message}");
             }
+        }
+        public async Task<ServiceResult<OrderDto>> AcceptOrRejectOrderAsync(int orderId, OrderStatus status, AppUser user)
+        {
+            var company = user.Company;
+            if(company == null)
+            {
+                return ServiceResult<OrderDto>.Unauthorized("User does not belong to any company");
+            }
+            var order = await _context.Orders.FirstOrDefaultAsync(o=>o.Id == orderId);
+            if(order == null)
+            {
+                return ServiceResult<OrderDto>.NotFound($"Order with Id:{orderId} not found");
+            }
+            if(order.SellerId != company.Id)
+            {
+                return ServiceResult<OrderDto>.BadRequest("You have to belong to the seller company for this order to perform this action.");
+            }
+            var orderProducts = order.ProductsWithQuantity;
+
+
+            if(status == OrderStatus.Accepted)
+            {
+                order.Status = OrderStatus.Accepted;
+                foreach(var orderedProduct in orderProducts)
+                {
+                    var companyProduct = await _context.CompanyProducts.FirstOrDefaultAsync(cp => cp.CompanyProductId == orderedProduct.CompanyProductId);
+                    if(companyProduct != null)
+                    {
+                        companyProduct.Stock += orderedProduct.Quantity;
+                    }
+                }
+                _context.Orders.Update(order);
+                await _context.SaveChangesAsync();
+            }
+            else if(status == OrderStatus.Rejected)
+            {
+                order.Status = OrderStatus.Rejected;
+                _context.Orders.Update(order);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                return ServiceResult<OrderDto>.BadRequest("Unsupported order status. Only 'Accepted' or 'Rejected' actions are allowed.");
+            }
+
+            var orderDto = new OrderDto
+            {
+                Seller = order.Seller,
+                Buyer = order.Buyer,
+                Status = order.Status,
+                CreatedAt = order.CreatedAt,
+                UserNameWhoMadeOrder = order.UserNameWhoMadeOrder,
+                ProductsWithQuantity = order.ProductsWithQuantity,
+                TotalPrice = order.TotalPrice,
+            };
+
+            return ServiceResult<OrderDto>.Ok(orderDto);
+        }
+
+        public async Task<ServiceResult<OrderDto>> CancellOrCorfirmOrderReceiptAsync(int orderId, AppUser user, OrderStatus status)
+        {
+            var company = user.Company;
+            if (company == null)
+            {
+                return ServiceResult<OrderDto>.Unauthorized("User does not belong to any company");
+            }
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
+            if (order == null)
+            {
+                return ServiceResult<OrderDto>.NotFound($"Order with Id:{orderId} not found");
+            }
+            if (order.BuyerId != company.Id)
+            {
+                return ServiceResult<OrderDto>.BadRequest("You have to belong to the buyer company for this order to perform this action.");
+            }
+
+            if(status == OrderStatus.Completed)
+            {
+                order.Status = status;
+                foreach(var orderedProduct in order.ProductsWithQuantity)
+                {
+                    var companyProduct = orderedProduct.CompanyProduct;
+                    var createCompanyProductDto = _mapper.Map<CreateCompanyProductDto>(companyProduct);
+                    await _companyProductService.CreateCompanyProductAsync(createCompanyProductDto, user);
+                }
+            }
+            else if(status == OrderStatus.Cancelled)
+            {
+                order.Status = status;
+            }
+            else
+            {
+                return ServiceResult<OrderDto>.BadRequest("Unsupported order status. Only 'Completed' or 'Cancelled' actions are allowed.");
+            }
+
+            var orderDto = _mapper.Map<OrderDto>(order);
+            _context.Orders.Update(order);
+            await _context.SaveChangesAsync();
+
+            return ServiceResult<OrderDto>.Ok(orderDto);
         }
     }
 }

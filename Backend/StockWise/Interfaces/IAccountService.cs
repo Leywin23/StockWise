@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StockWise.Dtos.AccountDtos;
+using StockWise.Dtos.CompanyProductDtos;
+using StockWise.Dtos.OrderDtos;
 using StockWise.Helpers;
 using StockWise.Models;
 using System.Security.Claims;
@@ -21,5 +23,6 @@ namespace StockWise.Interfaces
         Task<ServiceResult<string>> SuspendUserFromCompanyAsync(string userId);
         Task<ServiceResult<string>> UnsuspendUserFromCompanyAsync(string userId);
         Task<ServiceResult<string>> VerifyEmailAsync(string email, string code, CancellationToken ct = default);
+
     }
 }

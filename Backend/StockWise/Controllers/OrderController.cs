@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
 using StockWise.Dtos.OrderDtos;
 using StockWise.Extensions;
+using StockWise.Helpers;
 using StockWise.Interfaces;
 using StockWise.Models;
 using StockWise.Services;
@@ -95,6 +96,30 @@ namespace StockWise.Controllers
             }
             var result = await _orderService.UpdateOrderAsync(id, dto, user, default);
 
+            return this.ToActionResult(result);
+        }
+        [Authorize]
+        [HttpPut("AcceptOrRejectOrder")]
+        public async Task<IActionResult> AcceptOrRejectOrder(int orderId, OrderStatus status)
+        {
+            var user = await _currentUserService.EnsureAsync();
+            if (user == null)
+            {
+                return NotFound(ApiError.From(new Exception("Invalid user"), StatusCodes.Status401Unauthorized, HttpContext));
+            }
+            var result = await _orderService.AcceptOrRejectOrderAsync(orderId, status, user);
+            return this.ToActionResult(result);
+        }
+        [Authorize]
+        [HttpPut("CancellOrCorfirm")]
+        public async Task<IActionResult> CancellOrCorfirmOrderReceipt(int orderId, OrderStatus status)
+        {
+            var user = await _currentUserService.EnsureAsync();
+            if (user == null)
+            {
+                return NotFound(ApiError.From(new Exception("Invalid user"), StatusCodes.Status401Unauthorized, HttpContext));
+            }
+            var result = await _orderService.CancellOrCorfirmOrderReceiptAsync(orderId, user, status);
             return this.ToActionResult(result);
         }
 

@@ -582,6 +582,27 @@
   },
   {
     "ContainingType": "StockWise.Controllers.OrderController",
+    "Method": "CancellOrCorfirmOrderReceipt",
+    "RelativePath": "api/Order",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "orderId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.OrderController",
     "Method": "GetOrder",
     "RelativePath": "api/Order/{id}",
     "HttpMethod": "GET",
@@ -613,6 +634,27 @@
         "Name": "dto",
         "Type": "StockWise.Dtos.OrderDtos.UpdateOrderDto",
         "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.OrderController",
+    "Method": "AcceptOrRejectOrder",
+    "RelativePath": "api/Order/AcceptOrRejectOrder",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "orderId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []

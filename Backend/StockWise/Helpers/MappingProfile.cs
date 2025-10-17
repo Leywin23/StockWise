@@ -43,6 +43,9 @@ namespace StockWise.Helpers
                 .ForMember(d => d.OrdersAsBuyer, o => o.Ignore())
                 .ForMember(d => d.OrdersAsSeller, o => o.Ignore())
                 .ForMember(d => d.Users, o => o.Ignore());
+
+            CreateMap<OrderDto, Order>();
+            CreateMap<Order, OrderDto>();
         }
     }
 }
