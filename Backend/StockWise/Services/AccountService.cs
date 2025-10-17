@@ -22,7 +22,14 @@ namespace StockWise.Services
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IEmailSenderServicer _emailSenderServicer;
         private readonly IMemoryCache _cache;
-        public AccountService(ITokenService tokenService, StockWiseDb context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IEmailSenderServicer emailSenderServicer, IMemoryCache cache)
+        private readonly ICurrentUserService _currentUserService;
+        public AccountService(ITokenService tokenService,
+            StockWiseDb context,
+            UserManager<AppUser> userManager,
+            SignInManager<AppUser> signInManager, 
+            IEmailSenderServicer emailSenderServicer,
+            IMemoryCache cache,
+            ICurrentUserService currentUserService)
         {
             _tokenService = tokenService;
             _context = context;
@@ -30,6 +37,7 @@ namespace StockWise.Services
             _signInManager = signInManager;
             _emailSenderServicer = emailSenderServicer;
             _cache = cache;
+            _currentUserService = currentUserService;
         }
 
         public async Task<ServiceResult<NewUserDto>> RegisterAsync(RegisterDto userDto, CancellationToken ct = default)
@@ -70,7 +78,7 @@ namespace StockWise.Services
 
             try
             {
-                var emailToken = GenerateVerifydCode();
+                var emailToken = GenerateVerifyCode();
                 _cache.Set(newUser.Email, emailToken, TimeSpan.FromMinutes(10));
                 await _emailSenderServicer.SendEmailAsync(
                     newUser.Email!,
@@ -93,7 +101,7 @@ namespace StockWise.Services
             }
         }
 
-        public async Task<ServiceResult<LoginDto>> Login(LoginDataDto loginDto)
+        public async Task<ServiceResult<LoginDto>> LoginAsync(LoginDataDto loginDto)
         {
             try
             {
@@ -123,7 +131,6 @@ namespace StockWise.Services
 
         public async Task<ServiceResult<string>> LogoutAsync(
         CancellationToken ct,
-        ClaimsPrincipal ctx,
         ControllerBase cbase)
         {
             var jti = cbase.User.FindFirstValue(JwtRegisteredClaimNames.Jti);
@@ -162,7 +169,27 @@ namespace StockWise.Services
 
             return ServiceResult<string>.Ok("Logged out successfully. Token has been revoked.");
         }
+        public async Task<ServiceResult<string>> SendRequestToRestartPasswordAsync(string email) 
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return ServiceResult<string>.BadRequest("Email is required.");
 
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user != null)
+            {
+                var code = GenerateVerifyCode();
+
+                _cache.Set(GetResetKey(email), code, new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+                });
+
+                await _emailSenderServicer.SendEmailAsync(email, "Reset password code", code);
+            }
+
+            return ServiceResult<string>.Ok("If the email exists, a reset code was sent.");
+        }
         public async Task<ServiceResult<string>> VerifyEmailAsync(string email, string code, CancellationToken ct = default)
         {
             var user = await _userManager.Users
@@ -197,7 +224,7 @@ namespace StockWise.Services
 
             return ServiceResult<string>.Ok("Email verified successfully.");
         }
-        public async Task<ServiceResult<string>> RestartPassword(string email, string code, string newPassword)
+        public async Task<ServiceResult<string>> RestartPasswordAsync(string email, string code, string newPassword)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null) return ServiceResult<string>.NotFound("Email isn't assigned to any account");
@@ -223,7 +250,7 @@ namespace StockWise.Services
             return ServiceResult<string>.Ok("Password has been reset successfully.");
         }
         private static string GetResetKey(string email) => $"pwdreset:{email}";
-        public static string GenerateVerifydCode(int length = 6)
+        public static string GenerateVerifyCode(int length = 6)
         {
             const string alphabet = "ABCDEFGHJKLMNPQRSTUWXYZ23456789";
             var bytes = new byte[length];
@@ -236,9 +263,9 @@ namespace StockWise.Services
             }
             return new string(span);
         }
-        public async Task<ServiceResult<string>> ApproveUser(string userId, AppUser currentUser)
+        public async Task<ServiceResult<string>> ApproveUserAsync(string userId)
         {
-
+            var currentUser = await _currentUserService.EnsureAsync();
             if (currentUser.CompanyId is null)
                 return ServiceResult<string>.BadRequest("You are not assigned to a company.");
 
@@ -268,21 +295,29 @@ namespace StockWise.Services
             return ServiceResult<string>.Ok($"User {userToApprove.UserName} approved");
         }
 
-        public async Task<ServiceResult<List<AppUser>>> GetAllPending(AppUser user)
+        public async Task<ServiceResult<List<CompanyUserDto>>> GetAllPendingAsync()
         {
-            if (user.CompanyId is null) return ServiceResult<List<AppUser>>.BadRequest("You are not assigned to a company.");
+            var user = await _currentUserService.EnsureAsync();
+            if (user.CompanyId is null) return ServiceResult<List<CompanyUserDto>>.BadRequest("You are not assigned to a company.");
 
             var pendings = await _context.Users
                 .Where(u => u.CompanyId == user.CompanyId && u.CompanyMembershipStatus == CompanyMembershipStatus.Pending)
+                .Select(u=> new CompanyUserDto
+                {
+                    UserName = u.UserName,
+                    Email = u.Email,
+                    CompanyMembershipStatus = u.CompanyMembershipStatus
+                })
                 .ToListAsync();
 
-            if (!pendings.Any()) return ServiceResult<List<AppUser>>.NotFound("There aren't any pending users.");
+            if (!pendings.Any()) return ServiceResult<List<CompanyUserDto>>.NotFound("There aren't any pending users.");
 
-            return ServiceResult<List<AppUser>>.Ok(pendings);
+            return ServiceResult<List<CompanyUserDto>>.Ok(pendings);
         }
 
-        public async Task<ServiceResult<string>> SuspendUserFromCompany(string userId, AppUser currentUser)
+        public async Task<ServiceResult<string>> SuspendUserFromCompanyAsync(string userId)
         {
+            var currentUser = await _currentUserService.EnsureAsync();
             var user = await _userManager.FindByIdAsync(userId);
             if (user.Id == currentUser.Id)
                 return ServiceResult<string>.BadRequest("You cannot suspend yourself.");
@@ -304,9 +339,9 @@ namespace StockWise.Services
 
             return ServiceResult<string>.Ok($"User {user.UserName} has been suspended.");
         }
-        public async Task<ServiceResult<string>> UnsuspendUserFromCompany(string userId, AppUser currentUser)
+        public async Task<ServiceResult<string>> UnsuspendUserFromCompanyAsync(string userId)
         {
-
+            var currentUser = await _currentUserService.EnsureAsync();
             if (currentUser.CompanyId is null) return ServiceResult<string>.BadRequest("You are not assigned to a company.");
 
             var user = await _userManager.FindByIdAsync(userId);
@@ -329,8 +364,9 @@ namespace StockWise.Services
             return ServiceResult<string>.Ok($"User {user.UserName} has been unsuspended.");
         }
 
-        public async Task<ServiceResult<string>> RejectUserFromCompany(string userId, AppUser currentUser)
+        public async Task<ServiceResult<string>> RejectUserFromCompanyAsync(string userId)
         {
+            var currentUser = await _currentUserService.EnsureAsync();
             if (currentUser.CompanyId is null) return ServiceResult<string>.BadRequest("You are not assigned to a company.");
 
             var user = await _userManager.FindByIdAsync(userId);
@@ -354,9 +390,9 @@ namespace StockWise.Services
             }
             return ServiceResult<string>.Ok($"User {user.UserName} has been rejected.");
         }
-        public async Task<ServiceResult<string>> ChangeUserCompany([FromRoute] long companyNIP, AppUser currentUser)
+        public async Task<ServiceResult<string>> ChangeUserCompanyAsync([FromRoute] long companyNIP)
         {
-
+            var currentUser = await _currentUserService.EnsureAsync();
             var company = await _context.Companies.FirstOrDefaultAsync(c => c.NIP == companyNIP);
             if (company is null) return ServiceResult<string>.NotFound("Company with this NIP not found.");
 
@@ -443,7 +479,7 @@ namespace StockWise.Services
 
             try
             {
-                var emailToken = GenerateVerifydCode();
+                var emailToken = GenerateVerifyCode();
                 _cache.Set(newUser.Email, emailToken, TimeSpan.FromMinutes(10));
                 await _emailSenderServicer.SendEmailAsync(dto.Email, "Confirm your email",
                     $"Your confirmation token: {Uri.EscapeDataString(emailToken)}", ct);

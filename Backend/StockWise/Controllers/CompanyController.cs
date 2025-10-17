@@ -22,20 +22,22 @@ namespace StockWise.Controllers
         private readonly ICompanyService _companyService;
         private readonly StockWiseDb _context;
         private readonly IMapper _mapper;
+        private readonly ICurrentUserService _currentUserService;
 
-        public CompanyController(UserManager<AppUser> userManager, ICompanyService companyService, StockWiseDb context, IMapper mapper)
+        public CompanyController(UserManager<AppUser> userManager, ICompanyService companyService, StockWiseDb context, IMapper mapper, ICurrentUserService currentUserService)
         {
             _userManager = userManager;
             _companyService = companyService;
             _context = context;
             _mapper = mapper;
+            _currentUserService = currentUserService;
         }
 
         [Authorize]
         [HttpGet("me")]
         public async Task<IActionResult> GetCompanyData()
         {
-            var user = await GetCurrentUserAsync();
+            var user = await _currentUserService.EnsureAsync();
             if (user == null) return Unauthorized(ApiError.From(new Exception("User not found."), StatusCodes.Status401Unauthorized, HttpContext));
 
             var companyDto = await _companyService.GetCompanyAsync(user);
@@ -46,7 +48,7 @@ namespace StockWise.Controllers
         [HttpGet("me/advanced")]
         public async Task<IActionResult> GetAdvancedCompanyData()
         {
-            var user = await GetCurrentUserAsync();
+            var user = await _currentUserService.EnsureAsync();
             if (user == null) return Unauthorized(ApiError.From(new Exception("User not found."), StatusCodes.Status401Unauthorized, HttpContext));
 
             var companyData = await _companyService.GetAdvancedCompanyDataAsync(user);
@@ -72,7 +74,7 @@ namespace StockWise.Controllers
         [HttpDelete]
         public async Task<IActionResult> DeleteCompany()
         {
-            var user = await GetCurrentUserAsync();
+            var user = await _currentUserService.EnsureAsync();
             if (user == null) return Unauthorized(ApiError.From(new Exception("User not found"), StatusCodes.Status401Unauthorized, HttpContext));
 
             var companyDto = await _companyService.DeleteCompanyAsync(user);
@@ -83,7 +85,7 @@ namespace StockWise.Controllers
         [HttpPut]
         public async Task<IActionResult> EditCompany(UpdateCompanyDto companyDto)
         {
-            var user = await GetCurrentUserAsync();
+            var user = await _currentUserService.EnsureAsync();
             if (user == null) return Unauthorized(ApiError.From(new Exception("User not found"), StatusCodes.Status401Unauthorized, HttpContext));
 
             var updatedCompanyDto = await _companyService.UpdateCompanyAsync(companyDto, user);
@@ -91,16 +93,7 @@ namespace StockWise.Controllers
             return this.ToActionResult(updatedCompanyDto);
         }
 
-        private async Task<AppUser?> GetCurrentUserAsync()
-        {
-            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
-            if (string.IsNullOrEmpty(userName))
-                return null;
 
-            return await _context.Users
-                .Include(u => u.Company)
-                .FirstOrDefaultAsync(u => u.UserName == userName);
-        }
     }
 }
 

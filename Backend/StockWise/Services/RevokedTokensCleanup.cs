@@ -36,7 +36,7 @@ namespace StockWise.Services
                 }
 
                 await Task.Delay(TimeSpan.FromHours(6), stoppingToken);
-                }
             }
         }
     }
+}

@@ -8,17 +8,18 @@ namespace StockWise.Interfaces
 {
     public interface IAccountService
     {
-        Task<ServiceResult<string>> ApproveUser(string userId, AppUser currentUser);
-        Task<ServiceResult<string>> ChangeUserCompany([FromRoute] long companyNIP, AppUser currentUser);
+        Task<ServiceResult<string>> ApproveUserAsync(string userId);
+        Task<ServiceResult<string>> ChangeUserCompanyAsync([FromRoute] long companyNIP);
         Task<ServiceResult<CompanyWithAccountDto>> CreateCompanyWithAccountAsync(CreateCompanyWithAccountDto dto, CancellationToken ct = default);
-        Task<ServiceResult<List<AppUser>>> GetAllPending(AppUser user);
-        Task<ServiceResult<LoginDto>> Login(LoginDataDto loginDto);
-        Task<ServiceResult<string>> LogoutAsync(CancellationToken ct, ClaimsPrincipal ctx, ControllerBase cbase);
+        Task<ServiceResult<List<CompanyUserDto>>> GetAllPendingAsync();
+        Task<ServiceResult<LoginDto>> LoginAsync(LoginDataDto loginDto);
+        Task<ServiceResult<string>> LogoutAsync(CancellationToken ct, ControllerBase cbase);
         Task<ServiceResult<NewUserDto>> RegisterAsync(RegisterDto userDto, CancellationToken ct = default);
-        Task<ServiceResult<string>> RejectUserFromCompany(string userId, AppUser currentUser);
-        Task<ServiceResult<string>> RestartPassword(string email, string code, string newPassword);
-        Task<ServiceResult<string>> SuspendUserFromCompany(string userId, AppUser currentUser);
-        Task<ServiceResult<string>> UnsuspendUserFromCompany(string userId, AppUser currentUser);
+        Task<ServiceResult<string>> RejectUserFromCompanyAsync(string userId);
+        Task<ServiceResult<string>> SendRequestToRestartPasswordAsync(string email);
+        Task<ServiceResult<string>> RestartPasswordAsync(string email, string code, string newPassword);
+        Task<ServiceResult<string>> SuspendUserFromCompanyAsync(string userId);
+        Task<ServiceResult<string>> UnsuspendUserFromCompanyAsync(string userId);
         Task<ServiceResult<string>> VerifyEmailAsync(string email, string code, CancellationToken ct = default);
     }
 }
