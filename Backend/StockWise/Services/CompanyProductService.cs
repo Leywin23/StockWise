@@ -29,6 +29,10 @@ namespace StockWise.Services
         CompanyProductQueryParams q,
         bool withDetails = false)
         {
+            if (user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
+            {
+                return ServiceResult<PageResult<CompanyProduct>>.Unauthorized("You have to be approved by a manager to use this functionality");
+            }
             if (q.Page <= 0) q.Page = 1;
             if (q.PageSize <= 0) q.PageSize = 10;
             if (q.PageSize > 100) q.PageSize = 100;
@@ -128,6 +132,10 @@ namespace StockWise.Services
         {
             if (user?.Company == null) return ServiceResult<CompanyProductDto>.Forbidden("User is not assigned to any company.");
 
+            if (user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
+            {
+                return ServiceResult<CompanyProductDto>.Forbidden("You have to be approved by a manager to use this functionality");
+            }
             var companyId = user.CompanyId.Value;
 
             IQueryable<CompanyProduct> query = _context.CompanyProducts
@@ -153,6 +161,10 @@ namespace StockWise.Services
 
         public async Task<ServiceResult<CompanyProductDto>> CreateCompanyProductAsync(CreateCompanyProductDto dto, AppUser user)
         {
+            if (user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
+            {
+                return ServiceResult<CompanyProductDto>.Forbidden("You have to be approved by a manager to use this functionality");
+            }
             dto.CompanyProductName = dto.CompanyProductName?.Trim();
             dto.EAN = dto.EAN?.Trim();
             dto.Category = dto.Category?.Trim();
@@ -223,6 +235,10 @@ namespace StockWise.Services
 
         public async Task<ServiceResult<CompanyProduct>> DeleteCompanyProductAsync(AppUser user, int productId)
         {
+            if (user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
+            {
+                return ServiceResult<CompanyProduct>.Forbidden("You have to be approved by a manager to use this functionality");
+            }
             if (user?.CompanyId == null)
                 return ServiceResult<CompanyProduct>.Forbidden("User is not assigned to any company.");
 
@@ -243,6 +259,11 @@ namespace StockWise.Services
 
         public async Task<ServiceResult<CompanyProductDto>> UpdateCompanyProductAsync(int productId, AppUser user, UpdateCompanyProductDto companyProductDto)
         {
+            if (user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
+            {
+                return ServiceResult<CompanyProductDto>.Forbidden("You have to be approved by a manager to use this functionality");
+            }
+
             var company = await _context.Companies.Include(c => c.CompanyProducts).FirstOrDefaultAsync(c => c.Id == user.CompanyId);
             if (company == null) {
                 return ServiceResult<CompanyProductDto>.NotFound("User isn't assigned to any company");

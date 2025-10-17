@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
 using StockWise.Dtos.InventoryMovementDtos;
+using StockWise.Dtos.OrderDtos;
 using StockWise.Helpers;
 using StockWise.Hubs;
 using StockWise.Interfaces;
@@ -13,19 +14,40 @@ namespace StockWise.Services
     {
         private readonly StockWiseDb _context;
         private readonly IHubContext<StockHub> _hubContext;
-        public InventoryMovementService(StockWiseDb context, IHubContext<StockHub> hubContext)
+        private readonly ICurrentUserService _currentUserService;
+        public InventoryMovementService(StockWiseDb context, IHubContext<StockHub> hubContext, ICurrentUserService currentUserService)
         {
             _context = context;
             _hubContext = hubContext;
+            _currentUserService = currentUserService;
         }
 
         public async Task<ServiceResult<InventoryMovement>> AddMovementAsync(InventoryMovementDto dto)
         {
+            var user = await _currentUserService.EnsureAsync();
+            if(user == null)
+            {
+                return ServiceResult<InventoryMovement>.Unauthorized("User not found");
+            }
+            if (user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
+            {
+                return ServiceResult<InventoryMovement>.Unauthorized("You have to be approved by a manager to use this functionality");
+            }
+
+            if(user.CompanyId == null)
+            {
+                return ServiceResult<InventoryMovement>.Unauthorized("User does not belong to any company");
+            }
             var product = await _context.CompanyProducts
             .FirstOrDefaultAsync(p => p.CompanyProductId == dto.CompanyProductId);
 
             if (product == null)
                 return ServiceResult<InventoryMovement>.NotFound($"Couldn't find product with ID {dto.CompanyProductId}");
+
+            if (product.CompanyId != user.CompanyId)
+            {
+                return ServiceResult<InventoryMovement>.Forbidden($"You can not add movement to product from outside your company");
+            }
 
             var movement = new InventoryMovement
             {
@@ -66,8 +88,27 @@ namespace StockWise.Services
 
         public async Task<ServiceResult<ICollection<InventoryMovement>>> GetProductMovementHistoryAsync(int productId)
         {
+            var user = await _currentUserService.EnsureAsync();
+            if (user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
+            {
+                return ServiceResult<ICollection<InventoryMovement>>.Unauthorized("You have to be approved by a manager to use this functionality");
+            }
+            if(user.CompanyId == null)
+            {
+                return ServiceResult<ICollection<InventoryMovement>>.Unauthorized("The user does not belong to any company");
+            }
+            var companyProduct = await _context.CompanyProducts.FirstOrDefaultAsync(cp=>cp.CompanyProductId == productId);
+            if (companyProduct == null)
+            {
+                return ServiceResult<ICollection<InventoryMovement>>.NotFound($"Unable to find company product with Id: {productId}");
+            }
+            if(companyProduct.CompanyId != user.CompanyId)
+            {
+                return ServiceResult<ICollection<InventoryMovement>>.Forbidden("The product does not belong to your company");
+            }
+
             var movements = await _context.InventoryMovement
-            .Where(m => m.CompanyProductId == productId)
+            .Where(m => m.CompanyProductId == productId && m.CompanyProduct.CompanyId == user.CompanyId)
             .ToListAsync();
 
             if (movements.Count == 0)

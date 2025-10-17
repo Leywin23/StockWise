@@ -1,13 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
+using StockWise.Dtos.CompanyDtos;
 using StockWise.Dtos.OrderDtos;
+using StockWise.Helpers;
 using StockWise.Interfaces;
 using StockWise.Models;
-using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Http.HttpResults;
-using StockWise.Helpers;
 
 namespace StockWise.Services
 {
@@ -27,6 +28,10 @@ namespace StockWise.Services
             if (user == null)
                 return ServiceResult<List<OrderListDto>>.NotFound("User not found");
 
+            if (user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
+            {
+                return ServiceResult<List<OrderListDto>>.Forbidden("You have to be approved by a manager to use this functionality");
+            }
             if (user.Company == null)
                 return ServiceResult<List<OrderListDto>>.BadRequest("User does not belong to any company.");
 
@@ -78,6 +83,10 @@ namespace StockWise.Services
 
         public async Task<ServiceResult<OrderListDto>> GetOrderAsync(AppUser user, int id)
         {
+            if (user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
+            {
+                return ServiceResult<OrderListDto>.Forbidden("You have to be approved by a manager to use this functionality");
+            }
             var order = await _context.Orders
                 .Include(o => o.Seller)
                 .Include(o => o.Buyer)
@@ -127,6 +136,10 @@ namespace StockWise.Services
 
         public async Task<ServiceResult<OrderListDto>> MakeOrderAsync(CreateOrderDto order, AppUser user)
         {
+            if (user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
+            {
+                return ServiceResult<OrderListDto>.Forbidden("You have to be approved by a manager to use this functionality");
+            }
             foreach (var kvp in order.ProductsEANWithQuantity)
             {
                 if (kvp.Value <= 0)
@@ -140,7 +153,12 @@ namespace StockWise.Services
                 return ServiceResult<OrderListDto>.NotFound("User not found");
             }
 
-            if(user.Company == null)
+            if (user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
+            {
+                return ServiceResult<OrderListDto>.Unauthorized("You have to be approved by a manager to use this functionality");
+            }
+
+            if (user.Company == null)
             {
                 return ServiceResult<OrderListDto>.NotFound("User does not belong to any company");
             }
@@ -257,6 +275,10 @@ namespace StockWise.Services
 
         public async Task<ServiceResult<OrderListDto>> DeleteOrderAsync(AppUser user, int id)
         {
+            if (user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
+            {
+                return ServiceResult<OrderListDto>.Forbidden("You have to be approved by a manager to use this functionality");
+            }
             if (user?.Company == null)
                 return ServiceResult<OrderListDto>.BadRequest("User does not belong to any company.");
 
@@ -327,6 +349,10 @@ namespace StockWise.Services
 
         public async Task<ServiceResult<OrderListDto>> UpdateOrderAsync(int id, UpdateOrderDto dto, AppUser user, CancellationToken ct = default)
         {
+            if (user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
+            {
+                return ServiceResult<OrderListDto>.Forbidden("You have to be approved by a manager to use this functionality");
+            }
             if (dto is null) return ServiceResult<OrderListDto>.BadRequest("Body is required.");
             if (dto.ProductsEANWithQuantity is null) return ServiceResult<OrderListDto>.BadRequest("ProductsEANWithQuantity is required.");
             if (dto.ProductsEANWithQuantity.Count == 0) return ServiceResult<OrderListDto>.BadRequest("At least one product is required.");

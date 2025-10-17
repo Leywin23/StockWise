@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,7 @@ namespace StockWise.Controllers
 
 
         [HttpGet("{ProductId:int}")]
+        [Authorize]
         public async Task<IActionResult> GetProductMovementHistory(int ProductId)
         {
             
@@ -37,7 +39,7 @@ namespace StockWise.Controllers
         }
 
         [HttpPost]
-        [HttpPost]
+        [Authorize]
         public async Task<IActionResult> AddMovement([FromBody] InventoryMovementDto dto)
         {
             var result = await _inventoryMovementService.AddMovementAsync(dto);

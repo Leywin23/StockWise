@@ -136,7 +136,7 @@ namespace StockWise.Controllers
         [Authorize(Roles = "Manager")]
         public async Task<IActionResult> UnsuspendUserFromCompany(string userId)
         {
-            var result = await _accountService.GetAllPendingAsync();
+            var result = await _accountService.UnsuspendUserFromCompanyAsync(userId);
             return this.ToActionResult(result);
         }
 

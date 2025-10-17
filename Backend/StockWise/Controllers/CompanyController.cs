@@ -64,13 +64,14 @@ namespace StockWise.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> CreateCompany(CreateCompanyDto companyDto)
         {
             var newCompanyDto = await _companyService.CreateCompanyAsync(companyDto);
             return this.ToActionResult(newCompanyDto);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Manager")]
         [HttpDelete]
         public async Task<IActionResult> DeleteCompany()
         {
@@ -81,7 +82,7 @@ namespace StockWise.Controllers
             return this.ToActionResult(companyDto);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Manager")]
         [HttpPut]
         public async Task<IActionResult> EditCompany(UpdateCompanyDto companyDto)
         {

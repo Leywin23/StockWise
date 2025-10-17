@@ -48,7 +48,7 @@ namespace StockWise.Controllers
         {
             var user = await _currentUserService.EnsureAsync();
             if (user == null) {
-                return Unauthorized("User not found");
+                return Unauthorized(ApiError.From(new Exception("Invalid user"), StatusCodes.Status401Unauthorized, HttpContext));
             }
 
            var result = await _orderService.GetOrderAsync(user, id);

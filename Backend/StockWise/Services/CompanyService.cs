@@ -25,6 +25,10 @@ namespace StockWise.Services
 
         public async Task<ServiceResult<CompanyDto>> GetCompanyAsync(AppUser user)
         {
+            if(user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
+            {
+                return ServiceResult<CompanyDto>.Forbidden("You have to be approved by a manager to use this functionality");
+            }
             var company = await GetUserCompanyAsync(user);
             if (company == null) return ServiceResult<CompanyDto>.NotFound("User is not assigned to any company");
             var companyDto = _mapper.Map<CompanyDto>(company);
@@ -35,6 +39,11 @@ namespace StockWise.Services
         {
             if(user?.CompanyId is null)
                 return ServiceResult<AdvancedCompanyDto>.Forbidden("User is not assigned to any company");
+
+            if (user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
+            {
+                return ServiceResult<AdvancedCompanyDto>.Forbidden("You have to be approved by a manager to use this functionality");
+            }
 
             var companyId = user.CompanyId.Value;
 
