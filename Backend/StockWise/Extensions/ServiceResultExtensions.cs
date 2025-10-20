@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
-using StockWise.Helpers;
+using StockWise.Response;
 
 namespace StockWise.Extensions
 {

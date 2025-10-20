@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
 using StockWise.Dtos.ProductDtos;
-using StockWise.Helpers;
 using StockWise.Interfaces;
 using StockWise.Mappers;
 using StockWise.Models;
+using StockWise.Response;
 namespace StockWise.Services
 {
     public class ProductService: IProductService

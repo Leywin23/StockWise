@@ -100,28 +100,29 @@ namespace StockWise.Controllers
         }
         [Authorize]
         [HttpPut("AcceptOrRejectOrder")]
-        public async Task<IActionResult> AcceptOrRejectOrder(int orderId, OrderStatus status)
+        public async Task<IActionResult> AcceptOrRejectOrder(int orderId, OrderStatus status, CancellationToken ct = default)
         {
             var user = await _currentUserService.EnsureAsync();
             if (user == null)
             {
                 return NotFound(ApiError.From(new Exception("Invalid user"), StatusCodes.Status401Unauthorized, HttpContext));
             }
-            var result = await _orderService.AcceptOrRejectOrderAsync(orderId, status, user);
+            var result = await _orderService.AcceptOrRejectOrderAsync(orderId, status, user, ct);
             return this.ToActionResult(result);
         }
         [Authorize]
         [HttpPut("CancellOrCorfirm")]
-        public async Task<IActionResult> CancellOrCorfirmOrderReceipt(int orderId, OrderStatus status)
+        public async Task<IActionResult> CancellOrCorfirmOrderReceipt(int orderId, OrderStatus status, CancellationToken ct = default)
         {
             var user = await _currentUserService.EnsureAsync();
             if (user == null)
             {
                 return NotFound(ApiError.From(new Exception("Invalid user"), StatusCodes.Status401Unauthorized, HttpContext));
             }
-            var result = await _orderService.CancellOrCorfirmOrderReceiptAsync(orderId, user, status);
+            var result = await _orderService.CancelOrConfirmOrderReceiptAsync(orderId,user,status,ct);
             return this.ToActionResult(result);
         }
+
 
     }
 }

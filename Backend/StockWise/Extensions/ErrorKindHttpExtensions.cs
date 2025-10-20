@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using StockWise.Helpers;
+using StockWise.Response;
 
 namespace StockWise.Extensions
 {

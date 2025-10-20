@@ -869,33 +869,6 @@
             "description": "OK"
           }
         }
-      },
-      "put": {
-        "tags": [
-          "Order"
-        ],
-        "parameters": [
-          {
-            "name": "orderId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/OrderStatus"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
       }
     },
     "/api/Order/{id}": {
@@ -962,6 +935,35 @@
       }
     },
     "/api/Order/AcceptOrRejectOrder": {
+      "put": {
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/OrderStatus"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Order/CancellOrCorfirm": {
       "put": {
         "tags": [
           "Order"

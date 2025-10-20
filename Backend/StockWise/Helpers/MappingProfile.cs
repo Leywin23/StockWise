@@ -44,8 +44,16 @@ namespace StockWise.Helpers
                 .ForMember(d => d.OrdersAsSeller, o => o.Ignore())
                 .ForMember(d => d.Users, o => o.Ignore());
 
-            CreateMap<OrderDto, Order>();
-            CreateMap<Order, OrderDto>();
+            CreateMap<Order, OrderDto>()
+                .ForMember(dest => dest.Products, opt => opt.MapFrom(src => src.ProductsWithQuantity));
+
+            CreateMap<OrderProduct, OrderProductDto>()
+                .ForMember(dest => dest.CompanyProductId, opt => opt.MapFrom(src => src.CompanyProductId))
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.CompanyProduct.CompanyProductName))
+                .ForMember(dest => dest.EAN, opt => opt.MapFrom(src => src.CompanyProduct.EAN))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.CompanyProduct.Price.Amount));
+
+
         }
     }
 }

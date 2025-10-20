@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using StockWise.Dtos.OrderDtos;
 
-namespace StockWise.Helpers
+namespace StockWise.Response
 {
     public enum ErrorKind
     {

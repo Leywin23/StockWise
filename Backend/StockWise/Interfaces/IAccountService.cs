@@ -2,8 +2,8 @@
 using StockWise.Dtos.AccountDtos;
 using StockWise.Dtos.CompanyProductDtos;
 using StockWise.Dtos.OrderDtos;
-using StockWise.Helpers;
 using StockWise.Models;
+using StockWise.Response;
 using System.Security.Claims;
 
 namespace StockWise.Interfaces

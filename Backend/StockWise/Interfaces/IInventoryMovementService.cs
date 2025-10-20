@@ -1,6 +1,6 @@
 ﻿using StockWise.Dtos.InventoryMovementDtos;
-using StockWise.Helpers;
 using StockWise.Models;
+using StockWise.Response;
 
 namespace StockWise.Interfaces
 {

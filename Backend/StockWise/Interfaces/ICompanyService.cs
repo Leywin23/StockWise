@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StockWise.Dtos.CompanyDtos;
-using StockWise.Helpers;
 using StockWise.Models;
+using StockWise.Response;
 using System.Threading.Tasks;
 
 namespace StockWise.Interfaces

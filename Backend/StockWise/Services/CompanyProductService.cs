@@ -5,9 +5,9 @@ using StockWise.Dtos.CompanyDtos;
 using StockWise.Dtos.CompanyProductDtos;
 using StockWise.Dtos.InventoryMovementDtos;
 using StockWise.Dtos.ProductDtos;
-using StockWise.Helpers;
 using StockWise.Interfaces;
 using StockWise.Models;
+using StockWise.Response;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace StockWise.Services

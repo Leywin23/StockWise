@@ -1,7 +1,7 @@
 ﻿using StockWise.Dtos.CompanyDtos;
 using StockWise.Dtos.CompanyProductDtos;
-using StockWise.Helpers;
 using StockWise.Models;
+using StockWise.Response;
 using System.Threading.Tasks;
 
 namespace StockWise.Interfaces
