@@ -16,12 +16,13 @@ namespace StockWise.Helpers
                 .ForMember(d => d.CompanyProductName, opt => opt.MapFrom(s => s.CompanyProductName))
 
                 .ForPath(d => d.Price.Amount, opt => opt.MapFrom(s => s.Price))
-                .ForPath(d => d.Price.Currency.Code, opt => opt.MapFrom(s => s.Currency.Code))
+                .ForPath(d => d.Price.Currency.Code, opt => opt.MapFrom(s => s.Currency))
 
                 .ForMember(d => d.CompanyId, opt => opt.Ignore())
                 .ForMember(d => d.Company, opt => opt.Ignore())
                 .ForMember(d => d.CategoryId, opt => opt.Ignore())
                 .ForMember(d => d.Category, opt => opt.Ignore());
+
 
             CreateMap<CompanyProduct, CompanyProductDto>()
                 .ForMember(d => d.CategoryName, opt => opt.MapFrom(s => s.Category.Name));
@@ -52,8 +53,6 @@ namespace StockWise.Helpers
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.CompanyProduct.CompanyProductName))
                 .ForMember(dest => dest.EAN, opt => opt.MapFrom(src => src.CompanyProduct.EAN))
                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.CompanyProduct.Price.Amount));
-
-
         }
     }
 }

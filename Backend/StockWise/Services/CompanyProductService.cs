@@ -17,12 +17,14 @@ namespace StockWise.Services
         private readonly StockWiseDb _context;
         private readonly IMapper _mapper;
         private readonly IInventoryMovementService _inventoryMovementService;
+        private readonly BlobStorageService _blobStorage;
 
-        public CompanyProductService(StockWiseDb context, IMapper mapper, IInventoryMovementService inventoryMovementService)
+        public CompanyProductService(StockWiseDb context, IMapper mapper, IInventoryMovementService inventoryMovementService, BlobStorageService blobStorage)
         {
             _context = context;
             _mapper = mapper;
             _inventoryMovementService = inventoryMovementService;
+            _blobStorage = blobStorage;
         }
         public async Task<ServiceResult<PageResult<CompanyProduct>>> GetCompanyProductsAsync(
         AppUser user,
@@ -159,75 +161,111 @@ namespace StockWise.Services
             return ServiceResult<CompanyProductDto>.Ok(dto);
         }
 
-        public async Task<ServiceResult<CompanyProductDto>> CreateCompanyProductAsync(CreateCompanyProductDto dto, AppUser user)
+        public async Task<ServiceResult<CompanyProductDto>> CreateCompanyProductAsync(CreateCompanyProductDto dto, AppUser user, CancellationToken ct = default)
         {
             if (user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
-            {
                 return ServiceResult<CompanyProductDto>.Forbidden("You have to be approved by a manager to use this functionality");
-            }
+
             dto.CompanyProductName = dto.CompanyProductName?.Trim();
             dto.EAN = dto.EAN?.Trim();
             dto.Category = dto.Category?.Trim();
+            dto.Currency = dto.Currency?.Trim().ToUpperInvariant();
 
             if (string.IsNullOrWhiteSpace(dto.CompanyProductName))
                 return ServiceResult<CompanyProductDto>.BadRequest("CompanyProductName is required.");
             if (string.IsNullOrWhiteSpace(dto.EAN))
                 return ServiceResult<CompanyProductDto>.BadRequest("EAN is required.");
-            if (dto.Currency?.Code is null)
+            if (string.IsNullOrWhiteSpace(dto.Currency))
                 return ServiceResult<CompanyProductDto>.BadRequest("Currency code is required.");
-
+            if (dto.Currency.Length != 3)
+                return ServiceResult<CompanyProductDto>.BadRequest("Currency code must be a 3-letter ISO code (e.g., PLN, EUR).");
+            if (dto.Price < 0)
+                return ServiceResult<CompanyProductDto>.BadRequest("Price must be >= 0.");
             if (user.CompanyId is null)
                 return ServiceResult<CompanyProductDto>.BadRequest("User has no assigned company.");
 
-            int companyId = user.CompanyId.Value;
+            var companyId = user.CompanyId.Value;
 
-            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Name == dto.Category);
-            if (category == null)
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.Name == dto.Category, ct);
+            if (category is null)
             {
-                category = new Category { Name = dto.Category };
+                category = new Category { Name = dto.Category! };
                 _context.Categories.Add(category);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
             }
 
-            bool existsByEan = await _context.CompanyProducts
-                .AnyAsync(p => p.CompanyId == companyId && p.EAN == dto.EAN);
-            if (existsByEan)
+            if (await _context.CompanyProducts.AnyAsync(p => p.CompanyId == companyId && p.EAN == dto.EAN, ct))
                 return ServiceResult<CompanyProductDto>.Conflict($"Product with EAN {dto.EAN} already exists for this company.");
 
-            bool existsByName = await _context.CompanyProducts
-                .AnyAsync(p => p.CompanyId == companyId && p.CompanyProductName == dto.CompanyProductName);
-            if (existsByName)
+            if (await _context.CompanyProducts.AnyAsync(p => p.CompanyId == companyId && p.CompanyProductName == dto.CompanyProductName, ct))
                 return ServiceResult<CompanyProductDto>.Conflict($"Product named '{dto.CompanyProductName}' already exists for this company.");
 
-            var product = _mapper.Map<CompanyProduct>(dto);
-            product.CompanyId = companyId;
-            product.CategoryId = category.CategoryId;
-            product.InventoryMovements = new List<InventoryMovement>();
+            string? imageUrl = null;
+            string? uploadedBlobName = null;
 
-            await using var tx = await _context.Database.BeginTransactionAsync();
-
-            _context.CompanyProducts.Add(product);
-            await _context.SaveChangesAsync();
-
-            var movementDto = new InventoryMovementDto
+            if (dto.ImageFile is not null && dto.ImageFile.Length > 0)
             {
-                Date = DateTime.Now,
-                Type = MovementType.Inbound,
-                CompanyProductId = product.CompanyProductId,
-                Quantity = product.Stock,
-            };
+                if (!dto.ImageFile.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                    return ServiceResult<CompanyProductDto>.BadRequest("Only image files are allowed.");
+                const long MAX = 5 * 1024 * 1024; 
+                if (dto.ImageFile.Length > MAX)
+                    return ServiceResult<CompanyProductDto>.BadRequest("Image too large (max 5 MB).");
 
-            
-            var movementResult = await _inventoryMovementService.AddMovementAsync(movementDto);
+                var ext = Path.GetExtension(dto.ImageFile.FileName);
+                var safeName = $"{Guid.NewGuid()}{ext}".ToLowerInvariant();
+                uploadedBlobName = safeName;
 
-            if (movementResult == null || !movementResult.IsSuccess)
-            {
-                await tx.RollbackAsync();
-                var errMsg = movementResult?.Error.ToString() ?? "Unknown error";
-                return ServiceResult<CompanyProductDto>.BadRequest($"Failed to create inventory movement:{errMsg}");
+                await using var s = dto.ImageFile.OpenReadStream();
+                var url = await _blobStorage.UploadAsync(s, safeName, dto.ImageFile.ContentType, ct);
+                if (string.IsNullOrWhiteSpace(url))
+                    return ServiceResult<CompanyProductDto>.ServerError("Image upload failed.");
+                imageUrl = url;
             }
 
-            await tx.CommitAsync();
+            var product = _mapper.Map<CompanyProduct>(dto); 
+            product.CompanyId = companyId;
+            product.CategoryId = category.CategoryId;
+            product.Image = imageUrl;
+            product.Stock = 0;
+            product.InventoryMovements = new List<InventoryMovement>();
+
+            product.Price = Money.Of(dto.Price, dto.Currency);
+
+            await using var tx = await _context.Database.BeginTransactionAsync(ct);
+            try
+            {
+                _context.CompanyProducts.Add(product);
+                await _context.SaveChangesAsync(ct);
+
+                if (dto.Stock > 0)
+                {
+                    var movementDto = new InventoryMovementDto
+                    {
+                        Date = DateTime.UtcNow,
+                        Type = MovementType.Inbound,
+                        CompanyProductId = product.CompanyProductId,
+                        Quantity = dto.Stock,
+                    };
+
+                    var movementResult = await _inventoryMovementService.AddMovementAsync(movementDto); 
+                    if (movementResult is null || !movementResult.IsSuccess)
+                    {
+                        await tx.RollbackAsync(ct);
+
+
+                        var errMsg = movementResult?.Error.ToString() ?? "Unknown error";
+                        return ServiceResult<CompanyProductDto>.BadRequest($"Failed to create inventory movement: {errMsg}");
+                    }
+                }
+
+                await tx.CommitAsync(ct);
+            }
+            catch
+            {
+                await tx.RollbackAsync(ct);
+                throw;
+            }
 
             var productDto = _mapper.Map<CompanyProductDto>(product);
             return ServiceResult<CompanyProductDto>.Ok(productDto);

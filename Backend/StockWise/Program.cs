@@ -1,8 +1,10 @@
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using StockWise.Data;
@@ -120,6 +122,20 @@ namespace StockWise
                 });
             });
 
+            builder.Configuration.AddEnvironmentVariables();
+
+            builder.Services.Configure<AzureStorageOptions>(opt =>
+            {
+                opt.ConnectionString = builder.Configuration["AzureStorage:ConnectionString"] ?? "";
+                opt.ContainerName = builder.Configuration["AzureStorage:ContainerName"] ?? "stockwiseimages";
+            });
+
+            builder.Services.AddSingleton(sp =>
+            {
+                var opts = sp.GetRequiredService<IOptions<AzureStorageOptions>>().Value;
+                return new BlobServiceClient(opts.ConnectionString);
+            });
+
             builder.Services.AddMemoryCache();
             builder.Services.AddSignalR();
             builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
@@ -128,6 +144,7 @@ namespace StockWise
                 cfg.AddProfile<MappingProfile>();
             });
 
+            builder.Services.AddScoped<BlobStorageService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<ICompanyService, CompanyService>();
             builder.Services.AddScoped<ICompanyProductService, CompanyProductService>();
@@ -176,7 +193,11 @@ namespace StockWise
             app.MapHub<StockHub>("/stockHub");
             app.MapControllers();
             app.MapRazorPages();
-
+            var cs = builder.Configuration["AzureStorage:ConnectionString"];
+            var cn = builder.Configuration["AzureStorage:ContainerName"];
+            Console.WriteLine($"AzureStorage: hasConnectionString={(string.IsNullOrWhiteSpace(cs) ? "no" : "yes")}");
+            Console.WriteLine($"AzureStorage: container='{cn ?? "(null)"}'");
+            Console.WriteLine("fddfdssdffdssdffdsdsf");
 
             app.Run();
             

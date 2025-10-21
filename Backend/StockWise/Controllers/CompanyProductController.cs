@@ -69,7 +69,7 @@ namespace StockWise.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> AddCompanyProduct([FromBody] CreateCompanyProductDto dto)
+        public async Task<IActionResult> AddCompanyProduct([FromForm] CreateCompanyProductDto dto, CancellationToken ct = default)
         {
             var user = await GetCurrentUserAsync();
             if (user == null)
@@ -78,7 +78,7 @@ namespace StockWise.Controllers
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);
 
-            var productDto = await _companyProductService.CreateCompanyProductAsync(dto, user);
+            var productDto = await _companyProductService.CreateCompanyProductAsync(dto, user, ct);
 
             return this.ToActionResult(productDto);
         }

@@ -561,19 +561,81 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/CreateCompanyProductDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateCompanyProductDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateCompanyProductDto"
+                "required": [
+                  "Category",
+                  "CompanyProductName",
+                  "Currency",
+                  "Description",
+                  "EAN"
+                ],
+                "type": "object",
+                "properties": {
+                  "CompanyProductName": {
+                    "type": "string"
+                  },
+                  "EAN": {
+                    "type": "string"
+                  },
+                  "ImageFile": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "Description": {
+                    "type": "string"
+                  },
+                  "Category": {
+                    "type": "string"
+                  },
+                  "Price": {
+                    "maximum": 79228162514264337593543950335,
+                    "minimum": 0,
+                    "type": "number",
+                    "format": "double"
+                  },
+                  "Currency": {
+                    "type": "string"
+                  },
+                  "Stock": {
+                    "maximum": 2147483647,
+                    "minimum": 0,
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "IsAvailableForOrder": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "encoding": {
+                "CompanyProductName": {
+                  "style": "form"
+                },
+                "EAN": {
+                  "style": "form"
+                },
+                "ImageFile": {
+                  "style": "form"
+                },
+                "Description": {
+                  "style": "form"
+                },
+                "Category": {
+                  "style": "form"
+                },
+                "Price": {
+                  "style": "form"
+                },
+                "Currency": {
+                  "style": "form"
+                },
+                "Stock": {
+                  "style": "form"
+                },
+                "IsAvailableForOrder": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -1131,57 +1193,6 @@
           "phone": {
             "type": "string",
             "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "CreateCompanyProductDto": {
-        "required": [
-          "category",
-          "companyProductName",
-          "currency",
-          "description",
-          "ean"
-        ],
-        "type": "object",
-        "properties": {
-          "companyProductName": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "ean": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "image": {
-            "type": "string",
-            "nullable": true
-          },
-          "description": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "category": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "price": {
-            "maximum": 79228162514264337593543950335,
-            "minimum": 0,
-            "type": "number",
-            "format": "double"
-          },
-          "currency": {
-            "$ref": "#/components/schemas/Currency"
-          },
-          "stock": {
-            "maximum": 2147483647,
-            "minimum": 0,
-            "type": "integer",
-            "format": "int32"
-          },
-          "isAvailableForOrder": {
-            "type": "boolean"
           }
         },
         "additionalProperties": false

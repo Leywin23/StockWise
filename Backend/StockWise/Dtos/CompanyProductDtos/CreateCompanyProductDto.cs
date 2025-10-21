@@ -11,7 +11,7 @@ namespace StockWise.Dtos.CompanyProductDtos
         [Required]
         public string EAN { get; set; } = default!;
 
-        public string? Image { get; set; }
+        public IFormFile? ImageFile { get; set; }
 
         [Required]
         public string Description { get; set; } = default!;
@@ -23,7 +23,7 @@ namespace StockWise.Dtos.CompanyProductDtos
         public decimal Price { get; set; }
 
         [Required]
-        public Currency Currency { get; set; } = default!; // zakładam: public class Currency { public string Code { get; set; } }
+        public string Currency { get; set; } = default!;
 
         [Range(0, int.MaxValue)]
         public int Stock { get; set; }

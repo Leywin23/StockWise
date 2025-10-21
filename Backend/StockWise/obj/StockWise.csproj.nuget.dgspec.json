@@ -54,6 +54,10 @@
               "target": "Package",
               "version": "[15.0.1, )"
             },
+            "Azure.Storage.Blobs": {
+              "target": "Package",
+              "version": "[12.26.0, )"
+            },
             "MailKit": {
               "target": "Package",
               "version": "[4.13.0, )"
