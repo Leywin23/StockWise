@@ -707,19 +707,70 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateCompanyProductDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateCompanyProductDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateCompanyProductDto"
+                "type": "object",
+                "properties": {
+                  "CompanyProductName": {
+                    "type": "string"
+                  },
+                  "Description": {
+                    "type": "string"
+                  },
+                  "Ean": {
+                    "type": "string"
+                  },
+                  "Price": {
+                    "type": "number",
+                    "format": "double"
+                  },
+                  "Currency": {
+                    "type": "string"
+                  },
+                  "CategoryName": {
+                    "type": "string"
+                  },
+                  "ImageFile": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "Stock": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "IsAvailableForOrder": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "encoding": {
+                "CompanyProductName": {
+                  "style": "form"
+                },
+                "Description": {
+                  "style": "form"
+                },
+                "Ean": {
+                  "style": "form"
+                },
+                "Price": {
+                  "style": "form"
+                },
+                "Currency": {
+                  "style": "form"
+                },
+                "CategoryName": {
+                  "style": "form"
+                },
+                "ImageFile": {
+                  "style": "form"
+                },
+                "Stock": {
+                  "style": "form"
+                },
+                "IsAvailableForOrder": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -1441,46 +1492,6 @@
           "phone": {
             "type": "string",
             "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "UpdateCompanyProductDto": {
-        "type": "object",
-        "properties": {
-          "companyProductName": {
-            "type": "string",
-            "nullable": true
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "ean": {
-            "type": "string",
-            "nullable": true
-          },
-          "price": {
-            "type": "number",
-            "format": "double"
-          },
-          "currency": {
-            "$ref": "#/components/schemas/Currency"
-          },
-          "categoryName": {
-            "type": "string",
-            "nullable": true
-          },
-          "image": {
-            "type": "string",
-            "nullable": true
-          },
-          "stock": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "isAvailableForOrder": {
-            "type": "boolean"
           }
         },
         "additionalProperties": false

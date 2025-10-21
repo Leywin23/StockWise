@@ -193,11 +193,6 @@ namespace StockWise
             app.MapHub<StockHub>("/stockHub");
             app.MapControllers();
             app.MapRazorPages();
-            var cs = builder.Configuration["AzureStorage:ConnectionString"];
-            var cn = builder.Configuration["AzureStorage:ContainerName"];
-            Console.WriteLine($"AzureStorage: hasConnectionString={(string.IsNullOrWhiteSpace(cs) ? "no" : "yes")}");
-            Console.WriteLine($"AzureStorage: container='{cn ?? "(null)"}'");
-            Console.WriteLine("fddfdssdffdssdffdsdsf");
 
             app.Run();
             

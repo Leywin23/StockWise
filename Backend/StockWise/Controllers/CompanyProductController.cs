@@ -85,27 +85,27 @@ namespace StockWise.Controllers
 
         [HttpDelete("{productId:int}")]
         [Authorize(Roles = "Manager,Worker")]
-        public async Task<IActionResult> DeleteCompanyProduct([FromRoute] int productId)
+        public async Task<IActionResult> DeleteCompanyProduct([FromRoute] int productId, CancellationToken ct = default)
         {
             var user = await GetCurrentUserAsync();
             if (user == null) return Unauthorized("User not found.");
 
-            var deleted = await _companyProductService.DeleteCompanyProductAsync(user, productId);
+            var deleted = await _companyProductService.DeleteCompanyProductAsync(user, productId, ct);
             if (deleted == null) return NotFound("Product not found.");
-            var deletedProductDto = _mapper.Map<CompanyProductDto>(deleted);
-            return Ok(deletedProductDto);
+
+            return Ok(deleted);
         }
 
         [HttpPut("{productId:int}")]
         [Authorize(Roles = "Manager,Worker")]
-        public async Task<IActionResult> EditCompanyProduct([FromRoute] int productId, [FromBody] UpdateCompanyProductDto productDto)
+        public async Task<IActionResult> EditCompanyProduct([FromRoute] int productId, [FromForm] UpdateCompanyProductDto productDto, CancellationToken ct = default)
         {
             var user = await GetCurrentUserAsync();
 
             if (user == null) 
                 return Unauthorized(ApiError.From(new Exception("User not found."), StatusCodes.Status404NotFound, HttpContext));
 
-            var result = await _companyProductService.UpdateCompanyProductAsync(productId, user, productDto);
+            var result = await _companyProductService.UpdateCompanyProductAsync(productId, user, productDto, ct);
 
             return this.ToActionResult(result);
         }

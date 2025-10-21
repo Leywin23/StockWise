@@ -1,5 +1,9 @@
 ﻿using AutoMapper;
+using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using StockWise.Data;
 using StockWise.Dtos.CompanyDtos;
 using StockWise.Dtos.CompanyProductDtos;
@@ -18,13 +22,19 @@ namespace StockWise.Services
         private readonly IMapper _mapper;
         private readonly IInventoryMovementService _inventoryMovementService;
         private readonly BlobStorageService _blobStorage;
+        private readonly BlobServiceClient _blob;
+        private readonly IOptionsSnapshot<AzureStorageOptions> _opts;
+        private readonly ILogger<CompanyProductService> _log;
 
-        public CompanyProductService(StockWiseDb context, IMapper mapper, IInventoryMovementService inventoryMovementService, BlobStorageService blobStorage)
+        public CompanyProductService(StockWiseDb context, IMapper mapper, IInventoryMovementService inventoryMovementService, BlobStorageService blobStorage, BlobServiceClient blob, IOptionsSnapshot<AzureStorageOptions> opts, ILogger<CompanyProductService> log)
         {
             _context = context;
             _mapper = mapper;
             _inventoryMovementService = inventoryMovementService;
             _blobStorage = blobStorage;
+            _blob = blob;
+            _opts = opts;
+            _log = log;
         }
         public async Task<ServiceResult<PageResult<CompanyProduct>>> GetCompanyProductsAsync(
         AppUser user,
@@ -195,10 +205,10 @@ namespace StockWise.Services
                 await _context.SaveChangesAsync(ct);
             }
 
-            if (await _context.CompanyProducts.AnyAsync(p => p.CompanyId == companyId && p.EAN == dto.EAN, ct))
+            if (await _context.CompanyProducts.AnyAsync(p => p.CompanyId == companyId && p.EAN == dto.EAN && p.IsDeleted != true, ct))
                 return ServiceResult<CompanyProductDto>.Conflict($"Product with EAN {dto.EAN} already exists for this company.");
 
-            if (await _context.CompanyProducts.AnyAsync(p => p.CompanyId == companyId && p.CompanyProductName == dto.CompanyProductName, ct))
+            if (await _context.CompanyProducts.AnyAsync(p => p.CompanyId == companyId && p.CompanyProductName == dto.CompanyProductName && p.IsDeleted != true, ct))
                 return ServiceResult<CompanyProductDto>.Conflict($"Product named '{dto.CompanyProductName}' already exists for this company.");
 
             string? imageUrl = null;
@@ -271,31 +281,61 @@ namespace StockWise.Services
             return ServiceResult<CompanyProductDto>.Ok(productDto);
         }
 
-        public async Task<ServiceResult<CompanyProduct>> DeleteCompanyProductAsync(AppUser user, int productId)
+        public async Task<ServiceResult<CompanyProductDto>> DeleteCompanyProductAsync(
+    AppUser user,
+    int productId,
+    CancellationToken ct = default)
         {
             if (user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
-            {
-                return ServiceResult<CompanyProduct>.Forbidden("You have to be approved by a manager to use this functionality");
-            }
-            if (user?.CompanyId == null)
-                return ServiceResult<CompanyProduct>.Forbidden("User is not assigned to any company.");
+                return ServiceResult<CompanyProductDto>.Forbidden(
+                    "You have to be approved by a manager to use this functionality.");
+
+            if (user.CompanyId is null)
+                return ServiceResult<CompanyProductDto>.Forbidden(
+                    "User is not assigned to any company.");
 
             var companyId = user.CompanyId.Value;
 
-            var productToDelete = await _context.CompanyProducts
-                .FirstOrDefaultAsync(cp => cp.CompanyId == companyId && cp.CompanyProductId == productId);
+            var product = await _context.CompanyProducts
+                .FirstOrDefaultAsync(cp => cp.CompanyId == companyId && cp.CompanyProductId == productId, ct);
 
-            if (productToDelete == null)
-                return ServiceResult<CompanyProduct>.NotFound("Product not found.");
+            if (product is null)
+                return ServiceResult<CompanyProductDto>.NotFound("Product not found.");
 
-            _context.CompanyProducts.Remove(productToDelete);
-            await _context.SaveChangesAsync();
+            var imageUrl = product.Image;
+            var imageExist = !string.IsNullOrEmpty(imageUrl);
 
-            return ServiceResult<CompanyProduct>.Ok(productToDelete);
+            if (imageExist)
+            {
+                try
+                {
+                    var uri = new Uri(imageUrl);
+                    var bub = new BlobUriBuilder(uri);
+                    var containerClient = _blob.GetBlobContainerClient(bub.BlobContainerName);
+                    var blobClient = containerClient.GetBlobClient(bub.BlobName);
+                    await blobClient.DeleteIfExistsAsync();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Błąd podczas usuwania bloba", ex);
+                }
+            }
+
+            product.IsDeleted = true;
+            product.IsAvailableForOrder = false;
+            product.CompanyProductName = "Deleted";
+            product.EAN = "Deleted";
+            product.Description = "Deleted";
+
+            _context.CompanyProducts.Update(product);
+            await _context.SaveChangesAsync(ct);
+
+            var productDto = _mapper.Map<CompanyProductDto>(product);
+            return ServiceResult<CompanyProductDto>.Ok(productDto);
         }
 
 
-        public async Task<ServiceResult<CompanyProductDto>> UpdateCompanyProductAsync(int productId, AppUser user, UpdateCompanyProductDto companyProductDto)
+        public async Task<ServiceResult<CompanyProductDto>> UpdateCompanyProductAsync(int productId, AppUser user, UpdateCompanyProductDto companyProductDto, CancellationToken ct= default)
         {
             if (user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
             {
@@ -317,11 +357,36 @@ namespace StockWise.Services
             if (duplicate)
                 return ServiceResult<CompanyProductDto>.Conflict("Another product with the same name or EAN already exists.");
 
-            var Price = Money.Of(companyProductDto.Price, companyProductDto.Currency.Code);
+            var Price = Money.Of(companyProductDto.Price, companyProductDto.Currency);
+
+            if (!companyProductDto.ImageFile.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                return ServiceResult<CompanyProductDto>.BadRequest("Only image files are allowed.");
+
+           
+
+            string? imageUrl = null;
+            string? uploadedBlobName = null;
+
+            const long MAX = 5 * 1024 * 1024;
+            if (companyProductDto.ImageFile.Length > MAX)
+                return ServiceResult<CompanyProductDto>.ServerError("Image too large (max 5 MB).");
+            var ext = Path.GetExtension(companyProductDto.ImageFile.FileName);
+            var safeName = $"{Guid.NewGuid()}{ext}".ToLowerInvariant();
+            uploadedBlobName = safeName;
+            await using var s = companyProductDto.ImageFile.OpenReadStream();
+            var url = await _blobStorage.UploadAsync(s, safeName, companyProductDto.ImageFile.ContentType, ct);
+
+            if (!string.IsNullOrEmpty(product.Image))
+            {
+                var olbBlobName = Path.GetFileName(new Uri(product.Image).AbsolutePath);
+                var container = _blob.GetBlobContainerClient(_opts.Value.ContainerName);
+                var blob = container.GetBlobClient(olbBlobName);
+                await blob.DeleteIfExistsAsync();
+            }
 
             product.CompanyProductName = companyProductDto.CompanyProductName;
             product.EAN = companyProductDto.Ean;
-            product.Image = companyProductDto.Image;
+            product.Image = url;
             product.Description = companyProductDto.Description;
             product.Price = Price;
             product.Stock = companyProductDto.Stock;

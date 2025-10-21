@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StockWise.Data;
 
@@ -11,9 +12,11 @@ using StockWise.Data;
 namespace StockWise.Migrations
 {
     [DbContext(typeof(StockWiseDb))]
-    partial class StockWiseDbModelSnapshot : ModelSnapshot
+    [Migration("20251021145144_AddSoftDelete")]
+    partial class AddSoftDelete
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -350,13 +353,11 @@ namespace StockWise.Migrations
 
                     b.HasIndex("CompanyId", "CompanyProductName")
                         .IsUnique()
-                        .HasDatabaseName("IX_CompanyProduct_CompanyId_Name")
-                        .HasFilter("[IsDeleted] = 0");
+                        .HasDatabaseName("IX_CompanyProduct_CompanyId_Name");
 
                     b.HasIndex("CompanyId", "EAN")
                         .IsUnique()
-                        .HasDatabaseName("IX_CompanyProduct_CompanyId_EAN")
-                        .HasFilter("[IsDeleted] = 0");
+                        .HasDatabaseName("IX_CompanyProduct_CompanyId_EAN");
 
                     b.ToTable("CompanyProducts");
                 });

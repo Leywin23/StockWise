@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Identity;
 
 namespace StockWise.Data
 {
-    public class StockWiseDb: IdentityDbContext<AppUser>
+    public class StockWiseDb : IdentityDbContext<AppUser>
     {
-        public StockWiseDb(DbContextOptions<StockWiseDb> options): base(options){}
+        public StockWiseDb(DbContextOptions<StockWiseDb> options) : base(options) { }
 
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
@@ -27,36 +27,37 @@ namespace StockWise.Data
                 .HasForeignKey(c => c.ParentId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Product>().
-                HasOne(p => p.Category)
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Category)
                 .WithMany(c => c.Products)
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<CompanyProduct>().
-                HasOne(p=>p.Category)
-                .WithMany(c=>c.CompanyProducts)
-                .HasForeignKey(p=>p.CategoryId)
+
+            modelBuilder.Entity<CompanyProduct>()
+                .HasOne(p => p.Category)
+                .WithMany(c => c.CompanyProducts)
+                .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<InventoryMovement>().
-                HasOne(im => im.CompanyProduct)
+            modelBuilder.Entity<InventoryMovement>()
+                .HasOne(im => im.CompanyProduct)
                 .WithMany(p => p.InventoryMovements)
                 .HasForeignKey(im => im.CompanyProductId);
 
             modelBuilder.Entity<Order>()
-                .HasOne(o=>o.Buyer)
-                .WithMany(c=>c.OrdersAsBuyer)
-                .HasForeignKey(o=>o.BuyerId)
+                .HasOne(o => o.Buyer)
+                .WithMany(c => c.OrdersAsBuyer)
+                .HasForeignKey(o => o.BuyerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Order>()
-                .HasOne(o=>o.Seller)
-                .WithMany(c=>c.OrdersAsSeller)
-                .HasForeignKey(o=>o.SellerId)
+                .HasOne(o => o.Seller)
+                .WithMany(c => c.OrdersAsSeller)
+                .HasForeignKey(o => o.SellerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<OrderProduct>()
-     .HasKey(op => new { op.OrderId, op.CompanyProductId });
+                .HasKey(op => new { op.OrderId, op.CompanyProductId });
 
             modelBuilder.Entity<Order>()
                 .HasMany(o => o.ProductsWithQuantity)
@@ -66,7 +67,7 @@ namespace StockWise.Data
 
             modelBuilder.Entity<OrderProduct>()
                 .HasOne(op => op.CompanyProduct)
-                .WithMany()                                   
+                .WithMany()
                 .HasForeignKey(op => op.CompanyProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -81,9 +82,9 @@ namespace StockWise.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<CompanyProduct>()
-                .HasOne(cp=>cp.Company)
-                .WithMany(c=>c.CompanyProducts)
-                .HasForeignKey(cp=>cp.CompanyId)
+                .HasOne(cp => cp.Company)
+                .WithMany(c => c.CompanyProducts)
+                .HasForeignKey(cp => cp.CompanyId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Product>(b =>
@@ -91,8 +92,8 @@ namespace StockWise.Data
                 b.OwnsOne(p => p.ShoppingPrice, money =>
                 {
                     money.Property(m => m.Amount)
-                         .HasColumnType("decimal(18,2)")
-                         .HasColumnName("ShoppingPriceAmount");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("ShoppingPriceAmount");
 
                     money.OwnsOne(m => m.Currency, curr =>
                     {
@@ -105,8 +106,8 @@ namespace StockWise.Data
                 b.OwnsOne(p => p.SellingPrice, money =>
                 {
                     money.Property(m => m.Amount)
-                         .HasColumnType("decimal(18,2)")
-                         .HasColumnName("SellingPriceAmount");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("SellingPriceAmount");
 
                     money.OwnsOne(m => m.Currency, curr =>
                     {
@@ -143,12 +144,24 @@ namespace StockWise.Data
 
                 b.HasIndex(p => new { p.CompanyId, p.EAN })
                     .IsUnique()
-                    .HasDatabaseName("IX_CompanyProduct_CompanyId_EAN");
+                    .HasDatabaseName("IX_CompanyProduct_CompanyId_EAN")
+                    .HasFilter("[IsDeleted] = 0");
 
                 b.HasIndex(p => new { p.CompanyId, p.CompanyProductName })
                     .IsUnique()
-                    .HasDatabaseName("IX_CompanyProduct_CompanyId_Name");
+                    .HasDatabaseName("IX_CompanyProduct_CompanyId_Name")
+                    .HasFilter("[IsDeleted] = 0");
             });
+
+            modelBuilder.Entity<CompanyProduct>()
+                .HasQueryFilter(cp => !cp.IsDeleted);
+
+            modelBuilder.Entity<InventoryMovement>()
+                .HasQueryFilter(im => !im.CompanyProduct.IsDeleted);
+
+            modelBuilder.Entity<OrderProduct>()
+                .HasQueryFilter(op => !op.CompanyProduct.IsDeleted);
+
             modelBuilder.Entity<Order>(b =>
             {
                 b.OwnsOne(o => o.TotalPrice, money =>
@@ -194,7 +207,8 @@ namespace StockWise.Data
                     NormalizedName = "WORKER",
                 },
             };
+
             builder.Entity<IdentityRole>().HasData(roles);
-            }
         }
+    }
 }
