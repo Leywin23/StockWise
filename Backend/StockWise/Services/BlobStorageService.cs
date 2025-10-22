@@ -34,6 +34,13 @@ namespace StockWise.Services
             return blob.Uri.ToString();
         }
 
-
+        public async Task DeleteAsync(string image)
+        {
+            var oldBlobName = Path.GetFileName(new Uri(image).AbsolutePath);
+            var container = _blob.GetBlobContainerClient(_opts.ContainerName);
+            var blob = container.GetBlobClient(oldBlobName);
+            await blob.DeleteIfExistsAsync();
+        }
+        
     }
 }

@@ -309,11 +309,8 @@ namespace StockWise.Services
             {
                 try
                 {
-                    var uri = new Uri(imageUrl);
-                    var bub = new BlobUriBuilder(uri);
-                    var containerClient = _blob.GetBlobContainerClient(bub.BlobContainerName);
-                    var blobClient = containerClient.GetBlobClient(bub.BlobName);
-                    await blobClient.DeleteIfExistsAsync();
+                    await _blobStorage.DeleteAsync(imageUrl);
+                    
                 }
                 catch (Exception ex)
                 {
@@ -378,10 +375,7 @@ namespace StockWise.Services
 
             if (!string.IsNullOrEmpty(product.Image))
             {
-                var olbBlobName = Path.GetFileName(new Uri(product.Image).AbsolutePath);
-                var container = _blob.GetBlobContainerClient(_opts.Value.ContainerName);
-                var blob = container.GetBlobClient(olbBlobName);
-                await blob.DeleteIfExistsAsync();
+                await _blobStorage.DeleteAsync(product.Image);
             }
 
             product.CompanyProductName = companyProductDto.CompanyProductName;
