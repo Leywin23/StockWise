@@ -486,11 +486,6 @@
         "IsRequired": false
       },
       {
-        "Name": "Ean",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
         "Name": "Price",
         "Type": "System.Decimal",
         "IsRequired": false
@@ -758,25 +753,44 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "productDto",
-        "Type": "StockWise.Dtos.ProductDtos.CreateProductDto",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "StockWise.Controllers.ProductController",
-    "Method": "UpdateProduct",
-    "RelativePath": "api/Product",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
+        "Name": "ProductName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
       {
-        "Name": "productDto",
-        "Type": "StockWise.Dtos.ProductDtos.UpdateProductDto",
-        "IsRequired": true
+        "Name": "EAN",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Image",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      },
+      {
+        "Name": "Description",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "ShoppingPrice",
+        "Type": "System.Decimal",
+        "IsRequired": false
+      },
+      {
+        "Name": "SellingPrice",
+        "Type": "System.Decimal",
+        "IsRequired": false
+      },
+      {
+        "Name": "Currency",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Category",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -809,6 +823,57 @@
         "Name": "id",
         "Type": "System.Int32",
         "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.ProductController",
+    "Method": "UpdateProduct",
+    "RelativePath": "api/Product/{productId}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "ProductName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Description",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "ShoppingPrice",
+        "Type": "System.Decimal",
+        "IsRequired": false
+      },
+      {
+        "Name": "SellingPrice",
+        "Type": "System.Decimal",
+        "IsRequired": false
+      },
+      {
+        "Name": "Currency",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "CategoryName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Image",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []

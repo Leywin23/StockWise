@@ -6,7 +6,6 @@ namespace StockWise.Dtos.CompanyProductDtos
     {
         public string CompanyProductName { get; set; }
         public string Description { get; set; }
-        public string Ean { get; set; }
         public decimal Price { get; set; }
         public string Currency { get; set; }
         public string CategoryName { get; set; }

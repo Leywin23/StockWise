@@ -348,30 +348,32 @@ namespace StockWise.Services
             if (product == null)
                 return ServiceResult<CompanyProductDto>.NotFound($"Product with id: {productId} not found");
 
-            var duplicate = company.CompanyProducts.Any(cp => cp.CompanyProductId != productId &&
-           (cp.EAN == companyProductDto.Ean || cp.CompanyProductName == companyProductDto.CompanyProductName));
-
-            if (duplicate)
-                return ServiceResult<CompanyProductDto>.Conflict("Another product with the same name or EAN already exists.");
-
             var Price = Money.Of(companyProductDto.Price, companyProductDto.Currency);
 
             if (!companyProductDto.ImageFile.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
                 return ServiceResult<CompanyProductDto>.BadRequest("Only image files are allowed.");
 
-           
-
             string? imageUrl = null;
             string? uploadedBlobName = null;
 
-            const long MAX = 5 * 1024 * 1024;
-            if (companyProductDto.ImageFile.Length > MAX)
-                return ServiceResult<CompanyProductDto>.ServerError("Image too large (max 5 MB).");
-            var ext = Path.GetExtension(companyProductDto.ImageFile.FileName);
-            var safeName = $"{Guid.NewGuid()}{ext}".ToLowerInvariant();
-            uploadedBlobName = safeName;
-            await using var s = companyProductDto.ImageFile.OpenReadStream();
-            var url = await _blobStorage.UploadAsync(s, safeName, companyProductDto.ImageFile.ContentType, ct);
+            if (companyProductDto.ImageFile is not null && companyProductDto.ImageFile.Length > 0)
+            {
+                if (!companyProductDto.ImageFile.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                    return ServiceResult<CompanyProductDto>.BadRequest("Only image files are allowed.");
+                const long MAX = 5 * 1024 * 1024;
+                if (companyProductDto.ImageFile.Length > MAX)
+                    return ServiceResult<CompanyProductDto>.BadRequest("Image too large (max 5 MB).");
+
+                var ext = Path.GetExtension(companyProductDto.ImageFile.FileName);
+                var safeName = $"{Guid.NewGuid()}{ext}".ToLowerInvariant();
+                uploadedBlobName = safeName;
+
+                await using var s = companyProductDto.ImageFile.OpenReadStream();
+                var url = await _blobStorage.UploadAsync(s, safeName, companyProductDto.ImageFile.ContentType, ct);
+                if (string.IsNullOrWhiteSpace(url))
+                    return ServiceResult<CompanyProductDto>.ServerError("Image upload failed.");
+                imageUrl = url;
+            }
 
             if (!string.IsNullOrEmpty(product.Image))
             {
@@ -379,8 +381,7 @@ namespace StockWise.Services
             }
 
             product.CompanyProductName = companyProductDto.CompanyProductName;
-            product.EAN = companyProductDto.Ean;
-            product.Image = url;
+            product.Image = imageUrl;
             product.Description = companyProductDto.Description;
             product.Price = Price;
             product.Stock = companyProductDto.Stock;

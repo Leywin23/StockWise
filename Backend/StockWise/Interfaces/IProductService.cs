@@ -9,9 +9,9 @@ namespace StockWise.Interfaces
     {
         Task<ServiceResult<ProductDto>> GetProductById(int id);
         Task<ServiceResult<List<ProductDto>>> GetProducts();
-        Task<ServiceResult<Product>> AddProduct(CreateProductDto productDto);
-        Task<ServiceResult<Product>> DeleteProduct(int id);
-        Task<ServiceResult<Product>> UpdateProduct(UpdateProductDto productDto);
+        Task<ServiceResult<Product>> AddProduct(CreateProductDto productDto, CancellationToken ct = default);
+        Task<ServiceResult<Product>> DeleteProduct(int id, CancellationToken ct = default);
+        Task<ServiceResult<Product>> UpdateProduct(int productId, UpdateProductDto productDto, CancellationToken ct = default);
         string GetCategoryFullPath(Models.Category category);
     }
 }

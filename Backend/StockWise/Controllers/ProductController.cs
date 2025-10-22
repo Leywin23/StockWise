@@ -50,35 +50,35 @@ namespace StockWise.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddProduct([FromBody] CreateProductDto productDto)
+        public async Task<IActionResult> AddProduct([FromForm] CreateProductDto productDto, CancellationToken ct = default)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            var product = await _productService.AddProduct(productDto);
+            var product = await _productService.AddProduct(productDto, ct);
 
             return Ok(product);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProduct(int id)
+        public async Task<IActionResult> DeleteProduct([FromRoute] int id, CancellationToken ct = default)
         {
             if (!ModelState.IsValid) {
                 return BadRequest();
             }
-            var productToDelete = await _productService.DeleteProduct(id);
+            var productToDelete = await _productService.DeleteProduct(id, ct);
             return Ok(productToDelete);
         }
 
-        [HttpPut]
-        public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductDto productDto)
+        [HttpPut("{productId:int}")]
+        public async Task<IActionResult> UpdateProduct([FromRoute] int productId, [FromForm] UpdateProductDto productDto, CancellationToken ct = default)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            var productToUpdate = await _productService.UpdateProduct(productDto);
+            var productToUpdate = await _productService.UpdateProduct(productId, productDto, ct);
             return Ok(productToUpdate);
         }
     }

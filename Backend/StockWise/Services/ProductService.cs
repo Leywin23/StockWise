@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Data;
+using StockWise.Dtos.CompanyProductDtos;
 using StockWise.Dtos.ProductDtos;
 using StockWise.Interfaces;
 using StockWise.Mappers;
@@ -13,10 +15,12 @@ namespace StockWise.Services
     {
         private readonly StockWiseDb _context;
         private readonly IMapper _mapper;
-        public ProductService(StockWiseDb context, IMapper mapper)
+        private readonly BlobStorageService _blobStorage;
+        public ProductService(StockWiseDb context, IMapper mapper, BlobStorageService blobStorage)
         {
             _context = context;
             _mapper = mapper;
+            _blobStorage = blobStorage;
         }
         public async Task<ServiceResult<ProductDto>> GetProductById(int id)
         {
@@ -68,41 +72,67 @@ namespace StockWise.Services
             return ServiceResult<List<ProductDto>>.Ok(result);
         }
 
-        public async Task<ServiceResult<Product>> AddProduct(CreateProductDto productDto)
+        public async Task<ServiceResult<Product>> AddProduct(CreateProductDto productDto, CancellationToken ct = default)
         {
-            if (productDto == null)
-            {
+            if (productDto is null)
                 return ServiceResult<Product>.BadRequest("Product data is required.");
-            }
 
-            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Name == productDto.Category);
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.Name == productDto.Category, ct);
 
-            if (category == null)
+            if (category is null)
             {
-                category = new Models.Category { Name = productDto.Category };
+                category = new Category { Name = productDto.Category };
                 _context.Categories.Add(category);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
             }
 
-            var product = productDto.ToProductFromCreate(category);
-            var exist = await _context.Products.FirstOrDefaultAsync(p=>p.EAN == productDto.EAN);
-            if(exist != null)
-            {
+            var exist = await _context.Products.FirstOrDefaultAsync(p => p.EAN == productDto.EAN, ct);
+            if (exist != null)
                 return ServiceResult<Product>.BadRequest($"Product with EAN {exist.EAN} already added");
+
+            string? imageUrl = null;
+
+            if (productDto.Image is not null && productDto.Image.Length > 0)
+            {
+                if (!productDto.Image.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                    return ServiceResult<Product>.BadRequest("Only image files are allowed");
+
+                const long MAX = 5 * 1024 * 1024;
+                if (productDto.Image.Length > MAX)
+                    return ServiceResult<Product>.BadRequest("Image too large (max 5 MB).");
+
+                var ext = Path.GetExtension(productDto.Image.FileName);
+
+                var safeName = $"{Guid.NewGuid()}{ext}".ToLowerInvariant();
+
+                await using var s = productDto.Image.OpenReadStream();
+                var url = await _blobStorage.UploadAsync(s, safeName, productDto.Image.ContentType, ct);
+                if (string.IsNullOrWhiteSpace(url))
+                    return ServiceResult<Product>.ServerError("Image upload failed.");
+
+                imageUrl = url;
             }
 
-            await _context.Products.AddAsync(product);
-            await _context.SaveChangesAsync();
+            var product = _mapper.Map<Product>(productDto);   
+            product.Image = imageUrl;
+            product.CategoryId = category.CategoryId;                
+            await _context.Products.AddAsync(product, ct);
+            await _context.SaveChangesAsync(ct);
 
             return ServiceResult<Product>.Ok(product);
         }
 
-        public async Task<ServiceResult<Product>> DeleteProduct(int id)
+        public async Task<ServiceResult<Product>> DeleteProduct(int id, CancellationToken ct = default)
         {
             var productToDelete = await _context.Products.FindAsync(id);
             if (productToDelete == null)
             {
                 return ServiceResult<Product>.NotFound($"Couldn't find a product with given id: {id}");
+            }
+            if(productToDelete.Image != null)
+            {
+                await _blobStorage.DeleteAsync(productToDelete.Image);
             }
             _context.Products.Remove(productToDelete);
             await _context.SaveChangesAsync();
@@ -110,9 +140,9 @@ namespace StockWise.Services
             return ServiceResult<Product>.Ok(productToDelete);
         }
 
-        public async Task<ServiceResult<Product>> UpdateProduct(UpdateProductDto productDto)
+        public async Task<ServiceResult<Product>> UpdateProduct(int productId ,UpdateProductDto productDto, CancellationToken ct = default)
         {
-            var productToUpdate = await _context.Products.FirstOrDefaultAsync(x => x.EAN == productDto.EAN);
+            var productToUpdate = await _context.Products.FirstOrDefaultAsync(x => x.ProductId == productId);
             if (productToUpdate == null)
                 return ServiceResult<Product>.NotFound("Couldn't find a product");
 
@@ -121,15 +151,36 @@ namespace StockWise.Services
             {
                 return ServiceResult<Product>.NotFound("Coundn't find a category with this name");
             }
-            var shoppingPrice = Money.Of(productDto.ShoppingPrice, productDto.Currency.Code);
-            var sellingPrice = Money.Of(productDto.SellingPrice, productDto.Currency.Code);
+            if(productToUpdate.Image != null)
+            {
+                await _blobStorage.DeleteAsync(productToUpdate.Image);
+            }
+
+            string? imageUrl = null;
+
+            if(productDto.Image != null && productDto.Image.Length > 0)
+            {
+                if (!productDto.Image.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                    return ServiceResult<Product>.BadRequest("Only image file are allowed");
+                const long MAX = 5 * 1024 * 1024;
+                if (productDto.Image.Length > MAX)
+                    return ServiceResult<Product>.BadRequest("Image too large (max 5 MB).");
+                var s = productDto.Image.OpenReadStream();
+                var ext = Path.GetExtension(productDto.Image.FileName);
+                var safeName = $"{Guid.NewGuid()}{ext}".ToLowerInvariant();
+                var url = await _blobStorage.UploadAsync(s,safeName, productDto.Image.ContentType, ct);
+
+                imageUrl = url;
+            }
+            var shoppingPrice = Money.Of(productDto.ShoppingPrice, productDto.Currency);
+            var sellingPrice = Money.Of(productDto.SellingPrice, productDto.Currency);
 
             productToUpdate.ProductName = productDto.ProductName;
             productToUpdate.CategoryId = category.CategoryId;
             productToUpdate.Description = productDto.Description;
             productToUpdate.ShoppingPrice = shoppingPrice;
             productToUpdate.SellingPrice = sellingPrice;
-            productToUpdate.Image = productDto.Image;
+            productToUpdate.Image = imageUrl;
 
             _context.Products.Update(productToUpdate);
             await _context.SaveChangesAsync();
