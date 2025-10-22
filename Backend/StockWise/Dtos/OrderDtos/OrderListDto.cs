@@ -19,7 +19,7 @@ namespace StockWise.Dtos.OrderDtos
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public long NIP { get; set; }
+        public string NIP { get; set; }
     }
     public class CompanyProductMiniDto
     {

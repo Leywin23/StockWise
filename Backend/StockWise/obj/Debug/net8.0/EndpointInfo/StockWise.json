@@ -274,8 +274,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
@@ -576,6 +575,7 @@
                     "type": "string"
                   },
                   "EAN": {
+                    "pattern": "^\\d{8}$|^\\d{13}$",
                     "type": "string"
                   },
                   "ImageFile": {
@@ -1347,8 +1347,8 @@
             "nullable": true
           },
           "nip": {
-            "type": "integer",
-            "format": "int64"
+            "type": "string",
+            "nullable": true
           },
           "address": {
             "type": "string",
@@ -1385,8 +1385,8 @@
             "nullable": true
           },
           "nip": {
-            "type": "integer",
-            "format": "int64"
+            "type": "string",
+            "nullable": true
           },
           "companyEmail": {
             "type": "string",
@@ -1411,8 +1411,8 @@
             "nullable": true
           },
           "sellerNIP": {
-            "type": "integer",
-            "format": "int64"
+            "type": "string",
+            "nullable": true
           },
           "address": {
             "type": "string",
@@ -1516,8 +1516,8 @@
             "nullable": true
           },
           "companyNIP": {
-            "type": "integer",
-            "format": "int64"
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

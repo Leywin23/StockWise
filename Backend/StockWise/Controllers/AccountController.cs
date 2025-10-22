@@ -150,7 +150,7 @@ namespace StockWise.Controllers
 
         [HttpPost("companies/change/{companyNIP}")]
         [Authorize(Roles = "Worker")]
-        public async Task<IActionResult> ChangeUserCompany([FromRoute] long companyNIP)
+        public async Task<IActionResult> ChangeUserCompany([FromRoute] string companyNIP)
         {
             var result = await _accountService.ChangeUserCompanyAsync(companyNIP);
             return this.ToActionResult(result);

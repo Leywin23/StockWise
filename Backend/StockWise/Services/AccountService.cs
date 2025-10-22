@@ -390,7 +390,7 @@ namespace StockWise.Services
             }
             return ServiceResult<string>.Ok($"User {user.UserName} has been rejected.");
         }
-        public async Task<ServiceResult<string>> ChangeUserCompanyAsync([FromRoute] long companyNIP)
+        public async Task<ServiceResult<string>> ChangeUserCompanyAsync([FromRoute] string companyNIP)
         {
             var currentUser = await _currentUserService.EnsureAsync();
             var company = await _context.Companies.FirstOrDefaultAsync(c => c.NIP == companyNIP);

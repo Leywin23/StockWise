@@ -11,7 +11,7 @@ namespace StockWise.Interfaces
     public interface IAccountService
     {
         Task<ServiceResult<string>> ApproveUserAsync(string userId);
-        Task<ServiceResult<string>> ChangeUserCompanyAsync([FromRoute] long companyNIP);
+        Task<ServiceResult<string>> ChangeUserCompanyAsync([FromRoute] string companyNIP);
         Task<ServiceResult<CompanyWithAccountDto>> CreateCompanyWithAccountAsync(CreateCompanyWithAccountDto dto, CancellationToken ct = default);
         Task<ServiceResult<List<CompanyUserDto>>> GetAllPendingAsync();
         Task<ServiceResult<LoginDto>> LoginAsync(LoginDataDto loginDto);

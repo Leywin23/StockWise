@@ -25,7 +25,7 @@
     "Parameters": [
       {
         "Name": "companyNIP",
-        "Type": "System.Int64",
+        "Type": "System.String",
         "IsRequired": true
       }
     ],

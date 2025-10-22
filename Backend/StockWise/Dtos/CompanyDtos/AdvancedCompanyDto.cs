@@ -2,6 +2,7 @@
 using StockWise.Dtos.MoneyDtos;
 using StockWise.Dtos.OrderDtos;
 using StockWise.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace StockWise.Dtos.CompanyDtos
 {
@@ -18,7 +19,8 @@ namespace StockWise.Dtos.CompanyDtos
     public class AdvancedCompanyDto
     {
         public string Name { get; set; }
-        public long NIP { get; set; }
+        [RegularExpression(@"^\d{10}$", ErrorMessage = "NIP must contain exactly 10 digits.")]
+        public string NIP { get; set; }
         public string Address { get; set; }
         public string Email { get; set; }
         public string Phone { get; set; }

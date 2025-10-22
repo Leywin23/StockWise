@@ -9,6 +9,7 @@ namespace StockWise.Dtos.CompanyProductDtos
         public string CompanyProductName { get; set; } = default!;
 
         [Required]
+        [RegularExpression(@"^\d{8}$|^\d{13}$", ErrorMessage = "EAN must contain exactly 8 or 13 digits.")]
         public string EAN { get; set; } = default!;
 
         public IFormFile? ImageFile { get; set; }

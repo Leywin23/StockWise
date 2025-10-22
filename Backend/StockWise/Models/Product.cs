@@ -8,7 +8,7 @@ namespace StockWise.Models
         public int ProductId {  get; set; }
         [Required, StringLength(200)]
         public string ProductName { get; set; } = default!;
-        [Required, RegularExpression(@"^\d{8}$|^\d{13}$")]
+        [Required, RegularExpression(@"^\d{8}$|^\d{13}$", ErrorMessage = "EAN must contain exactly 8 or 13 digits.")]
         public string EAN { get; set; } = default!;
         public string? Image { get; set; }
         [Required, StringLength(2000)]
