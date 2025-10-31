@@ -2,14 +2,12 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using StockWise.Data;
-using StockWise.Dtos.OrderDtos;
+using StockWise.Application.Contracts.OrderDtos;
+using StockWise.Application.Interfaces;
 using StockWise.Extensions;
-using StockWise.Helpers;
-using StockWise.Interfaces;
+using StockWise.Infrastructure.Persistence;
+using StockWise.Infrastructure.Services;
 using StockWise.Models;
-using StockWise.Services;
 using System.Security.Claims;
 
 namespace StockWise.Controllers

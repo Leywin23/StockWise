@@ -4,14 +4,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using StockWise.Data;
-using StockWise.Dtos.CompanyProductDtos;
-using StockWise.Dtos.ProductDtos;
+using StockWise.Application.Contracts.CompanyProductDtos;
+using StockWise.Application.Interfaces;
 using StockWise.Extensions;
-using StockWise.Interfaces;
-using StockWise.Mappers;
+using StockWise.Infrastructure.Persistence;
+using StockWise.Infrastructure.Services;
 using StockWise.Models;
-using StockWise.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 

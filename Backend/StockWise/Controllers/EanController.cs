@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
-using StockWise.Data;
-using StockWise.Interfaces;
+using StockWise.Application.Interfaces;
+using StockWise.Infrastructure.Persistence;
 using StockWise.Models;
 using System.Text.Json;
 

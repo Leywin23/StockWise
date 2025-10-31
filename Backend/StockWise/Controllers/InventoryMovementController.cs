@@ -3,12 +3,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using StockWise.Data;
-using StockWise.Dtos.InventoryMovementDtos;
+using StockWise.Application.Contracts.InventoryMovementDtos;
+using StockWise.Application.Interfaces;
 using StockWise.Extensions;
-using StockWise.Helpers;
 using StockWise.Hubs;
-using StockWise.Interfaces;
+using StockWise.Infrastructure.Persistence;
 using StockWise.Models;
 
 namespace StockWise.Controllers

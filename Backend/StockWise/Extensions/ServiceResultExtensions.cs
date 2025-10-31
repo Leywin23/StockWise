@@ -1,35 +1,55 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.WebUtilities;
-using StockWise.Response;
+﻿using System;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using StockWise.Application.Abstractions; 
 
 namespace StockWise.Extensions
 {
     public static class ServiceResultExtensions
     {
-        public static IActionResult ToActionResult<T>(this ControllerBase c, ServiceResult<T> result)
+        public static IActionResult ToActionResult<T>(this ControllerBase c, ServiceResult<T> r)
         {
-            if (result.IsSuccess)
+            if (r.IsSuccess)
             {
-                return c.Ok(result.Value);
+                // Sukces: zwróć wartość jeśli jest, inaczej 200 OK bez body
+                return r.Value is null ? c.Ok() : c.Ok(r.Value);
             }
 
-            var (status, title) = result.Error.ToHttp();
-
-            if (status == StatusCodes.Status400BadRequest && result.Details is Dictionary<string, string[]> ve && ve.Count > 0)
+            // Błędy na podstawie ErrorKind
+            return r.Error switch
             {
-                var apiValidation = ApiError.Validation(c.HttpContext, ve);
-                return new ObjectResult(apiValidation) { StatusCode = status };
-            }
+                ErrorKind.BadRequest => c.BadRequest(ApiError.From(
+                                            new Exception(r.Message ?? "Bad request"),
+                                            StatusCodes.Status400BadRequest,
+                                            c.HttpContext)),
 
-            var apiErr = new ApiError
-            {
-                Status = status,
-                Title = title,
-                Detail = result.Message ?? ReasonPhrases.GetReasonPhrase(status),
-                TraceId = c.HttpContext.TraceIdentifier
+                ErrorKind.Unauthorized => c.Unauthorized(ApiError.From(
+                                            new Exception(r.Message ?? "Unauthorized"),
+                                            StatusCodes.Status401Unauthorized,
+                                            c.HttpContext)),
+
+                ErrorKind.Forbidden => c.Forbid(), // bez body
+
+                ErrorKind.NotFound => c.NotFound(ApiError.From(
+                                            new Exception(r.Message ?? "Not found"),
+                                            StatusCodes.Status404NotFound,
+                                            c.HttpContext)),
+
+                ErrorKind.Conflict => c.Conflict(ApiError.From(
+                                            new Exception(r.Message ?? "Conflict"),
+                                            StatusCodes.Status409Conflict,
+                                            c.HttpContext)),
+
+                ErrorKind.ServerError => c.StatusCode(StatusCodes.Status500InternalServerError, ApiError.From(
+                                            new Exception(r.Message ?? "Unexpected error"),
+                                            StatusCodes.Status500InternalServerError,
+                                            c.HttpContext)),
+
+                _ => c.StatusCode(StatusCodes.Status500InternalServerError, ApiError.From(
+                        new Exception(r.Message ?? "Unexpected error"),
+                        StatusCodes.Status500InternalServerError,
+                        c.HttpContext))
             };
-
-            return new ObjectResult(apiErr) { StatusCode = status };
         }
     }
 }

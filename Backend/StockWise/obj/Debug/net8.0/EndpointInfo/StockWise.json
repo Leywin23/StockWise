@@ -1347,6 +1347,7 @@
             "nullable": true
           },
           "nip": {
+            "pattern": "^\\d{10}$",
             "type": "string",
             "nullable": true
           },

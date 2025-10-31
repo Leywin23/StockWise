@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
-using StockWise.Interfaces;
+using StockWise.Application.Interfaces;
 
 namespace StockWise.Controllers
 {
@@ -9,8 +9,8 @@ namespace StockWise.Controllers
     [ApiController]
     public class EmailController : ControllerBase
     {
-        private readonly IEmailSenderServicer _emailSender;
-        public EmailController(IEmailSenderServicer emailSender)
+        private readonly IEmailSenderService _emailSender;
+        public EmailController(IEmailSenderService emailSender)
         {
             _emailSender = emailSender;
         }

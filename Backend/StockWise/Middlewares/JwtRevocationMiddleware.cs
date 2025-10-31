@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.EntityFrameworkCore;
-using StockWise.Data;
+using StockWise.Infrastructure.Persistence;
 using StockWise.Models;
 using System.IdentityModel.Tokens.Jwt;
 

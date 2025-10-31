@@ -4,13 +4,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using StockWise.Data;
-using StockWise.Dtos.AccountDtos;
+using StockWise.Application.Contracts.AccountDtos;
+using StockWise.Application.Interfaces;
 using StockWise.Extensions;
-using StockWise.Helpers;
-using StockWise.Interfaces;
+using StockWise.Infrastructure.Persistence;
 using StockWise.Models;
-using StockWise.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
@@ -25,10 +23,10 @@ namespace StockWise.Controllers
         private readonly StockWiseDb _context;
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
-        private readonly IEmailSenderServicer _emailSenderServicer;
+        private readonly IEmailSenderService _emailSenderServicer;
         private readonly IMemoryCache _cache;
         private readonly IAccountService _accountService;
-        public AccountController(ITokenService tokenService, StockWiseDb context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IEmailSenderServicer emailSenderServicer, IMemoryCache cache, IAccountService accountService)
+        public AccountController(ITokenService tokenService, StockWiseDb context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IEmailSenderService emailSenderServicer, IMemoryCache cache, IAccountService accountService)
         {
             _tokenService = tokenService;
             _context = context;
@@ -66,7 +64,7 @@ namespace StockWise.Controllers
         [Authorize]
         public async Task<IActionResult> Logout(CancellationToken ct)
         {
-            var result = await _accountService.LogoutAsync(ct,this);
+            var result = await _accountService.LogoutAsync(ct);
             return this.ToActionResult(result);
         }
 

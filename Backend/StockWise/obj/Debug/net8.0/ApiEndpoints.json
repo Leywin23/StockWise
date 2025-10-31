@@ -99,7 +99,7 @@
     "Parameters": [
       {
         "Name": "dto",
-        "Type": "StockWise.Dtos.AccountDtos.CreateCompanyWithAccountDto",
+        "Type": "StockWise.Application.Contracts.AccountDtos.CreateCompanyWithAccountDto",
         "IsRequired": true
       }
     ],
@@ -115,7 +115,7 @@
     "Parameters": [
       {
         "Name": "loginDto",
-        "Type": "StockWise.Dtos.AccountDtos.LoginDataDto",
+        "Type": "StockWise.Application.Contracts.AccountDtos.LoginDataDto",
         "IsRequired": true
       }
     ],
@@ -141,7 +141,7 @@
     "Parameters": [
       {
         "Name": "userDto",
-        "Type": "StockWise.Dtos.AccountDtos.RegisterDto",
+        "Type": "StockWise.Application.Contracts.AccountDtos.RegisterDto",
         "IsRequired": true
       }
     ],
@@ -271,7 +271,7 @@
     "Parameters": [
       {
         "Name": "companyDto",
-        "Type": "StockWise.Dtos.CompanyDtos.CreateCompanyDto",
+        "Type": "StockWise.Application.Contracts.CompanyDtos.CreateCompanyDto",
         "IsRequired": true
       }
     ],
@@ -297,7 +297,7 @@
     "Parameters": [
       {
         "Name": "companyDto",
-        "Type": "StockWise.Dtos.CompanyDtos.UpdateCompanyDto",
+        "Type": "StockWise.Application.Contracts.CompanyDtos.UpdateCompanyDto",
         "IsRequired": true
       }
     ],
@@ -591,7 +591,7 @@
     "Parameters": [
       {
         "Name": "dto",
-        "Type": "StockWise.Dtos.InventoryMovementDtos.InventoryMovementDto",
+        "Type": "StockWise.Application.Contracts.InventoryMovementDtos.InventoryMovementDto",
         "IsRequired": true
       }
     ],
@@ -633,7 +633,7 @@
     "Parameters": [
       {
         "Name": "order",
-        "Type": "StockWise.Dtos.OrderDtos.CreateOrderDto",
+        "Type": "StockWise.Application.Contracts.OrderDtos.CreateOrderDto",
         "IsRequired": true
       }
     ],
@@ -686,7 +686,7 @@
       },
       {
         "Name": "dto",
-        "Type": "StockWise.Dtos.OrderDtos.UpdateOrderDto",
+        "Type": "StockWise.Application.Contracts.OrderDtos.UpdateOrderDto",
         "IsRequired": true
       }
     ],

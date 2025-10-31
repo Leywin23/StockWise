@@ -1,0 +1,16 @@
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise.Application\obj\Debug\net8.0\StockWise.Application.csproj.AssemblyReference.cache
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise.Application\obj\Debug\net8.0\StockWise.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise.Application\obj\Debug\net8.0\StockWise.Application.AssemblyInfoInputs.cache
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise.Application\obj\Debug\net8.0\StockWise.Application.AssemblyInfo.cs
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise.Application\obj\Debug\net8.0\StockWise.Application.csproj.CoreCompileInputs.cache
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise.Application\obj\Debug\net8.0\StockWise.Application.sourcelink.json
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise.Application\bin\Debug\net8.0\StockWise.Application.deps.json
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise.Application\bin\Debug\net8.0\StockWise.Application.dll
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise.Application\bin\Debug\net8.0\StockWise.Application.pdb
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise.Application\bin\Debug\net8.0\StockWise.Domain.dll
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise.Application\bin\Debug\net8.0\StockWise.Domain.pdb
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise.Application\obj\Debug\net8.0\StockWis.47DB3E67.Up2Date
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise.Application\obj\Debug\net8.0\StockWise.Application.dll
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise.Application\obj\Debug\net8.0\refint\StockWise.Application.dll
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise.Application\obj\Debug\net8.0\StockWise.Application.pdb
+C:\Users\DESKTOP\source\repos\StockWise\Backend\StockWise.Application\obj\Debug\net8.0\ref\StockWise.Application.dll

@@ -1,15 +1,14 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using StockWise.Data;
 using StockWise.Models;
 using static System.Net.Mime.MediaTypeNames;
 using StockWise.Migrations;
-using StockWise.Mappers;
 using Microsoft.AspNetCore.Authorization;
-using StockWise.Dtos.ProductDtos;
 using AutoMapper;
-using StockWise.Interfaces;
+using StockWise.Application.Contracts.ProductDtos;
+using StockWise.Infrastructure.Persistence;
+using StockWise.Application.Interfaces;
 
 namespace StockWise.Controllers
 {
