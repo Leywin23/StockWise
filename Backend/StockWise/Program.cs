@@ -87,3 +87,7 @@ app.MapControllers();
 app.MapRazorPages();
 
 app.Run();
+namespace StockWise
+{
+    public partial class Program { }
+}

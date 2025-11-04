@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockWise.Infrastructure", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockWise.Tests.Unit", "StockWise.Tests.Unit\StockWise.Tests.Unit.csproj", "{EF2A56A1-3771-49D6-919E-BA44C30F7607}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockWise.Tests.Integration", "StockWise.Tests.Integration\StockWise.Tests.Integration.csproj", "{FDC408B7-E5D0-4C45-9685-25BE55DD5A08}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockWise.Tests.Api", "StockWise.Tests.Api\StockWise.Tests.Api.csproj", "{38CF0E51-E0F6-4650-861A-5B687CA85B0C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{EF2A56A1-3771-49D6-919E-BA44C30F7607}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EF2A56A1-3771-49D6-919E-BA44C30F7607}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF2A56A1-3771-49D6-919E-BA44C30F7607}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDC408B7-E5D0-4C45-9685-25BE55DD5A08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDC408B7-E5D0-4C45-9685-25BE55DD5A08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDC408B7-E5D0-4C45-9685-25BE55DD5A08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDC408B7-E5D0-4C45-9685-25BE55DD5A08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38CF0E51-E0F6-4650-861A-5B687CA85B0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38CF0E51-E0F6-4650-861A-5B687CA85B0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38CF0E51-E0F6-4650-861A-5B687CA85B0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38CF0E51-E0F6-4650-861A-5B687CA85B0C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

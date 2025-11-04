@@ -1,0 +1,6 @@
+{
+  "StockWise.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\DESKTOP\\source\\repos\\StockWise\\Backend\\StockWise.Application",
+  "StockWise, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\DESKTOP\\source\\repos\\StockWise\\Backend\\StockWise",
+  "StockWise.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\DESKTOP\\source\\repos\\StockWise\\Backend\\StockWise.Domain",
+  "StockWise.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "C:\\Users\\DESKTOP\\source\\repos\\StockWise\\Backend\\StockWise.Infrastructure"
+}

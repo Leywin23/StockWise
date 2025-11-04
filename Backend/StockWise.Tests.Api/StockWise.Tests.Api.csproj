@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+
+		<!-- TE 3 KLUCZOWE: -->
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+		<PreserveCompilationContext>true</PreserveCompilationContext>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="FluentAssertions" Version="8.8.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.8" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.8" />
+		<!-- PODNIEŚ Sdk testów -->
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+		<PackageReference Include="xunit" Version="2.5.3" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+		<PackageReference Include="coverlet.collector" Version="6.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\StockWise\StockWise.csproj" />
+		<ProjectReference Include="..\StockWise.Infrastructure\StockWise.Infrastructure.csproj" />
+	</ItemGroup>
+
+	<!-- Opcjonalny „młotek” jeśli środowisko dalej nie kopiuje plików -->
+	<Target Name="CopyWebDeps" AfterTargets="Build">
+		<ItemGroup>
+			<WebDeps Include="..\StockWise\bin\$(Configuration)\net8.0\*.deps.json" />
+			<WebRuntime Include="..\StockWise\bin\$(Configuration)\net8.0\*.runtimeconfig.json" />
+		</ItemGroup>
+		<Copy SourceFiles="@(WebDeps)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+		<Copy SourceFiles="@(WebRuntime)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+	</Target>
+</Project>
+
