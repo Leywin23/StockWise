@@ -6,7 +6,6 @@
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
 
-		<!-- TE 3 KLUCZOWE: -->
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
 		<PreserveCompilationContext>true</PreserveCompilationContext>
@@ -17,7 +16,6 @@
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.8" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.8" />
-		<!-- PODNIEŚ Sdk testów -->
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
 		<PackageReference Include="xunit" Version="2.5.3" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
@@ -29,7 +27,6 @@
 		<ProjectReference Include="..\StockWise.Infrastructure\StockWise.Infrastructure.csproj" />
 	</ItemGroup>
 
-	<!-- Opcjonalny „młotek” jeśli środowisko dalej nie kopiuje plików -->
 	<Target Name="CopyWebDeps" AfterTargets="Build">
 		<ItemGroup>
 			<WebDeps Include="..\StockWise\bin\$(Configuration)\net8.0\*.deps.json" />
