@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Models;
 using static System.Net.Mime.MediaTypeNames;
-using StockWise.Migrations;
 using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
 using StockWise.Application.Contracts.ProductDtos;

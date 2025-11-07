@@ -14,6 +14,8 @@ using System.Linq;
 
 public class CustomWebAppFactory : WebApplicationFactory<Program>
 {
+    private static readonly object _seedLock = new();
+    private static bool _seedDone;
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Test");
@@ -43,9 +45,18 @@ public class CustomWebAppFactory : WebApplicationFactory<Program>
             .AddScheme<AuthenticationSchemeOptions, FakeAuthHandler>(FakeAuthHandler.Scheme, _ => { });
             using var scope = services.BuildServiceProvider().CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<StockWiseDb>();
-            db.Database.EnsureDeleted();
             db.Database.EnsureCreated();
-            Seed(db);
+            if (!_seedDone)
+            {
+                lock (_seedLock)
+                {
+                    if (!_seedDone)
+                    {
+                        Seed(db);
+                        _seedDone = true;
+                    }
+                }
+            }
         });
     }
     private static void Seed(StockWiseDb db)

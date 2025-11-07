@@ -24,5 +24,14 @@ namespace StockWise.Tests.Api.Controllers
             var resp = await client.GetAsync($"api/CompanyProduct/{id}");
             resp.StatusCode.Should().Be(HttpStatusCode.OK);
         }
+        [Theory]
+        [InlineData(2)]
+        public async Task GetByIdCompanyProduct_ShouldReturnNotFound(int id)
+        {
+            var client = _factory.CreateClient();
+            var resp = await client.GetAsync($"api/CompanyProduct/{id}");
+            resp.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+
     }
 }
