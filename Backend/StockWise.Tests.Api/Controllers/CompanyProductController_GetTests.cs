@@ -18,8 +18,9 @@ namespace StockWise.Tests.Api.Controllers
         public async Task GetCompanyProducts_ShouldReturnOk()
         {
             var client = _factory.CreateClient();
-            var resp = await client.GetAsync("/api/CompanyProduct?page=1&pageSize=10");
+            var resp = await client.GetAsync("api/CompanyProduct?pageNumber=1&pageSize=10");
             resp.StatusCode.Should().Be(HttpStatusCode.OK);
         }
+
     }
 }

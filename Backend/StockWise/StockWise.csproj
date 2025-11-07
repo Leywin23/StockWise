@@ -9,6 +9,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.2" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -17,7 +18,11 @@
 		<PackageReference Include="AutoMapper" Version="12.0.1" />
 		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
 	</ItemGroup>
-
+	
+	<ItemGroup>
+		<InternalsVisibleTo Include="StockWise.Tests.Api"/>
+	</ItemGroup>
+	
 	<ItemGroup>
 		<ProjectReference Include="..\StockWise.Infrastructure\StockWise.Infrastructure.csproj" />
 		<ProjectReference Include="..\StockWise.Application\StockWise.Application.csproj" />

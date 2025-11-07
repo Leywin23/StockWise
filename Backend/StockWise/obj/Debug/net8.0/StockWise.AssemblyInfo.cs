@@ -14,10 +14,11 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("StockWise")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fd10ce3841c1bcd6de5d4b04f2dda8db217a9aee")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+54b4c97dac0349db2c14a890f9ae4b2779f97498")]
 [assembly: System.Reflection.AssemblyProductAttribute("StockWise")]
 [assembly: System.Reflection.AssemblyTitleAttribute("StockWise")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("StockWise.Tests.Api")]
 
 // Wygenerowane przez klasę WriteCodeFragment programu MSBuild.
 
