@@ -88,10 +88,8 @@ namespace StockWise.Controllers
             var user = await GetCurrentUserAsync();
             if (user == null) return Unauthorized("User not found.");
 
-            var deleted = await _companyProductService.DeleteCompanyProductAsync(user, productId, ct);
-            if (deleted == null) return NotFound("Product not found.");
-
-            return Ok(deleted);
+            var result = await _companyProductService.DeleteCompanyProductAsync(user, productId, ct);
+            return this.ToActionResult(result);
         }
 
         [HttpPut("{productId:int}")]

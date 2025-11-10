@@ -281,9 +281,9 @@ namespace StockWise.Infrastructure.Services
         }
 
         public async Task<ServiceResult<CompanyProductDto>> DeleteCompanyProductAsync(
-    AppUser user,
-    int productId,
-    CancellationToken ct = default)
+        AppUser user,
+        int productId,
+        CancellationToken ct = default)
         {
             if (user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
                 return ServiceResult<CompanyProductDto>.Forbidden(
@@ -349,8 +349,10 @@ namespace StockWise.Infrastructure.Services
 
             var Price = Money.Of(companyProductDto.Price, companyProductDto.Currency);
 
-            if (!companyProductDto.ImageFile.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+            if (companyProductDto.ImageFile is not null && !companyProductDto.ImageFile.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+            {
                 return ServiceResult<CompanyProductDto>.BadRequest("Only image files are allowed.");
+            }
 
             string? imageUrl = null;
             string? uploadedBlobName = null;

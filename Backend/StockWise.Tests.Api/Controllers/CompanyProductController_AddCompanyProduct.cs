@@ -38,10 +38,45 @@ namespace StockWise.Tests.Api.Controllers
             var resp = await client.PostAsync("api/CompanyProduct", form);
             var body = await resp.Content.ReadAsStringAsync();
 
-            _output.WriteLine("Response body:");
-            _output.WriteLine(body);
-
             resp.StatusCode.Should().Be(HttpStatusCode.OK, $"response body was: {body}");
+        }
+        [Fact]
+        public async Task AddCompanyProduct_ShouldReturnBadRequest()
+        {
+            var client = _factory.CreateClient();
+            var form = new MultipartFormDataContent
+            {
+                { new StringContent("Keychron K6 Wireless Mechanical Keyboard"), "CompanyProductName" },
+                { new StringContent("1234567"), "EAN" },
+                { new StringContent("Compact 65% wireless mechanical keyboard with RGB backlight and hot-swappable switches."), "Description" },
+                { new StringContent("Keyboards"), "Category" },
+                { new StringContent("89,99"), "Price" },
+                { new StringContent("USD"), "Currency" },
+                { new StringContent("85"), "Stock" },
+                { new StringContent("true"), "IsAvailableForOrder" }
+            };
+            var resp = await client.PostAsync("api/CompanyProduct", form);
+            var body = await resp.Content.ReadAsStringAsync();
+
+            resp.StatusCode.Should().Be(HttpStatusCode.BadRequest, body);
+        }
+        [Fact]
+        public async Task AddCompanyProduct_ShouldReturnBadRequest_ProductAlreadyExist()
+        {
+            var client = _factory.CreateClient();
+            var form = new MultipartFormDataContent
+            {
+                { new StringContent("Logitech M185 Wireless Mouse"), "CompanyProductName" },
+                { new StringContent("5099206027295"), "EAN" },
+                { new StringContent("Compact 65% wireless mechanical keyboard with RGB backlight and hot-swappable switches."), "Description" },
+                { new StringContent("Keyboards"), "Category" },
+                { new StringContent("89,99"), "Price" },
+                { new StringContent("USD"), "Currency" },
+                { new StringContent("85"), "Stock" },
+                { new StringContent("true"), "IsAvailableForOrder" }
+            };
+            var resp = await client.PostAsync("api/CompanyProduct", form);
+            var body = await resp.Content.ReadAsStringAsync();
         }
     }
 }
