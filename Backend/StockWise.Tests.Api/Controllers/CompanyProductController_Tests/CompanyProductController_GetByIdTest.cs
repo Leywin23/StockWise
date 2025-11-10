@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace StockWise.Tests.Api.Controllers
+namespace StockWise.Tests.Api.Controllers.CompanyProductController_Tests
 {
     public class CompanyProductController_GetByIdTest : IClassFixture<CustomWebAppFactory>
     {

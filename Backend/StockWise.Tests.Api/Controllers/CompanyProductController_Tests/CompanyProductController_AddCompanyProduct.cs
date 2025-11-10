@@ -1,11 +1,14 @@
-﻿using System.Globalization;
+﻿using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using StockWise.Infrastructure.Persistence;
+using StockWise.Models;
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
-using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace StockWise.Tests.Api.Controllers
+namespace StockWise.Tests.Api.Controllers.CompanyProductController_Tests
 {
     public class CompanyProductController_AddCompanyProduct : IClassFixture<CustomWebAppFactory>
     {
@@ -21,12 +24,24 @@ namespace StockWise.Tests.Api.Controllers
         [Fact]
         public async Task AddCompanyProduct_ShouldReturnOk()
         {
+            using (var scope = _factory.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<StockWiseDb>();
+                await db.Database.EnsureDeletedAsync();
+                await db.Database.EnsureCreatedAsync();
+
+                var company = new Company { Name = "ACME", NIP = "1234567890", Address = "A 1", Email = "a@a", Phone = "123" };
+                db.Companies.Add(company);
+                db.Users.Add(new AppUser { Id = "u1", UserName = "john", Email = "john@test.com", EmailConfirmed = true, Company = company, CompanyMembershipStatus = CompanyMembershipStatus.Approved });
+                db.Categories.Add(new Category { Name = "Category" });
+                await db.SaveChangesAsync();
+            }
             var client = _factory.CreateClient();
 
             var form = new MultipartFormDataContent
             {
                 { new StringContent("Logitech M185 Wireless Mouse"), "CompanyProductName" },
-                { new StringContent("5099206027295"), "EAN" },
+                { new StringContent("5099206027291"), "EAN" },
                 { new StringContent("Compact wireless optical mouse Logitech M185 ..."), "Description" },
                 { new StringContent("Category"), "Category" },
                 { new StringContent("12,99"), "Price" },

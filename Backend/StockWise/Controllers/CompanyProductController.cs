@@ -112,9 +112,7 @@ namespace StockWise.Controllers
         {
             var user = await GetCurrentUserAsync();
             if (user == null) return Unauthorized("User not found.");
-
-
-
+            
             if (string.IsNullOrWhiteSpace(toCode)) return BadRequest("Target currency code is required.");
 
             var result = await _companyProductService.GetCompanyProductAsyncById(user, productId);
