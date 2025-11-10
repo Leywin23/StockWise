@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockWise.Application.Abstractions;
@@ -144,14 +145,20 @@ namespace StockWise.Infrastructure.Services
 
         public async Task<ServiceResult<CompanyDto>> DeleteCompanyAsync(AppUser user)
         {
-            var company = await GetUserCompanyAsync(user);
-            if (company == null) return ServiceResult<CompanyDto>.NotFound("User is not assigned to any company");
+            var company = await _context.Companies
+                .Include(c => c.CompanyProducts)
+                .FirstOrDefaultAsync(c => c.Id == user.CompanyId);
+
+            if (company == null)
+                return ServiceResult<CompanyDto>.NotFound("User is not assigned to any company");
+
+            _context.CompanyProducts.RemoveRange(company.CompanyProducts);
 
             _context.Companies.Remove(company);
             await _context.SaveChangesAsync();
 
-            var companyDto = _mapper.Map<CompanyDto>(company);
-            return ServiceResult<CompanyDto>.Ok(companyDto);
+            var dto = _mapper.Map<CompanyDto>(company);
+            return ServiceResult<CompanyDto>.Ok(dto);
         }
 
 
@@ -159,6 +166,10 @@ namespace StockWise.Infrastructure.Services
         {
             var company = await GetUserCompanyAsync(user);
             if (company == null) return ServiceResult<CompanyDto>.NotFound("User is not assigned to any company");
+
+            var companyNameCheck = await _context.Companies.FirstOrDefaultAsync(c=>c.Name == companyDto.Name);
+            if (companyNameCheck != null)
+                return ServiceResult<CompanyDto>.Conflict("Company with this name already exist");
 
             company.Name = companyDto.Name;
             company.Email = companyDto.Email;

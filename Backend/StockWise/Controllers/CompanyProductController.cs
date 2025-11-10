@@ -88,8 +88,10 @@ namespace StockWise.Controllers
             var user = await GetCurrentUserAsync();
             if (user == null) return Unauthorized("User not found.");
 
-            var result = await _companyProductService.DeleteCompanyProductAsync(user, productId, ct);
-            return this.ToActionResult(result);
+            var deleted = await _companyProductService.DeleteCompanyProductAsync(user, productId, ct);
+            if (deleted == null) return NotFound("Product not found.");
+
+            return Ok(deleted);
         }
 
         [HttpPut("{productId:int}")]
@@ -112,7 +114,9 @@ namespace StockWise.Controllers
         {
             var user = await GetCurrentUserAsync();
             if (user == null) return Unauthorized("User not found.");
-            
+
+
+
             if (string.IsNullOrWhiteSpace(toCode)) return BadRequest("Target currency code is required.");
 
             var result = await _companyProductService.GetCompanyProductAsyncById(user, productId);
