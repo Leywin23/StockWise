@@ -311,6 +311,10 @@
               "target": "Package",
               "version": "[8.8.0, )"
             },
+            "Microsoft.AspNet.Identity.Core": {
+              "target": "Package",
+              "version": "[2.2.4, )"
+            },
             "Microsoft.AspNetCore.Mvc.Testing": {
               "target": "Package",
               "version": "[8.0.8, )"

@@ -101,7 +101,7 @@ namespace StockWise.Infrastructure.Services
             catch (Exception ex)
             {
                 await _userManager.DeleteAsync(newUser);
-                ;
+                
                 return ServiceResult<NewUserDto>.ServerError("User creation failed.");
             }
         }

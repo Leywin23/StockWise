@@ -6,10 +6,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using StockWise.Application.Interfaces;
 using StockWise.Infrastructure.Persistence;
 using StockWise.Models;
-using StockWise.Tests.Api;
+using StockWise.Tests.Api.Fakes;
 using System.IO;
+using Microsoft.AspNetCore.Identity;
 
 public class CustomWebAppFactory : WebApplicationFactory<Program>
 {
@@ -27,6 +29,9 @@ public class CustomWebAppFactory : WebApplicationFactory<Program>
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll(typeof(DbContextOptions<StockWiseDb>));
+            services.RemoveAll(typeof(IEmailSenderService));
+            services.AddSingleton<IEmailSenderService, FakeEmailSender>();
+
 
             var connString = GetConnectionString();
             services.AddSqlServer<StockWiseDb>(connString);
@@ -41,6 +46,7 @@ public class CustomWebAppFactory : WebApplicationFactory<Program>
             using var sp = services.BuildServiceProvider();
             using var scope = sp.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<StockWiseDb>();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
 
             db.Database.EnsureDeleted();
             db.Database.EnsureCreated();
@@ -56,6 +62,7 @@ public class CustomWebAppFactory : WebApplicationFactory<Program>
                     Phone = "123456789"
                 };
                 db.Companies.Add(company);
+                db.SaveChanges();
 
                 db.Users.Add(new AppUser
                 {
@@ -66,11 +73,38 @@ public class CustomWebAppFactory : WebApplicationFactory<Program>
                     Company = company,
                     CompanyMembershipStatus = CompanyMembershipStatus.Approved
                 });
+                var loginUser = new AppUser
+                {
+                    UserName = "loginuser",
+                    Email = "loginuser@test.com",
+                    EmailConfirmed = true,
+                    CompanyId = company.Id,
+                    CompanyMembershipStatus = CompanyMembershipStatus.Approved
+                };
+                var create = userManager.CreateAsync(loginUser, "Password123!").GetAwaiter().GetResult();
+                if (create.Succeeded)
+                {
+                    userManager.AddToRoleAsync(loginUser, "Worker").GetAwaiter().GetResult();
+                }
+                var unconfirmedUser = new AppUser
+                {
+                    UserName = "unconfirmeduser",
+                    Email = "nonexistent@test.com",
+                    EmailConfirmed = false, 
+                    CompanyId = company.Id,
+                    CompanyMembershipStatus = CompanyMembershipStatus.Approved
+                };
+
+                var create2 = userManager.CreateAsync(unconfirmedUser, "Password123!").GetAwaiter().GetResult();
+                if (create.Succeeded)
+                {
+                    userManager.AddToRoleAsync(unconfirmedUser, "Worker").GetAwaiter().GetResult();
+                }
 
                 var category = new Category { Name = "Category" };
                 db.Categories.Add(category);
 
-                db.CompanyProducts.Add(new CompanyProduct
+                var companyProduct = new CompanyProduct
                 {
                     CompanyProductName = "Test Product",
                     EAN = "12345678",
@@ -79,8 +113,22 @@ public class CustomWebAppFactory : WebApplicationFactory<Program>
                     Stock = 200,
                     Company = company,
                     IsAvailableForOrder = true,
-                    Category = category
-                });
+                    Category = category,
+                    InventoryMovements = new List<InventoryMovement>()
+                };
+
+                var inventoryMovement = new InventoryMovement
+                {
+                    Date = DateTime.Now,
+                    Type = MovementType.Inbound,
+                    Quantity = 200,
+                    Comment = "Initial stock",
+                    CompanyProduct = companyProduct 
+                };
+
+                companyProduct.InventoryMovements.Add(inventoryMovement);
+
+                db.CompanyProducts.Add(companyProduct);
 
                 db.SaveChanges();
             }

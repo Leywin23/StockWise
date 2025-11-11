@@ -154,6 +154,19 @@ namespace StockWise.Infrastructure.Services
 
             _context.CompanyProducts.RemoveRange(company.CompanyProducts);
 
+            var users = await _context.Users
+               .Where(u => u.CompanyId == company.Id)
+               .ToListAsync();
+
+            foreach (var u in users)
+            {
+                u.CompanyId = null;
+                u.CompanyMembershipStatus = CompanyMembershipStatus.Suspended;
+            }
+            await _context.SaveChangesAsync();
+
+            _context.Users.UpdateRange(users);
+
             _context.Companies.Remove(company);
             await _context.SaveChangesAsync();
 

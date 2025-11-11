@@ -9,7 +9,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
-namespace StockWise.Tests.Api
+namespace StockWise.Tests.Api.Fakes
 {
     public class FakeAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
