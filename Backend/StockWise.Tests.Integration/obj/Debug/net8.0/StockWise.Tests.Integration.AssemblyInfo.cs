@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("StockWise.Tests.Integration")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bdd180189c5d0d4cf79595c5f902351e6155b3df")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a609403d19333500aae6580fd148ad281e888b10")]
 [assembly: System.Reflection.AssemblyProductAttribute("StockWise.Tests.Integration")]
 [assembly: System.Reflection.AssemblyTitleAttribute("StockWise.Tests.Integration")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

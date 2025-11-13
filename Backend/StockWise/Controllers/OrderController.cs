@@ -35,10 +35,8 @@ namespace StockWise.Controllers
         public async Task<IActionResult> GetOrders()
         {
             var user = await _currentUserService.EnsureAsync();
-
-            var orders = await _orderService.GetOrdersAsync(user);
-
-            return Ok(orders);
+            var result = await _orderService.GetOrdersAsync(user);
+            return this.ToActionResult(result);
         }
 
         [Authorize]
@@ -50,9 +48,9 @@ namespace StockWise.Controllers
                 return Unauthorized(ApiError.From(new Exception("Invalid user"), StatusCodes.Status401Unauthorized, HttpContext));
             }
 
-           var result = await _orderService.GetOrderAsync(user, id);
-            
-            return Ok(result);
+            var result = await _orderService.GetOrderAsync(user, id);
+
+            return this.ToActionResult(result);
         }
 
         [HttpPost]
@@ -68,7 +66,7 @@ namespace StockWise.Controllers
             return this.ToActionResult(orderResult);
         }
 
-        [HttpDelete]
+        [HttpDelete("{id:int}")]
         [Authorize]
         public async Task<IActionResult> DeleteOrderAsync(int id)
         {
@@ -97,8 +95,8 @@ namespace StockWise.Controllers
             return this.ToActionResult(result);
         }
         [Authorize]
-        [HttpPut("AcceptOrRejectOrder")]
-        public async Task<IActionResult> AcceptOrRejectOrder(int orderId, OrderStatus status, CancellationToken ct = default)
+        [HttpPut("AcceptOrRejectOrder/{orderId:int}")]
+        public async Task<IActionResult> AcceptOrRejectOrder(int orderId, [FromBody] OrderStatus status, CancellationToken ct = default)
         {
             var user = await _currentUserService.EnsureAsync();
             if (user == null)
@@ -109,8 +107,8 @@ namespace StockWise.Controllers
             return this.ToActionResult(result);
         }
         [Authorize]
-        [HttpPut("CancellOrCorfirm")]
-        public async Task<IActionResult> CancellOrCorfirmOrderReceipt(int orderId, OrderStatus status, CancellationToken ct = default)
+        [HttpPut("CancellOrCorfirm/{orderId:int}")]
+        public async Task<IActionResult> CancellOrCorfirmOrderReceipt(int orderId,[FromBody] OrderStatus status, CancellationToken ct = default)
         {
             var user = await _currentUserService.EnsureAsync();
             if (user == null)
@@ -120,7 +118,5 @@ namespace StockWise.Controllers
             var result = await _orderService.CancelOrConfirmOrderReceiptAsync(orderId,user,status,ct);
             return this.ToActionResult(result);
         }
-
-
     }
 }
