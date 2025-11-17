@@ -641,25 +641,25 @@
   },
   {
     "ContainingType": "StockWise.Controllers.OrderController",
-    "Method": "DeleteOrderAsync",
-    "RelativePath": "api/Order",
-    "HttpMethod": "DELETE",
+    "Method": "GetOrder",
+    "RelativePath": "api/Order/{id}",
+    "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
         "Name": "id",
         "Type": "System.Int32",
-        "IsRequired": false
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []
   },
   {
     "ContainingType": "StockWise.Controllers.OrderController",
-    "Method": "GetOrder",
+    "Method": "DeleteOrderAsync",
     "RelativePath": "api/Order/{id}",
-    "HttpMethod": "GET",
+    "HttpMethod": "DELETE",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -695,7 +695,7 @@
   {
     "ContainingType": "StockWise.Controllers.OrderController",
     "Method": "AcceptOrRejectOrder",
-    "RelativePath": "api/Order/AcceptOrRejectOrder",
+    "RelativePath": "api/Order/AcceptOrRejectOrder/{orderId}",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -703,12 +703,12 @@
       {
         "Name": "orderId",
         "Type": "System.Int32",
-        "IsRequired": false
+        "IsRequired": true
       },
       {
         "Name": "status",
         "Type": "System.String",
-        "IsRequired": false
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []
@@ -716,7 +716,7 @@
   {
     "ContainingType": "StockWise.Controllers.OrderController",
     "Method": "CancellOrCorfirmOrderReceipt",
-    "RelativePath": "api/Order/CancellOrCorfirm",
+    "RelativePath": "api/Order/CancellOrCorfirm/{orderId}",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -724,12 +724,12 @@
       {
         "Name": "orderId",
         "Type": "System.Int32",
-        "IsRequired": false
+        "IsRequired": true
       },
       {
         "Name": "status",
         "Type": "System.String",
-        "IsRequired": false
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []

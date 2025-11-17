@@ -956,15 +956,18 @@
             "description": "OK"
           }
         }
-      },
-      "delete": {
+      }
+    },
+    "/api/Order/{id}": {
+      "get": {
         "tags": [
           "Order"
         ],
         "parameters": [
           {
             "name": "id",
-            "in": "query",
+            "in": "path",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -976,10 +979,8 @@
             "description": "OK"
           }
         }
-      }
-    },
-    "/api/Order/{id}": {
-      "get": {
+      },
+      "delete": {
         "tags": [
           "Order"
         ],
@@ -1041,7 +1042,7 @@
         }
       }
     },
-    "/api/Order/AcceptOrRejectOrder": {
+    "/api/Order/AcceptOrRejectOrder/{orderId}": {
       "put": {
         "tags": [
           "Order"
@@ -1049,20 +1050,33 @@
         "parameters": [
           {
             "name": "orderId",
-            "in": "query",
+            "in": "path",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
             }
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/OrderStatus"
-            }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderStatus"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderStatus"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderStatus"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -1070,7 +1084,7 @@
         }
       }
     },
-    "/api/Order/CancellOrCorfirm": {
+    "/api/Order/CancellOrCorfirm/{orderId}": {
       "put": {
         "tags": [
           "Order"
@@ -1078,20 +1092,33 @@
         "parameters": [
           {
             "name": "orderId",
-            "in": "query",
+            "in": "path",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
             }
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/OrderStatus"
-            }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderStatus"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderStatus"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderStatus"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK"

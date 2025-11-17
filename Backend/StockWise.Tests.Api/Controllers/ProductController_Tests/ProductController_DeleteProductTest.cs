@@ -26,7 +26,6 @@ namespace StockWise.Tests.Api.Controllers.ProductController_Tests
         [Fact]
         public async Task DeleteProduct_ShouldReturnOk_AndRemoveProductFromDatabase()
         {
-
             int productId;
             string ean;
 
@@ -57,6 +56,7 @@ namespace StockWise.Tests.Api.Controllers.ProductController_Tests
                 productInDb.Should().BeNull();
             }
         }
+
         [Fact]
         public async Task DeleteProduct_ShouldReturnNotFound_WhenProductDoesNotExist()
         {
@@ -77,6 +77,7 @@ namespace StockWise.Tests.Api.Controllers.ProductController_Tests
             body.Should().NotBeNullOrEmpty();
             body.Should().Contain($"Couldn't find a product with given id: {notExistingId}");
         }
+
         [Fact]
         public async Task DeleteProduct_ShouldReturnOk_WhenProductHasImage()
         {

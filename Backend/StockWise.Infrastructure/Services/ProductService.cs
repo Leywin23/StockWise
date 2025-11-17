@@ -206,5 +206,9 @@ namespace StockWise.Infrastructure.Services
             return string.Join(" > ", names);
         }
 
+        public async Task GetAndCreateProductByEanAsync(string ean, CancellationToken none)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
