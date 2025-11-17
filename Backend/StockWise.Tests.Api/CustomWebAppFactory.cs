@@ -80,12 +80,13 @@ public class CustomWebAppFactory : WebApplicationFactory<Program>
         AddUsers(db, userManager, seller);
 
         var category = AddCategory(db, "Category");
-        var product = AddProductWithInbound(db, seller, category,
+        var companyProduct = AddProductWithInbound(db, seller, category,
                         name: "Test Product", ean: "12345678",
                         description: "Sample product for testing",
                         unitPricePln: 12.99m, inboundQty: 200);
 
-        AddOrder(db, seller, buyer, product, orderedByUserName: "loginuser", quantity: 3);
+        AddOrder(db, seller, buyer, companyProduct, orderedByUserName: "loginuser", quantity: 3);
+        AddProduct(db, category, name: "Test Product", ean: "12345678", description: "Sample product for testing", unitPricePln: 12.99m);
     }
 
     private static Company AddCompany(StockWiseDb db, string name, string nip, string address, string email, string phone)
@@ -131,7 +132,7 @@ public class CustomWebAppFactory : WebApplicationFactory<Program>
             CompanyMembershipStatus = CompanyMembershipStatus.Approved
         };
         var create2 = um.CreateAsync(unconfirmedUser, "Password123!").GetAwaiter().GetResult();
-        if (create2.Succeeded) 
+        if (create2.Succeeded)
         {
             um.AddToRoleAsync(unconfirmedUser, "Worker").GetAwaiter().GetResult();
         }
@@ -182,6 +183,28 @@ public class CustomWebAppFactory : WebApplicationFactory<Program>
         product.InventoryMovements.Add(movement);
 
         db.CompanyProducts.Add(product);
+        db.SaveChanges();
+        return product;
+    }
+    private static Product AddProduct(
+        StockWiseDb db,
+        Category category,
+        string name,
+        string ean,
+        string description,
+        decimal unitPricePln
+        )
+    { 
+        var product = new Product
+        {
+            ProductName = name,
+            EAN = ean,
+            Description = description,
+            ShoppingPrice = Money.Of(unitPricePln, "PLN"),
+            SellingPrice = Money.Of(unitPricePln, "PLN"),
+            Category = category,
+        };
+        db.Products.Add(product);
         db.SaveChanges();
         return product;
     }

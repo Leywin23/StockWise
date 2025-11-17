@@ -8,6 +8,7 @@ using AutoMapper;
 using StockWise.Application.Contracts.ProductDtos;
 using StockWise.Infrastructure.Persistence;
 using StockWise.Application.Interfaces;
+using StockWise.Extensions;
 
 namespace StockWise.Controllers
 {
@@ -35,7 +36,7 @@ namespace StockWise.Controllers
 
             var result = await _productService.GetProductById(id);
 
-            return Ok(result);
+            return this.ToActionResult(result);
         }
 
         [HttpGet]
@@ -44,7 +45,7 @@ namespace StockWise.Controllers
         {
             var result = await _productService.GetProducts();
 
-            return Ok(result);
+            return this.ToActionResult(result);
         }
 
         [HttpPost]
@@ -56,7 +57,7 @@ namespace StockWise.Controllers
             }
             var product = await _productService.AddProduct(productDto, ct);
 
-            return Ok(product);
+            return this.ToActionResult(product);
         }
 
         [HttpDelete("{id}")]
@@ -66,7 +67,7 @@ namespace StockWise.Controllers
                 return BadRequest();
             }
             var productToDelete = await _productService.DeleteProduct(id, ct);
-            return Ok(productToDelete);
+            return this.ToActionResult(productToDelete);
         }
 
         [HttpPut("{productId:int}")]
@@ -77,7 +78,7 @@ namespace StockWise.Controllers
                 return BadRequest();
             }
             var productToUpdate = await _productService.UpdateProduct(productId, productDto, ct);
-            return Ok(productToUpdate);
+            return this.ToActionResult(productToUpdate);
         }
     }
 }
