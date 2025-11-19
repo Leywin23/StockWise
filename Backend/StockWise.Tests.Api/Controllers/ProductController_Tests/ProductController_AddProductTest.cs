@@ -94,7 +94,7 @@ namespace StockWise.Tests.Api.Controllers.ProductController_Tests
             var form = new MultipartFormDataContent
             {
                 { new StringContent("Test1"), "ProductName" },
-                { new StringContent("32143276"), "EAN" },
+                { new StringContent("32143273"), "EAN" },
                 { new StringContent("Description"), "Description" },
                 { new StringContent("12"), "ShoppingPrice" },
                 { new StringContent("14"), "SellingPrice" },
@@ -113,6 +113,7 @@ namespace StockWise.Tests.Api.Controllers.ProductController_Tests
             resp.StatusCode.Should().Be(HttpStatusCode.BadRequest, body);
             body.Should().Contain("Only image files are allowed");
         }
+
         [Fact]
         public async Task AddCompanyProduct_ShouldReturnBadRequest_WhenRequiredFieldsMissing()
         {

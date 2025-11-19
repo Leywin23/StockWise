@@ -241,7 +241,7 @@ namespace StockWise.Tests.Api.Controllers.OrderController_Tests
             {
                 var db = scope.ServiceProvider.GetRequiredService<StockWiseDb>();
 
-                var buyer = db.Companies.Single(c => c.NIP == "1234567890"); 
+                var buyer = db.Companies.Single(c => c.NIP == "1234567890");
                 var seller = db.Companies.First(c => c.NIP != "1234567890");
 
                 var cat = db.Categories.FirstOrDefault() ?? new Category { Name = "UpdCat" };
@@ -269,7 +269,7 @@ namespace StockWise.Tests.Api.Controllers.OrderController_Tests
                 {
                     Seller = seller,
                     Buyer = buyer,
-                    Status = OrderStatus.Accepted, 
+                    Status = OrderStatus.Accepted,
                     CreatedAt = DateTime.UtcNow,
                     UserNameWhoMadeOrder = "loginuser",
                     ProductsWithQuantity = new List<OrderProduct>

@@ -70,6 +70,13 @@ public class CustomWebAppFactory : WebApplicationFactory<Program>
         using var scope = sp.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<StockWiseDb>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+        if (!roleManager.RoleExistsAsync("Worker").GetAwaiter().GetResult())
+            roleManager.CreateAsync(new IdentityRole("Worker")).GetAwaiter().GetResult();
+
+        if (!roleManager.RoleExistsAsync("Manager").GetAwaiter().GetResult())
+            roleManager.CreateAsync(new IdentityRole("Manager")).GetAwaiter().GetResult();
 
         if (db.Companies.Any())
             return;
@@ -238,4 +245,5 @@ public class CustomWebAppFactory : WebApplicationFactory<Program>
         db.Orders.Add(order);
         db.SaveChanges();
     }
+
 }

@@ -29,21 +29,22 @@ namespace StockWise.Tests.Api.Controllers.OrderController_Tests
             using (var scope = _factory.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<StockWiseDb>();
-                orderId = db.Orders.First().Id; 
+                orderId = db.Orders.First().Id;
             }
             var client = _factory.CreateClient();
             var status = OrderStatus.Accepted;
             var resp = await client.PutAsJsonAsync($"/api/Order/AcceptOrRejectOrder/{orderId}", status);
             var body = await resp.Content.ReadAsStringAsync();
             resp.StatusCode.Should().Be(HttpStatusCode.OK, body);
-            
+
             using (var scope2 = _factory.Services.CreateScope())
             {
                 var db2 = scope2.ServiceProvider.GetRequiredService<StockWiseDb>();
-                var updated = db2.Orders.Single(o=> o.Id == orderId);
+                var updated = db2.Orders.Single(o => o.Id == orderId);
                 updated.Status.Should().Be(OrderStatus.Accepted);
             }
         }
+
         [Fact]
         public async Task AcceptOrRejectOrder_RejectShouldReturnOk()
         {

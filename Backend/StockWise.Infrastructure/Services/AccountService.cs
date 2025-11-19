@@ -419,30 +419,25 @@ namespace StockWise.Infrastructure.Services
 
             return ServiceResult<string>.Ok($"User {currentUser.UserName} has changed company to {company.Name} (pending approval).");
         }
-        public async Task<ServiceResult<CompanyWithAccountDto>> CreateCompanyWithAccountAsync(CreateCompanyWithAccountDto dto, CancellationToken ct = default)
+        public async Task<ServiceResult<CompanyWithAccountDto>> CreateCompanyWithAccountAsync(
+    CreateCompanyWithAccountDto dto,
+    CancellationToken ct = default)
         {
-            var existByNIP = await _context.Companies.FirstOrDefaultAsync(c => c.NIP == dto.NIP);
+            var existByNIP = await _context.Companies.FirstOrDefaultAsync(c => c.NIP == dto.NIP, ct);
             if (existByNIP != null)
-            {
                 return ServiceResult<CompanyWithAccountDto>.Conflict("Comapny with this NIP already exist");
-            }
-            var existByCompanyName = await _context.Companies.FirstOrDefaultAsync(c => c.Name == dto.CompanyName);
+
+            var existByCompanyName = await _context.Companies.FirstOrDefaultAsync(c => c.Name == dto.CompanyName, ct);
             if (existByCompanyName != null)
-            {
                 return ServiceResult<CompanyWithAccountDto>.Conflict("Comapny with this name already exist");
-            }
 
-            var existByUserName = await _context.Users.FirstOrDefaultAsync(u => u.UserName == dto.UserName);
+            var existByUserName = await _context.Users.FirstOrDefaultAsync(u => u.UserName == dto.UserName, ct);
             if (existByUserName != null)
-            {
                 return ServiceResult<CompanyWithAccountDto>.Conflict("User with this name already exist");
-            }
-            var existByEmail = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
-            if (existByEmail != null)
-            {
-                return ServiceResult<CompanyWithAccountDto>.Conflict("User with this email already exist");
-            }
 
+            var existByEmail = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email, ct);
+            if (existByEmail != null)
+                return ServiceResult<CompanyWithAccountDto>.Conflict("User with this email already exist");
             var newCompany = new Company
             {
                 Name = dto.CompanyName,
@@ -453,46 +448,65 @@ namespace StockWise.Infrastructure.Services
                 CreatedAt = DateTime.Now,
                 Verified = false
             };
-            var companyResult = await _context.Companies.AddAsync(newCompany);
+
+            await _context.Companies.AddAsync(newCompany, ct);
             await _context.SaveChangesAsync(ct);
 
             var newUser = new AppUser
             {
                 UserName = dto.UserName,
                 Email = dto.Email,
-                Company = newCompany,
+                CompanyId = newCompany.Id,
                 CompanyMembershipStatus = CompanyMembershipStatus.Approved
             };
-            try
-            {
-                await _userManager.CreateAsync(newUser, dto.Password);
-            }
-            catch (Exception ex)
-            {
-                return ServiceResult<CompanyWithAccountDto>.ServerError(ex.Message);
-            }
-            await _context.SaveChangesAsync(ct);
 
+            IdentityResult createResult;
             try
             {
-                await _userManager.AddToRoleAsync(newUser, "Manager");
+                createResult = await _userManager.CreateAsync(newUser, dto.Password);
             }
             catch (Exception ex)
             {
                 return ServiceResult<CompanyWithAccountDto>.ServerError(ex.Message);
+            }
+
+            if (!createResult.Succeeded)
+            {
+                var errors = string.Join("; ", createResult.Errors.Select(e => e.Description));
+                return ServiceResult<CompanyWithAccountDto>.Conflict(errors);
+            }
+
+            IdentityResult roleResult;
+            try
+            {
+                roleResult = await _userManager.AddToRoleAsync(newUser, "Manager");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<CompanyWithAccountDto>.ServerError(ex.Message);
+            }
+
+            if (!roleResult.Succeeded)
+            {
+                var errors = string.Join("; ", roleResult.Errors.Select(e => e.Description));
+                return ServiceResult<CompanyWithAccountDto>.ServerError(errors);
             }
 
             try
             {
                 var emailToken = GenerateVerifyCode();
                 _cache.Set(newUser.Email, emailToken, TimeSpan.FromMinutes(10));
-                await _emailSenderServicer.SendEmailAsync(dto.Email, "Confirm your email",
-                    $"Your confirmation token: {Uri.EscapeDataString(emailToken)}", ct);
+                await _emailSenderServicer.SendEmailAsync(
+                    dto.Email,
+                    "Confirm your email",
+                    $"Your confirmation token: {Uri.EscapeDataString(emailToken)}",
+                    ct);
             }
             catch (Exception ex)
             {
                 return ServiceResult<CompanyWithAccountDto>.ServerError(ex.Message);
             }
+
             var result = new CompanyWithAccountDto
             {
                 UserName = newUser.UserName,
@@ -506,5 +520,6 @@ namespace StockWise.Infrastructure.Services
 
             return ServiceResult<CompanyWithAccountDto>.Ok(result);
         }
+
     }
 }

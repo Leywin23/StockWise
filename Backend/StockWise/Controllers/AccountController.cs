@@ -106,7 +106,9 @@ namespace StockWise.Controllers
         }
 
 
-        [Authorize]
+        [Authorize(Roles = "Manager")]
+
+
         [HttpPost("approve-user/{userId}")]
         public async Task<IActionResult> ApproveUser(string userId)
         {

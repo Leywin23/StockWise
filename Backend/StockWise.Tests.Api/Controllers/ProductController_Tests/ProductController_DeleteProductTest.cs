@@ -32,7 +32,7 @@ namespace StockWise.Tests.Api.Controllers.ProductController_Tests
             using (var scope = _factory.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<StockWiseDb>();
-                var product = db.Products.First();     
+                var product = db.Products.First();
                 productId = product.ProductId;
                 ean = product.EAN;
             }
