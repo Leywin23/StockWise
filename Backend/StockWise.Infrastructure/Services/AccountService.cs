@@ -254,6 +254,7 @@ namespace StockWise.Infrastructure.Services
             _cache.Remove(cacheKey);
             return ServiceResult<string>.Ok("Password has been reset successfully.");
         }
+
         private static string GetResetKey(string email) => $"pwdreset:{email}";
         public static string GenerateVerifyCode(int length = 6)
         {

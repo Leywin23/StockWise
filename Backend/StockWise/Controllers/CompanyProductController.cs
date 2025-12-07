@@ -66,7 +66,7 @@ namespace StockWise.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = "Manager,Worker")]
         public async Task<IActionResult> AddCompanyProduct([FromForm] CreateCompanyProductDto dto, CancellationToken ct = default)
         {
             var user = await GetCurrentUserAsync();

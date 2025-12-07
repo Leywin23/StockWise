@@ -69,13 +69,14 @@ namespace StockWise.Controllers
         }
 
         [HttpPost("verify-email")]
-        public async Task<IActionResult> VerifyEmail(string email, string code)
+        public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailDto dto)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ApiError.From(new Exception(), StatusCodes.Status400BadRequest, HttpContext));
+                return BadRequest(ApiError.From(new Exception("Bad request"), StatusCodes.Status400BadRequest, HttpContext));
             }
-            var result = await _accountService.VerifyEmailAsync(email, code);
+
+            var result = await _accountService.VerifyEmailAsync(dto.Email, dto.Code);
             return this.ToActionResult(result);
         }
 
@@ -89,8 +90,6 @@ namespace StockWise.Controllers
             var result = await _accountService.SendRequestToRestartPasswordAsync(email);
             return this.ToActionResult(result);
         }
-
-        private static string GetResetKey(string email) => $"pwdreset:{email}";
 
 
         [HttpPost("Restart-Password")]

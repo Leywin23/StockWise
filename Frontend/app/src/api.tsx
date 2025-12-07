@@ -38,15 +38,7 @@ export type CreateProductDto = {
   category: string;
 };
 
-export const getProductsFromApi = async () => {
-  try {
-    const response = await axios.get<ProductDto[]>('https://localhost:7178/api/Product');
-    return response.data;
-  } catch (err) {
-    console.error(err);
-    return [];
-  }
-};
+
 
 export const postProductToApi = async (product: CreateProductDto) => {
   try {
@@ -118,3 +110,47 @@ export const AddMovementFromApi = async(movement: InventoryMovementDto)=>{
     console.log(`Error with fetching Api ${err}`);
   }
 }
+
+
+export type CreateCompanyWithAccountDto = {
+  userName: string;
+  email: string;
+  password: string;
+  companyName: string;
+  nip: string;
+  companyEmail: string;
+  address: string;
+  phone: string;
+};
+
+export type CompanyWithAccountDto = {
+  userName: string;
+  email: string;
+  companyName: string;
+  nip: string;
+  companyEmail: string;
+  address: string;
+  phone: string;
+};
+
+export const createCompanyWithAccountFromApi = async (
+  dto: CreateCompanyWithAccountDto
+): Promise<CompanyWithAccountDto> => {
+  const response = await axios.post<CompanyWithAccountDto>(
+    "https://localhost:7178/api/Account/CompanyWithUser",
+    dto
+  );
+  return response.data;
+};
+
+export const verifyEmailFromApi = async (
+  email: string,
+  code: string
+): Promise<string> => {
+  const response = await axios.post<string>(
+    "https://localhost:7178/api/Account/verify-email",
+    { email, code }
+  );
+  return response.data;
+
+};

@@ -198,14 +198,9 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "email",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "code",
-        "Type": "System.String",
-        "IsRequired": false
+        "Name": "dto",
+        "Type": "StockWise.Application.Contracts.AccountDtos.VerifyEmailDto",
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []
