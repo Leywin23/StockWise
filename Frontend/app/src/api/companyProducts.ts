@@ -1,9 +1,6 @@
+import { string } from "yup";
 import apiClient from "./axiosClient";
 
-/**
- * Money value object – odpowiada strukturze po stronie backendu
- * (Price.Amount, Price.Currency).
- */
 export type Money = {
   amount: number;
   currency: {
@@ -11,11 +8,9 @@ export type Money = {
   };
 };
 
-/**
- * DTO produktu zwracane z backendu.
- * Powinno odpowiadać CompanyProductDto z backendu.
- */
+
 export type companyProductDto = {
+  companyProductId: number;
   companyProductName: string;
   ean: string;
   categoryName: string;
@@ -26,31 +21,25 @@ export type companyProductDto = {
   isAvailableForOrder: boolean;
 };
 
-/**
- * DTO do tworzenia produktu – to, co wysyłamy z formularza.
- * Backend przyjmuje decimal Price + string Currency,
- * więc tutaj trzymamy to jako osobne pola.
- */
+
 export type createCompanyProductDto = {
   companyProductName: string;
   ean: string;
   category: string;
   imageFile?: File | null;
   description?: string | null;
-  price: number;        // tylko kwota
-  currency: string;     // np. "PLN"
+  price: number;       
+  currency: string;    
   stock: number;
   isAvailableForOrder: boolean;
 };
 
-/**
- * PageResult<T> – dopasowane do C# PageResult<T>.
- */
+
 export type PageResult<T> = {
   pageSize: number;
   page: number;
   totalCount: number;
-  sortDir: number;          // enum SortDir (np. 0/1)
+  sortDir: number;          
   sortBy: string;
   items: T[];
 };
@@ -63,7 +52,7 @@ export type CompanyProductQueryParams = {
   minTotal?: number;
   maxTotal?: number;
   sortedBy?: string;
-  sortDir?: number; // SortDir
+  sortDir?: number; 
 };
 
 export type ServiceResult<T> = {
@@ -99,25 +88,22 @@ export const postCompanyProductFromApi = async (
 ): Promise<companyProductDto> => {
   const formData = new FormData();
 
-  // Nazwy muszą zgadzać się z właściwościami CreateCompanyProductDto po stronie C#
   formData.append("CompanyProductName", dto.companyProductName);
   formData.append("EAN", dto.ean);
   formData.append("Category", dto.category);
   formData.append("Description", dto.description || "");
 
-  // C# ma decimal Price + string Currency
   const priceStr = dto.price.toLocaleString("pl-PL", {
-    useGrouping: false,          // bez spacji/tysięcy
-    minimumFractionDigits: 0,    // pozwala na 10
-    maximumFractionDigits: 2,    // i na 10,99
+    useGrouping: false,         
+    minimumFractionDigits: 0,    
+    maximumFractionDigits: 2,    
   });
   formData.append("Price", priceStr);
-  formData.append("Currency", dto.currency);     // <- np. "PLN"
+  formData.append("Currency", dto.currency);    
 
   formData.append("Stock", String(dto.stock));
   formData.append("IsAvailableForOrder", String(dto.isAvailableForOrder));
 
-  // Wysyłamy ImageFile tylko, jeśli to faktycznie plik.
   if (dto.imageFile instanceof File) {
     formData.append("ImageFile", dto.imageFile);
   }
@@ -129,3 +115,52 @@ export const postCompanyProductFromApi = async (
 
   return response.data;
 };
+
+export const deleteCompanyProductFromApi = async (productId : number) : Promise<companyProductDto> => {
+  const response = await apiClient.delete<companyProductDto>(`/CompanyProduct/${productId}`);
+  return response.data;
+}
+
+export type updateCompanyProductDto = {
+  companyProductName: string;
+  description: string;
+  price: number;
+  currency: string;
+  categoryName: string;
+  imageFile: File | null;
+  stock: number;
+  isAvailableForOrder: boolean;
+};
+
+export const putCompanyProductFromApi = async (
+  productId: number,
+  dto: updateCompanyProductDto
+): Promise<companyProductDto> => {
+  const formData = new FormData();
+
+  formData.append("CompanyProductName", dto.companyProductName);
+  formData.append("Description", dto.description || "");
+  formData.append("Category", dto.categoryName);
+
+  const priceStr = dto.price.toLocaleString("pl-PL", {
+    useGrouping: false,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+  formData.append("Price", priceStr);
+  formData.append("Currency", dto.currency.toUpperCase()); 
+
+  formData.append("Stock", String(dto.stock));
+  formData.append("IsAvailableForOrder", String(dto.isAvailableForOrder));
+
+  if (dto.imageFile instanceof File) {
+    formData.append("ImageFile", dto.imageFile);
+  }
+
+  const response = await apiClient.put<companyProductDto>(
+    `/CompanyProduct/${productId}`,
+    formData
+  );
+  return response.data;
+};
+
