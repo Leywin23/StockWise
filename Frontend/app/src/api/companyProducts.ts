@@ -1,4 +1,4 @@
-import { string } from "yup";
+import { number, string } from "yup";
 import apiClient from "./axiosClient";
 
 export type Money = {
@@ -162,5 +162,21 @@ export const putCompanyProductFromApi = async (
     formData
   );
   return response.data;
+
+
 };
+export const convertToAnotherCurrencyFromApi = async (
+  productId: number,
+  toCode: string
+): Promise<Money> => {
+  const response = await apiClient.get<Money>(
+    `/CompanyProduct/${productId}/convert?toCode=${toCode}`
+  );
+
+  console.log("CONVERT RESPONSE:", response.data); // to, co pokazałeś
+
+  return response.data; // tu NIE ma ServiceResult
+};
+
+
 

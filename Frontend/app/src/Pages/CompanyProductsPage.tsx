@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import {
   companyProductDto,
+  convertToAnotherCurrencyFromApi,
   createCompanyProductDto,
   deleteCompanyProductFromApi,
   getCompanyProductFromApi,
+  Money,
   postCompanyProductFromApi,
   putCompanyProductFromApi,
   updateCompanyProductDto,
@@ -60,6 +62,14 @@ const CompanyProductsPage: React.FC = () => {
   const [companyProducts, setCompanyProducts] = useState<companyProductDto[]>([]);
   const { isLoggedIn } = useAuth();
   const [editedProductId, setEditedProductId] = useState<number | null>(null);
+  const [convertProductPrice, setConvertProductPrice] = useState<number | null>(null);
+  const [convertCurrencyCode, setConvertCurrencyCode] = useState<string>("");
+  const [toCode, setToCode] = useState<Money>({
+    amount: 0,
+    currency: {
+      code: "",
+    },
+  });
 
   const navigate = useNavigate();
 
@@ -186,6 +196,30 @@ const CompanyProductsPage: React.FC = () => {
     }
   };
 
+  const handleConvertCurrency = async (productId: number, currency: string) => {
+  try {
+    const converted = await convertToAnotherCurrencyFromApi(productId, currency);
+    setToCode(converted);
+  } catch (err: any) {
+    toast.error(err?.response?.data?.message || "Failed to convert to another currency");
+  }
+};
+
+const handleConvertFormSubmit = async (
+  e: React.FormEvent,
+  productId: number
+) => {
+  e.preventDefault();
+
+  const code = convertCurrencyCode.trim().toUpperCase();
+  if (!code) {
+    toast.error("Please enter target currency code (e.g. USD)");
+    return;
+  }
+
+  await handleConvertCurrency(productId, code);
+};
+
   return (
     <div className="min-h-screen bg-slate-100 py-8">
       <div className="max-w-6xl mx-auto px-4">
@@ -194,7 +228,6 @@ const CompanyProductsPage: React.FC = () => {
         </h1>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {/* FORMULARZ CREATE */}
           <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
             <h2 className="text-xl font-semibold mb-4 text-slate-800">
               Create new product
@@ -438,6 +471,9 @@ const CompanyProductsPage: React.FC = () => {
                       >
                         Delete
                       </button>
+                      <button 
+                        onClick={()=> setConvertProductPrice(p.companyProductId)}
+                      >Convert</button>
                     </div>
 
 
@@ -553,6 +589,42 @@ const CompanyProductsPage: React.FC = () => {
                             Cancel
                           </button>
                         </div>
+                      </form>
+                    )}
+                    {convertProductPrice === p.companyProductId && (
+                      <form
+                        onSubmit={(e) => handleConvertFormSubmit(e, p.companyProductId)}
+                        className="border-t border-slate-200 p-4 flex items-end gap-3 bg-white"
+                      >
+                        <div>
+                          <label className="block text-xs font-medium text-slate-600 mb-1">
+                            To currency code
+                          </label>
+                          <input
+                            type="text"
+                            value={convertCurrencyCode}
+                            onChange={(e) => setConvertCurrencyCode(e.target.value)}
+                            maxLength={3}
+                            className="w-24 rounded-md border border-slate-300 px-2 py-1 text-xs uppercase focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            placeholder="USD"
+                          />
+                        </div>
+
+                        <button
+                          type="submit"
+                          className="inline-flex justify-center rounded-md bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700"
+                        >
+                          Convert
+                        </button>
+
+                        {toCode.currency.code && (
+                          <div className="text-xs text-slate-700 ml-2">
+                            {p.price.amount} {p.price.currency.code} →{" "}
+                            <span className="font-semibold">
+                              {toCode.amount} {toCode.currency.code}
+                            </span>
+                          </div>
+                        )}
                       </form>
                     )}
                   </div>
