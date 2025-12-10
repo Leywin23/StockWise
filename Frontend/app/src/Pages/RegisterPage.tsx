@@ -40,7 +40,7 @@ const onSubmit = async (data: RegisterRequest) => {
   try {
     const response = await registerFromApi(data);
     toast.success("Account created! Check your e-mail for confirmation code.");
-    navigate("/login");
+    navigate("/verify-email");
   } catch (err: any) {
     const res = err?.response;
     const status = res?.status as number | undefined;

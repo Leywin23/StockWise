@@ -14,6 +14,8 @@ import VerifyEmail from "./Components/VerifyEmail/VerifyEmail";
 
 import { Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./Components/Navbar/Navbar";
+import VerifyEmailPage from "./Pages/VerifyEmailPage";
+import CreateCompanyWithAccountPage from "./Pages/CreateCompanyWithAccountPage";
 
 function App() {
   const { isLoggedIn } = useAuth();
@@ -65,7 +67,26 @@ function App() {
             )
           }
         />
-
+        <Route
+          path="/create-account-with-company"
+          element={
+            isLoggedIn ? (
+              <Navigate to="/company-products" replace />
+            ) : (
+              <CreateCompanyWithAccountPage />
+            )
+          }
+        />
+         <Route
+          path="/verify-email"
+          element={
+            isLoggedIn ? (
+              <Navigate to="/company-products" replace />
+            ) : (
+              <VerifyEmailPage />
+            )
+          }
+        />
         <Route
           path="/login"
           element={

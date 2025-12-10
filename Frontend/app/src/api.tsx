@@ -142,14 +142,16 @@ export const createCompanyWithAccountFromApi = async (
   );
   return response.data;
 };
-
-export const verifyEmailFromApi = async (
+export type verifyEmailDto = {
   email: string,
   code: string
+}
+export const verifyEmailFromApi = async (
+  dto : verifyEmailDto
 ): Promise<string> => {
   const response = await axios.post<string>(
     "https://localhost:7178/api/Account/verify-email",
-    { email, code }
+    dto
   );
   return response.data;
 

@@ -91,6 +91,13 @@ const LoginPage = () => {
                 >
                   Register here
                 </Link>
+                
+                <Link
+                  to="/create-account-with-company"
+                  className="text-sm font-medium text-blue-600 hover:underline"
+                >
+                  Register and create company here
+                </Link>
               </div>
 
             </form>
