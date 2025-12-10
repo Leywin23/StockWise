@@ -55,13 +55,16 @@ export type CompanyProductQueryParams = {
   sortDir?: number; 
 };
 
+export type ValidationDetails = Record<string, string[]>;
+
 export type ServiceResult<T> = {
   isSuccess: boolean;
   value: T | null;
   error: number;
   message: string | null;
-  details: any;
+  details: ValidationDetails | null;
 };
+
 
 export const getCompanyProductFromApi = async (): Promise<
   companyProductDto[]
@@ -173,9 +176,9 @@ export const convertToAnotherCurrencyFromApi = async (
     `/CompanyProduct/${productId}/convert?toCode=${toCode}`
   );
 
-  console.log("CONVERT RESPONSE:", response.data); // to, co pokazałeś
+  console.log("CONVERT RESPONSE:", response.data); 
 
-  return response.data; // tu NIE ma ServiceResult
+  return response.data;
 };
 
 

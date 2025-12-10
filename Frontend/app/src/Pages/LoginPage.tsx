@@ -2,6 +2,7 @@ import { useAuth } from "../context/AuthContext";
 import { useForm } from "react-hook-form";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { Link } from "react-router-dom";
 
 type LoginFormsInputs = {
   email: string;
@@ -25,7 +26,7 @@ const LoginPage = () => {
   });
 
   const handleLogin = (form: LoginFormsInputs) => {
-    // tu wywołujesz kontekst
+    
     loginUser(form.email, form.password);
   };
 
@@ -81,6 +82,17 @@ const LoginPage = () => {
               >
                 Sign in
               </button>
+
+              <div className="mt-4 text-center">
+                <span className="text-sm text-slate-600">Don’t have an account? </span>
+                <Link
+                  to="/register"
+                  className="text-sm font-medium text-blue-600 hover:underline"
+                >
+                  Register here
+                </Link>
+              </div>
+
             </form>
           </div>
         </div>

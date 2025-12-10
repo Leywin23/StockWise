@@ -1,41 +1,26 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { HubConnectionState } from "@microsoft/signalr";
 import "./App.css";
 
-import {
-  ProductDto,
-} from "./api";
 import signalRConnection from "./signalrClient";
 
-import AddProductForm from "./Components/AddProductForm/AddProductFrom";
-import EanSearchForm from "./Components/EanSearchForm/EanSearchForm";
-import InventoryMovementForm from "./Components/InventoryMovementForm/InventoryMovementForm";
+import { useAuth } from "./context/AuthContext";
 
+import LoginPage from "./Pages/LoginPage";
+import RegisterPage from "./Pages/RegisterPage";
+import CompanyProductsPage from "./Pages/CompanyProductsPage";
 import CreateCompanyWithAccount from "./Components/CreateCompanyWithAccount/CreateCompanyWithAccount";
 import VerifyEmail from "./Components/VerifyEmail/VerifyEmail";
-import LoginPage from "./Pages/LoginPage";       
-import { useAuth } from "./context/AuthContext";  
-import CompanyProductsPage from "./Pages/CompanyProductsPage";
+
+import { Routes, Route, Navigate } from "react-router-dom";
+import Navbar from "./Components/Navbar/Navbar";
 
 function App() {
-  const [products, setProducts] = useState<ProductDto[]>([]);
-  const { isLoggedIn } = useAuth(); 
+  const { isLoggedIn } = useAuth();
 
-  /*const loadProducts = async () => {
-    try {
-      const responseBody = await getProductsFromApi();
-      if (Array.isArray(responseBody)) {
-        setProducts(responseBody);
-      } else {
-        console.error("Expected array, got:", responseBody);
-      }
-    } catch (error) {
-      console.error("Error loading products:", error);
-    }
-  };*/
 
   useEffect(() => {
-    if (!isLoggedIn()) return;
+    if (!isLoggedIn) return;
 
     const startConnection = async () => {
       if (signalRConnection.state === HubConnectionState.Disconnected) {
@@ -49,7 +34,6 @@ function App() {
               console.log(
                 `Stock updated: Product ${productId} has now ${stock} items`
               );
-              
             }
           );
         } catch (err) {
@@ -65,27 +49,66 @@ function App() {
     return () => {
       signalRConnection.off("StockUpdated");
     };
-  }, [isLoggedIn]); 
-
-  if (!isLoggedIn()) {
-    return (
-      <div className="App" style={{ padding: "20px" }}>
-        {}
-        <h1>Authentication</h1>
-        <LoginPage />
-        <CreateCompanyWithAccount />
-        <VerifyEmail />
-      </div>
-    );
-  }
-
+  }, [isLoggedIn]);
 
   return (
     <div className="App" style={{ padding: "20px" }}>
-      <h1>Product Manager</h1>
+      <Navbar/>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            isLoggedIn ? (
+              <Navigate to="/company-products" replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
 
+        <Route
+          path="/login"
+          element={
+            isLoggedIn ? <Navigate to="/company-products" replace /> : <LoginPage />
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            isLoggedIn ? (
+              <Navigate to="/company-products" replace />
+            ) : (
+              <RegisterPage />
+            )
+          }
+        />
 
-      <CompanyProductsPage />
+        <Route
+          path="/create-company"
+          element={
+            isLoggedIn ? (
+              <Navigate to="/company-products" replace />
+            ) : (
+              <CreateCompanyWithAccount />
+            )
+          }
+        />
+
+        <Route path="/verify-email" element={<VerifyEmail />} />
+
+        <Route
+          path="/company-products"
+          element={
+            isLoggedIn ? (
+              <CompanyProductsPage />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+
+        <Route path="*" element={<div>Not found</div>} />
+      </Routes>
     </div>
   );
 }

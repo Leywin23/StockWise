@@ -60,7 +60,7 @@ const validationSchema = Yup.object().shape({
 
 const CompanyProductsPage: React.FC = () => {
   const [companyProducts, setCompanyProducts] = useState<companyProductDto[]>([]);
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, logout } = useAuth();
   const [editedProductId, setEditedProductId] = useState<number | null>(null);
   const [convertProductPrice, setConvertProductPrice] = useState<number | null>(null);
   const [convertCurrencyCode, setConvertCurrencyCode] = useState<string>("");
@@ -93,17 +93,19 @@ const CompanyProductsPage: React.FC = () => {
     },
   });
 
-  const loadCompanyProducts = async () => {
-    try {
-      const items = await getCompanyProductFromApi();
-      setCompanyProducts(items);
-    } catch (error) {
-      console.error("Error loading company products:", error);
-    }
-  };
+ const loadCompanyProducts = async () => {
+  try {
+    const items = await getCompanyProductFromApi();
+    setCompanyProducts(items);
+  } catch (error: any) {
+    toast.error(error)
+    console.error("Error loading company products:", error);
+  }
+};
+
 
   useEffect(() => {
-    if (!isLoggedIn()) {
+    if (!isLoggedIn) {
       navigate("/login");
       return;
     }
@@ -473,6 +475,7 @@ const handleConvertFormSubmit = async (
                       </button>
                       <button 
                         onClick={()=> setConvertProductPrice(p.companyProductId)}
+                        className="inline-flex justify-center rounded-md bg-blue-400 px-3 py-1 text-xs font-medium text-white hover:bg-blue-600"
                       >Convert</button>
                     </div>
 
