@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 type Props = {}
 
 const Navbar = (props: Props) => {
-const {isLoggedIn ,logout} = useAuth();
+const {isLoggedIn ,logout, user} = useAuth();
 const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -28,13 +28,21 @@ const navigate = useNavigate();
     <div className="w-full bg-slate-800 text-white px-6 py-3 flex justify-between">
       <h1 className="font-semibold">StockWise</h1>
 
-      {isLoggedIn&& (
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 hover:bg-red-600 px-4 py-1 rounded"
-        >
-          Logout
-        </button>
+      {isLoggedIn && (
+        <div className="flex gap-4 items-center">
+          {user && (
+            <span>
+              {user.userName} ({user.email})
+            </span>
+          )}
+
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 hover:bg-red-600 px-4 py-1 rounded"
+          >
+            Logout
+          </button>
+        </div>
       )}
     </div>
   );

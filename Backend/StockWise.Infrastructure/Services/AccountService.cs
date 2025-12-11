@@ -134,6 +134,7 @@ namespace StockWise.Infrastructure.Services
             }
         }
 
+
         public async Task<ServiceResult<string>> LogoutAsync(CancellationToken ct = default)
         {
             var user = _httpContextAccessor.HttpContext?.User;

@@ -13,7 +13,19 @@ export type companyProductDto = {
   companyProductId: number;
   companyProductName: string;
   ean: string;
-  categoryName: string;
+
+  // opcjonalne categoryName (dla świętego spokoju, jakby kiedyś backend to dodał)
+  categoryName?: string;
+
+
+  category?: {
+    categoryId: number;
+    name: string;
+    parentId: number | null;
+    parent: any | null;
+    children: any[] | null;
+  } | null;
+
   image: string | null;
   description: string;
   price: Money;
@@ -66,24 +78,29 @@ export type ServiceResult<T> = {
 };
 
 
-export const getCompanyProductFromApi = async (): Promise<
-  companyProductDto[]
-> => {
-  const response = await apiClient.get<
-    ServiceResult<PageResult<companyProductDto>>
-  >("/CompanyProduct");
+export const getCompanyProductFromApi = async (query: CompanyProductQueryParams): Promise<PageResult<companyProductDto> | null> => {
+  const response = await apiClient.get<ServiceResult<PageResult<companyProductDto>>>("/CompanyProduct", {
+    params: {
+       page: query.page,
+      pageSize: query.pageSize,
+      stock: query.stock,
+      isAvailableForOrder: query.isAvailableForOrder,
+      minTotal: query.minTotal,
+      maxTotal: query.maxTotal,
+      sortedBy: query.sortedBy,
+      sortDir: query.sortDir,
+    }
+  });
 
   console.log("GET /CompanyProduct response:", response.data);
 
   const service = response.data;
 
-  if (!service.isSuccess || !service.value) {
-    return [];
+ if (!service.isSuccess || !service.value) {
+    return null;
   }
 
-  const page = service.value;
-
-  return Array.isArray(page.items) ? page.items : [];
+  return service.value;
 };
 
 export const postCompanyProductFromApi = async (
