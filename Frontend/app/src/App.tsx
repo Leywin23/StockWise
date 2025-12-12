@@ -16,6 +16,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./Components/Navbar/Navbar";
 import VerifyEmailPage from "./Pages/VerifyEmailPage";
 import CreateCompanyWithAccountPage from "./Pages/CreateCompanyWithAccountPage";
+import OrderPage from "./Pages/OrderPage";
 
 function App() {
   const { isLoggedIn } = useAuth();
@@ -67,6 +68,18 @@ function App() {
             )
           }
         />
+
+          <Route
+          path="/OrderProduct"
+          element={
+            isLoggedIn ? (
+              <OrderPage />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        
         <Route
           path="/create-account-with-company"
           element={

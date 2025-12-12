@@ -139,7 +139,7 @@ namespace StockWise.Infrastructure.Services
 
             return ServiceResult<PageResult<CompanyProduct>>.Ok(page);
         }
-        public async Task<ServiceResult<CompanyProductDto>> GetCompanyProductAsyncById(AppUser user, int companyProductId, bool withDetails = false)
+        public async Task<ServiceResult<CompanyProductDto>> GetCompanyProductAsyncById(AppUser user, int companyProductId, bool withDetails=true)
         {
             if (user?.Company == null) return ServiceResult<CompanyProductDto>.Forbidden("User is not assigned to any company.");
 

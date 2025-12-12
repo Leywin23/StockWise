@@ -60,7 +60,7 @@ namespace StockWise.Controllers
             var user = await GetCurrentUserAsync();
             if (user == null) return Unauthorized(ApiError.From(new Exception("User not found."), StatusCodes.Status401Unauthorized, HttpContext));
 
-            var result = await _companyProductService.GetCompanyProductAsyncById(user, productId);
+            var result = await _companyProductService.GetCompanyProductAsyncById(user, productId, true);
 
             return this.ToActionResult(result);
         }

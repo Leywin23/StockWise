@@ -14,7 +14,6 @@ export type companyProductDto = {
   companyProductName: string;
   ean: string;
 
-  // opcjonalne categoryName (dla świętego spokoju, jakby kiedyś backend to dodał)
   categoryName?: string;
 
 
@@ -69,39 +68,34 @@ export type CompanyProductQueryParams = {
 
 export type ValidationDetails = Record<string, string[]>;
 
-export type ServiceResult<T> = {
-  isSuccess: boolean;
-  value: T | null;
-  error: number;
-  message: string | null;
-  details: ValidationDetails | null;
-};
+export const getCompanyProductFromApi = async (
+  query: CompanyProductQueryParams
+): Promise<PageResult<companyProductDto> | null> => {
+  try {
+    const response = await apiClient.get<PageResult<companyProductDto>>("/CompanyProduct", {
+      params: {
+        page: query.page,
+        pageSize: query.pageSize,
+        stock: query.stock,
+        isAvailableForOrder: query.isAvailableForOrder,
+        minTotal: query.minTotal,
+        maxTotal: query.maxTotal,
+        sortedBy: query.sortedBy,
+        sortDir: query.sortDir,
+      },
+    });
 
-
-export const getCompanyProductFromApi = async (query: CompanyProductQueryParams): Promise<PageResult<companyProductDto> | null> => {
-  const response = await apiClient.get<ServiceResult<PageResult<companyProductDto>>>("/CompanyProduct", {
-    params: {
-       page: query.page,
-      pageSize: query.pageSize,
-      stock: query.stock,
-      isAvailableForOrder: query.isAvailableForOrder,
-      minTotal: query.minTotal,
-      maxTotal: query.maxTotal,
-      sortedBy: query.sortedBy,
-      sortDir: query.sortDir,
-    }
-  });
-
-  console.log("GET /CompanyProduct response:", response.data);
-
-  const service = response.data;
-
- if (!service.isSuccess || !service.value) {
+    console.log("GET /CompanyProduct response:", response.data);
+    return response.data;
+  } catch (err) {
+    console.error("GET /CompanyProduct error:", (err as any)?.response?.data ?? err);
     return null;
   }
-
-  return service.value;
 };
+
+export const getCompanyProductDetailsFromApi = async () => {
+  
+}
 
 export const postCompanyProductFromApi = async (
   dto: createCompanyProductDto
