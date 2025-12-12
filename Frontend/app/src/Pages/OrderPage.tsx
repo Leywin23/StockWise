@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import * as Yup from "yup";
 import { CreateCompanyWithAccountDto } from '../api';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { CreateOrderDto, getOrdersFromApi, OrderListDto, postOrderFromApi } from '../api/OrderApi';
+import { CreateOrderDto, deleteOrderFromApi, getOrdersFromApi, OrderListDto, postOrderFromApi } from '../api/OrderApi';
 import { toast } from 'react-toastify';
 import { ApiError } from '../api/auth';
 import { useAuth } from '../context/AuthContext';
@@ -160,19 +160,37 @@ const loadOrders = async () => {
     setOrderList(orders);
     console.log(orders);
   } catch (err: any) {
-    console.log(err);
-  }
+  const status = err?.response?.status;
+  const data = err?.response?.data;
+
+  console.log("STATUS:", status);
+  console.log("ERROR DATA:", data);
+  };
 };
 useEffect(()=>{
   if (!isLoggedIn) return;
   loadOrders();
 },[]);
 
+const handleDeleteOrder = async (orderId: number)=>{
+  try{
+  const deleted = await deleteOrderFromApi(orderId);
+
+  setOrderList(prev=>(prev??[]).filter(o=>o.id !== orderId))
+  toast.success("Order deleted")
+  } catch (err: any) {
+    const status = err?.response?.status;
+    const apiError = err?.response?.data as ApiError | undefined;
+
+    toast.error(
+      apiError?.detail || apiError?.title || `Delete failed (${status})`
+    );
+  };
+}
   return (
   <div className="min-h-screen bg-slate-100 px-4 py-8">
     <div className="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
-      {/* LEFT: FORM */}
       <div className="bg-white rounded-xl shadow-md p-6 border border-slate-200">
         <h1 className="text-2xl font-semibold text-slate-800 mb-1">
           Create new order
@@ -242,7 +260,6 @@ useEffect(()=>{
             </div>
           </div>
 
-          {/* PRODUCTS */}
           <div className="border-t border-slate-200 pt-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-slate-800">Products</h2>
@@ -294,7 +311,6 @@ useEffect(()=>{
         </form>
       </div>
 
-      {/* RIGHT: ORDERS LIST */}
       <div className="bg-white rounded-xl shadow-md p-6 border border-slate-200">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-slate-800">Orders</h2>
@@ -329,6 +345,7 @@ useEffect(()=>{
                     <span className="text-slate-500">Total:</span>{" "}
                     {o.totalPrice?.amount} {o.totalPrice?.currency?.code ?? ""}
                   </div>
+                  <button onClick={() => handleDeleteOrder(o.id)}>Delete</button>
                 </div>
 
                 <div className="mt-2">

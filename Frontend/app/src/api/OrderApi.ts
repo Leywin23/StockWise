@@ -59,3 +59,8 @@ export const getOrdersFromApi = async (): Promise<OrderListDto[]> => {
   const res = await apiClient.get<OrderListDto[]>('/order');
   return res.data;
 };
+
+export const deleteOrderFromApi = async (id:number) : Promise<OrderListDto> => {
+     const res = await apiClient.delete<OrderListDto>(`/order/${id}`);
+    return res.data;
+}

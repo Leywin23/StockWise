@@ -11,11 +11,10 @@ namespace StockWise.Extensions
         {
             if (r.IsSuccess)
             {
-                // Sukces: zwróć wartość jeśli jest, inaczej 200 OK bez body
                 return r.Value is null ? c.Ok() : c.Ok(r.Value);
             }
 
-            // Błędy na podstawie ErrorKind
+
             return r.Error switch
             {
                 ErrorKind.BadRequest => c.BadRequest(ApiError.From(
@@ -28,7 +27,7 @@ namespace StockWise.Extensions
                                             StatusCodes.Status401Unauthorized,
                                             c.HttpContext)),
 
-                ErrorKind.Forbidden => c.Forbid(), // bez body
+                ErrorKind.Forbidden => c.Forbid(), 
 
                 ErrorKind.NotFound => c.NotFound(ApiError.From(
                                             new Exception(r.Message ?? "Not found"),
