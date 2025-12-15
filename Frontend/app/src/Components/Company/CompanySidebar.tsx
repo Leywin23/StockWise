@@ -1,10 +1,9 @@
 import React from "react";
-
-type View = "products" | "create" | "orders" | "history";
+import { CompanyView } from "./CompanyView";
 
 type Props = {
-  activeView: View;
-  onChangeView: (view: View) => void;
+  activeView: CompanyView;
+  onChangeView: (view: CompanyView) => void;
 };
 
 const CompanySidebar: React.FC<Props> = ({ activeView, onChangeView }) => {
@@ -43,16 +42,29 @@ const CompanySidebar: React.FC<Props> = ({ activeView, onChangeView }) => {
         </button>
 
         <button
-          onClick={() => onChangeView("orders")}
+          onClick={() => onChangeView("orderlist")}
           className={
             "w-full text-left px-4 py-2 text-sm flex items-center gap-2 " +
-            (activeView === "orders"
+            (activeView === "orderlist"
               ? "bg-slate-900 text-white"
               : "text-slate-700 hover:bg-slate-100")
           }
         >
           <span>📑</span>
           <span>Orders</span>
+        </button>
+
+        <button
+          onClick={() => onChangeView("creteOrders")}
+          className={
+            "w-full text-left px-4 py-2 text-sm flex items-center gap-2 " +
+            (activeView === "creteOrders"
+              ? "bg-slate-900 text-white"
+              : "text-slate-700 hover:bg-slate-100")
+          }
+        >
+          <span>🛒</span>
+          <span>Create order</span>
         </button>
 
         <button

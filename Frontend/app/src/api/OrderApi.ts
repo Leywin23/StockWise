@@ -6,7 +6,7 @@ export enum OrderStatus {
     Pending = 10,
     Accepted = 20,
     Rejected = 30,
-    Cancelled = 40,
+    Canceled = 40,
     Completed = 50
 }
 
@@ -49,6 +49,24 @@ export type OrderListDto = {
     totalPrice: Money;
 }
 
+export type OrderProductDto = {
+  companyProductId:number;
+  productName: string;
+  ean: string;
+  price: number;
+  quantity : number;
+}
+
+export type OrderDto = {
+  seller : CompanyMiniDto;
+  buyer : CompanyMiniDto;
+  status : OrderStatus;
+  createdAt : Date;
+  userNameWhoMakeOrder : string;
+  products : OrderProductDto[];
+  totalPrice : Money;
+}
+
 export const postOrderFromApi = async (
   dto: CreateOrderDto
 ): Promise<OrderListDto> => {
@@ -61,6 +79,49 @@ export const getOrdersFromApi = async (): Promise<OrderListDto[]> => {
 };
 
 export const deleteOrderFromApi = async (id:number) : Promise<OrderListDto> => {
-     const res = await apiClient.delete<OrderListDto>(`/order/${id}`);
+    const res = await apiClient.delete<OrderListDto>(`/order/${id}`);
     return res.data;
 }
+
+export type UpdateOrderProductLineDto = {
+  ean: string;
+  quantity: number;
+};
+
+export type UpdateOrderDto = {
+  currency: string;
+  productsEANWithQuantity: Record<string, number>;
+};
+
+export const putOrderFromApi = async (id:number ,dto: UpdateOrderDto) : Promise<OrderListDto> =>{
+    const res = await apiClient.put<OrderListDto>(`/order/${id}`, dto);
+    return res.data;
+}
+
+export const acceptOrRejectOrderFromApi = async (
+  id: number,
+  status: OrderStatus
+): Promise<OrderDto> => {
+  const res = await apiClient.put<OrderDto>(
+    `/order/AcceptOrRejectOrder/${id}`,
+    status, 
+    {
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+  return res.data;
+};
+
+export const cancelOrConfirmFromApi = async (
+  id: number,
+  status: OrderStatus
+): Promise<OrderDto> => {
+  const res = await apiClient.put<OrderDto>(
+    `/order/CancelOrCorfirm/${id}`,
+    status, 
+    {
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+  return res.data;
+};

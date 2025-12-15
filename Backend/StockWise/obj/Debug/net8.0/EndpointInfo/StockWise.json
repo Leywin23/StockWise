@@ -1087,7 +1087,7 @@
         }
       }
     },
-    "/api/Order/CancellOrCorfirm/{orderId}": {
+    "/api/Order/CancelOrCorfirm/{orderId}": {
       "put": {
         "tags": [
           "Order"

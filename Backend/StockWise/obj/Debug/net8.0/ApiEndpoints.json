@@ -711,7 +711,7 @@
   {
     "ContainingType": "StockWise.Controllers.OrderController",
     "Method": "CancellOrCorfirmOrderReceipt",
-    "RelativePath": "api/Order/CancellOrCorfirm/{orderId}",
+    "RelativePath": "api/Order/CancelOrCorfirm/{orderId}",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,

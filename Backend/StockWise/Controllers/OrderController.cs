@@ -107,7 +107,7 @@ namespace StockWise.Controllers
             return this.ToActionResult(result);
         }
         [Authorize]
-        [HttpPut("CancellOrCorfirm/{orderId:int}")]
+        [HttpPut("CancelOrCorfirm/{orderId:int}")]
         public async Task<IActionResult> CancellOrCorfirmOrderReceipt(int orderId,[FromBody] OrderStatus status, CancellationToken ct = default)
         {
             var user = await _currentUserService.EnsureAsync();

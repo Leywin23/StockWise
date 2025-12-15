@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -50,7 +51,7 @@ namespace StockWise.Controllers
 
             var products = await _companyProductService.GetCompanyProductsAsync(user, q);
 
-            return Ok(products);
+            return this.ToActionResult(products);
         }
 
         [HttpGet("{productId:int}")]

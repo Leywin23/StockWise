@@ -1,4 +1,3 @@
-// src/Pages/CompanyProductsPage.tsx
 import React, { useEffect, useState } from "react";
 import {
   companyProductDto,
@@ -13,13 +12,17 @@ import CompanySidebar from "../Components/Company/CompanySidebar";
 import ProductFiltersBar from "../Components/Company/ProductFiltersBar";
 import ProductsTable from "../Components/Company/ProductsTable";
 import CreateProductForm from "../Components/Company/CreateProductForm";
+import OrdersPanel from "../Components/Panels/CreateOrderPanel";
+import { CompanyView } from "../Components/Company/CompanyView";
+import OrdersListPanel from "../Components/Panels/OrdersListPanel";
+import CreateOrderPanel from "../Components/Panels/CreateOrderPanel";
 
-type View = "products" | "create" | "orders" | "history";
+
 
 const CompanyProductsPage: React.FC = () => {
   const { isLoggedIn } = useAuth(); 
 
-  const [activeView, setActiveView] = useState<View>("products");
+  const [activeView, setActiveView] = useState<CompanyView>("products");
 
   const [companyProducts, setCompanyProducts] = useState<companyProductDto[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -41,8 +44,8 @@ const CompanyProductsPage: React.FC = () => {
       const query: CompanyProductQueryParams = {
         page,
         pageSize,
-        stock: stockFilter ?? 0,
-        isAvailableForOrder: availableOnly ?? false,
+        stock: stockFilter,
+        isAvailableForOrder: availableOnly,
         minTotal,
         maxTotal,
         sortedBy,
@@ -69,7 +72,6 @@ const CompanyProductsPage: React.FC = () => {
   useEffect(() => {
     if (!isLoggedIn) return;
     loadCompanyProducts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isLoggedIn,
     page,
@@ -157,10 +159,11 @@ const CompanyProductsPage: React.FC = () => {
             />
           )}
 
-          {activeView === "orders" && (
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-200 text-sm text-slate-700">
-              Orders view – tu później dorzucisz listę zamówień.
-            </div>
+          {activeView === "orderlist" && (
+            <OrdersListPanel/>
+          )}
+          {activeView === "creteOrders" && (
+            <CreateOrderPanel/>
           )}
 
           {activeView === "history" && (

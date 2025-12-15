@@ -155,7 +155,7 @@ const ProductsTable: React.FC<Props> = ({
           </thead>
 
           <tbody>
-            {products.length === 0 ? (
+            {(products ?? []).length === 0 ? (
               <tr>
                 <td
                   colSpan={10}

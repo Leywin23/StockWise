@@ -659,9 +659,9 @@ namespace StockWise.Infrastructure.Services
                 await _context.SaveChangesAsync(ct);
                 await tx.CommitAsync(ct);
             }
-            else if (status == OrderStatus.Cancelled)
+            else if (status == OrderStatus.Canceled)
             {
-                order.Status = OrderStatus.Cancelled;
+                order.Status = OrderStatus.Canceled;
                 _context.Orders.Update(order);
                 await _context.SaveChangesAsync(ct);
             }

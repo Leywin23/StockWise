@@ -5,7 +5,7 @@
         Pending = 10,
         Accepted = 20,
         Rejected = 30,
-        Cancelled = 40,
+        Canceled = 40,
         Completed = 50
     };
 
