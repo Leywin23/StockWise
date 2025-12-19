@@ -8,15 +8,12 @@ export type Money = {
   };
 };
 
-
 export type companyProductDto = {
   companyProductId: number;
   companyProductName: string;
   ean: string;
 
   categoryName?: string;
-
-
   category?: {
     categoryId: number;
     name: string;

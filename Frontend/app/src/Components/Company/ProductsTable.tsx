@@ -17,6 +17,7 @@ type Props = {
   onPrevPage: () => void;
   onNextPage: () => void;
   onReload: () => void;
+  onOpenHistory: (productId: number, productName: string) => void;
 };
 
 type EditForm = {
@@ -38,6 +39,7 @@ const ProductsTable: React.FC<Props> = ({
   onPrevPage,
   onNextPage,
   onReload,
+  onOpenHistory,
 }) => {
   const [editedId, setEditedId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<EditForm | null>(null);
@@ -247,6 +249,14 @@ const ProductsTable: React.FC<Props> = ({
                             className="px-2 py-1 rounded border border-blue-300 text-[11px] text-blue-700 hover:bg-blue-50"
                           >
                             ⇄
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onOpenHistory(p.companyProductId, p.companyProductName)}
+                            className="px-2 py-1 rounded border border-slate-300 text-[11px] text-slate-700 hover:bg-slate-100"
+                            title="Inventory movements"
+                          >
+                            📜
                           </button>
                         </div>
                       </td>

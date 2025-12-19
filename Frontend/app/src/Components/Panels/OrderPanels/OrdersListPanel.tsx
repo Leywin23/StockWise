@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../../context/AuthContext";
 import {
   acceptOrRejectOrderFromApi,
   deleteOrderFromApi,
@@ -9,8 +9,8 @@ import {
   OrderStatus,
   putOrderFromApi,
   UpdateOrderDto,
-} from "../../api/OrderApi";
-import { ApiError } from "../../api/auth";
+} from "../../../api/OrderApi";
+import { ApiError } from "../../../api/auth";
 
 type ProductLine = { ean: string; quantity: number };
 type Tab = "received" | "placed";

@@ -9,18 +9,6 @@ import {
 import { toast } from "react-toastify";
 import type { Resolver } from "react-hook-form";
 
-type FormInputs = {
-  companyProductName: string;
-  ean: string;
-  category: string;
-  imageFile: FileList | null;
-  description: string;
-  amount: number;
-  currency: string;
-  stock: number;
-  isAvailableForOrder: boolean;
-};
-
 type Props = {
   onCreated: () => void;
 };
@@ -66,26 +54,30 @@ const validationSchema = Yup.object().shape({
 
 const CreateProductForm: React.FC<Props> = ({ onCreated }) => {
   const {
-      register,
-      handleSubmit,
-      reset,
-      formState: { errors, isSubmitting },
-    } = useForm<CompanyProductFormInputs>({
-      resolver: yupResolver(validationSchema) as Resolver<CompanyProductFormInputs>,
-      defaultValues: {
-        companyProductName: "",
-        ean: "",
-        category: "",
-        imageFile: null,
-        description: "",
-        amount: 0,
-        currency: "PLN",
-        stock: 0,
-        isAvailableForOrder: true,
-      },
-    });
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<CompanyProductFormInputs>({
+    resolver: yupResolver(validationSchema) as Resolver<CompanyProductFormInputs>,
+    defaultValues: {
+      companyProductName: "",
+      ean: "",
+      category: "",
+      imageFile: null,
+      description: "",
+      amount: 0,
+      currency: "PLN",
+      stock: 0,
+      isAvailableForOrder: true,
+    },
+  });
 
-  const onSubmit = async (data: FormInputs) => {
+  const imageFile = watch("imageFile");
+  const imageName = imageFile?.[0]?.name ?? "";
+
+  const onSubmit = async (data: CompanyProductFormInputs) => {
     const file = data.imageFile?.[0] ?? null;
 
     const dto: createCompanyProductDto = {
@@ -110,162 +102,191 @@ const CreateProductForm: React.FC<Props> = ({ onCreated }) => {
     }
   };
 
+  const FieldError = ({ msg }: { msg?: string }) =>
+    msg ? <p className="mt-1 text-xs text-rose-600">{msg}</p> : null;
+
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
-      <h2 className="text-xl font-semibold mb-4 text-slate-800">
-        Create new product
-      </h2>
+    <div className="flex justify-center">
+      <div className="w-full max-w-3xl">
+        <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-8">
+          {/* Header */}
+          <div className="text-center mb-7">
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Product name
-          </label>
-          <input
-            {...register("companyProductName")}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {errors.companyProductName && (
-            <p className="mt-1 text-xs text-red-500">
-              {errors.companyProductName.message}
+            <h2 className="text-2xl font-semibold text-slate-800">
+              Create new product
+            </h2>
+            <p className="text-sm text-slate-500 mt-1">
+              Add a product to your company catalog and make it available for orders.
             </p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            EAN
-          </label>
-          <input
-            {...register("ean")}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {errors.ean && (
-            <p className="mt-1 text-xs text-red-500">
-              {errors.ean.message}
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Category
-          </label>
-          <input
-            {...register("category")}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {errors.category && (
-            <p className="mt-1 text-xs text-red-500">
-              {errors.category.message}
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Image file
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            {...register("imageFile")}
-            className="w-full text-sm"
-          />
-          {errors.imageFile && (
-            <p className="mt-1 text-xs text-red-500">
-              {(errors.imageFile as any).message}
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Description
-          </label>
-          <textarea
-            {...register("description")}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            rows={3}
-          />
-          {errors.description && (
-            <p className="mt-1 text-xs text-red-500">
-              {errors.description.message}
-            </p>
-          )}
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Price
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              {...register("amount")}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {errors.amount && (
-              <p className="mt-1 text-xs text-red-500">
-                {errors.amount.message}
-              </p>
-            )}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Currency
-            </label>
-            <input
-              {...register("currency")}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {errors.currency && (
-              <p className="mt-1 text-xs text-red-500">
-                {errors.currency.message}
-              </p>
-            )}
-          </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+
+            <div className="rounded-xl border border-slate-200 p-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Product name
+                  </label>
+                  <input
+                    {...register("companyProductName")}
+                    placeholder="e.g. Premium Coffee Beans"
+                    className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                  <FieldError msg={errors.companyProductName?.message} />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Category
+                  </label>
+                  <input
+                    {...register("category")}
+                    placeholder="e.g. Beverages"
+                    className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                  <FieldError msg={errors.category?.message} />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    EAN
+                  </label>
+                  <input
+                    {...register("ean")}
+                    placeholder="13 digits"
+                    className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                  <FieldError msg={errors.ean?.message} />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Image (optional)
+                  </label>
+
+                  <div className="rounded-lg border border-slate-300 bg-slate-50 px-4 py-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-sm text-slate-700">
+                          {imageName ? (
+                            <span className="font-medium">{imageName}</span>
+                          ) : (
+                            <span className="text-slate-500">No file selected</span>
+                          )}
+                        </div>
+                        <div className="text-xs text-slate-500 mt-0.5">
+                          PNG/JPG, best square image.
+                        </div>
+                      </div>
+
+                      <label className="shrink-0 cursor-pointer rounded-md bg-slate-900 px-3 py-2 text-xs font-medium text-white hover:bg-slate-800">
+                        Choose file
+                        <input
+                          type="file"
+                          accept="image/*"
+                          {...register("imageFile")}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  <FieldError msg={(errors.imageFile as any)?.message} />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Description (optional)
+                </label>
+                <textarea
+                  {...register("description")}
+                  rows={3}
+                  placeholder="Short description visible in your catalog..."
+                  className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+                <FieldError msg={errors.description?.message} />
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 p-5">
+              <div className="text-sm font-semibold text-slate-800 mb-4">
+                Pricing & stock
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Price
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    {...register("amount")}
+                    className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                  <FieldError msg={errors.amount?.message} />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Currency
+                  </label>
+                  <input
+                    {...register("currency")}
+                    maxLength={3}
+                    className="w-full uppercase rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                  <FieldError msg={errors.currency?.message} />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Stock
+                  </label>
+                  <input
+                    type="number"
+                    {...register("stock")}
+                    className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                  <FieldError msg={errors.stock?.message} />
+                </div>
+              </div>
+
+              <div className="mt-5 flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3">
+                <div>
+                  <div className="text-sm font-medium text-slate-800">
+                    Available for order
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    If disabled, product stays in catalog but cannot be ordered.
+                  </div>
+                </div>
+
+                <label className="inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    {...register("isAvailableForOrder")}
+                    className="sr-only peer"
+                  />
+                  <div className="relative w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:bg-blue-600 transition">
+                    <div className="absolute top-0.5 left-0.5 h-5 w-5 bg-white rounded-full transition peer-checked:translate-x-5" />
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full rounded-lg bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition disabled:opacity-60"
+            >
+              {isSubmitting ? "Saving..." : "Create product"}
+            </button>
+          </form>
         </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Stock
-            </label>
-            <input
-              type="number"
-              {...register("stock")}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {errors.stock && (
-              <p className="mt-1 text-xs text-red-500">
-                {errors.stock.message}
-              </p>
-            )}
-          </div>
-
-          <div className="flex items-center mt-6">
-            <label className="inline-flex items-center text-sm text-slate-700">
-              <input
-                type="checkbox"
-                {...register("isAvailableForOrder")}
-                className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-              />
-              <span className="ml-2">Available for order</span>
-            </label>
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full mt-2 inline-flex justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
-        >
-          {isSubmitting ? "Saving..." : "Create product"}
-        </button>
-      </form>
+      </div>
     </div>
   );
 };

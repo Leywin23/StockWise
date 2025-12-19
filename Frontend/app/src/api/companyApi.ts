@@ -8,6 +8,8 @@ export type CompanyDto = {
   phone: string;
 };
 
+
+
 export const getMyCompanyFromApi = async (): Promise<CompanyDto> => {
   const res = await apiClient.get<CompanyDto>("/company/me");
   return res.data;

@@ -68,16 +68,16 @@ const CompanySidebar: React.FC<Props> = ({ activeView, onChangeView }) => {
         </button>
 
         <button
-          onClick={() => onChangeView("history")}
+          onClick={() => onChangeView("addMovement")}
           className={
             "w-full text-left px-4 py-2 text-sm flex items-center gap-2 " +
-            (activeView === "history"
+            (activeView === "addMovement"
               ? "bg-slate-900 text-white"
               : "text-slate-700 hover:bg-slate-100")
           }
         >
           <span>🕓</span>
-          <span>History</span>
+          <span>Add new movement</span>
         </button>
       </nav>
     </aside>

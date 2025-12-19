@@ -17,6 +17,7 @@ import Navbar from "./Components/Navbar/Navbar";
 import VerifyEmailPage from "./Pages/VerifyEmailPage";
 import CreateCompanyWithAccountPage from "./Pages/CreateCompanyWithAccountPage";
 
+
 function App() {
   const { isLoggedIn } = useAuth();
 
@@ -130,6 +131,7 @@ function App() {
             )
           }
         />
+
 
         <Route path="*" element={<div>Not found</div>} />
       </Routes>

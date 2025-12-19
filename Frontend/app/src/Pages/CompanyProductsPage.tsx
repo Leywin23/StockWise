@@ -12,10 +12,12 @@ import CompanySidebar from "../Components/Company/CompanySidebar";
 import ProductFiltersBar from "../Components/Company/ProductFiltersBar";
 import ProductsTable from "../Components/Company/ProductsTable";
 import CreateProductForm from "../Components/Company/CreateProductForm";
-import OrdersPanel from "../Components/Panels/CreateOrderPanel";
+import OrdersPanel from "../Components/Panels/OrderPanels/CreateOrderPanel";
 import { CompanyView } from "../Components/Company/CompanyView";
-import OrdersListPanel from "../Components/Panels/OrdersListPanel";
-import CreateOrderPanel from "../Components/Panels/CreateOrderPanel";
+import OrdersListPanel from "../Components/Panels/OrderPanels/OrdersListPanel";
+import CreateOrderPanel from "../Components/Panels/OrderPanels/CreateOrderPanel";
+import InventoryMovementsPanel from "../Components/Panels/InventoryMovementsPanel/InventoryMovementsPanel";
+import AddInventoryMovementPanel from "../Components/Panels/InventoryMovementsPanel/AddInventoryMovementPanel";
 
 
 
@@ -38,6 +40,8 @@ const CompanyProductsPage: React.FC = () => {
   const [maxTotal, setMaxTotal] = useState<number | undefined>(undefined);
   const [sortedBy, setSortedBy] = useState<string>("stock");
   const [sortDir, setSortDir] = useState<number>(1); 
+  const [historyProductId, setHistoryProductId] = useState<number | null>(null);
+  const [historyProductName, setHistoryProductName] = useState<string | null>(null);
 
   const loadCompanyProducts = async () => {
     try {
@@ -145,6 +149,11 @@ const CompanyProductsPage: React.FC = () => {
                   setPage((p) => (p < totalPages ? p + 1 : p))
                 }
                 onReload={loadCompanyProducts}
+                onOpenHistory={(productId, productName) => {
+                  setHistoryProductId(productId);
+                  setHistoryProductName(productName)
+                  setActiveView("inventoryHistory");
+                }}
               />
             </>
           )}
@@ -166,10 +175,20 @@ const CompanyProductsPage: React.FC = () => {
             <CreateOrderPanel/>
           )}
 
-          {activeView === "history" && (
+          {activeView === "addMovement" && (
             <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-200 text-sm text-slate-700">
-              History view – tu możesz dodać historię, logi itd.
+              <AddInventoryMovementPanel/>
             </div>
+          )}
+          {activeView === "inventoryHistory" && historyProductId && (
+            <InventoryMovementsPanel
+              productId={historyProductId}
+              productName={historyProductName}
+              onClose={() => {
+                setActiveView("products");
+                setHistoryProductId(null);
+              }}
+            />
           )}
         </main>
       </div>

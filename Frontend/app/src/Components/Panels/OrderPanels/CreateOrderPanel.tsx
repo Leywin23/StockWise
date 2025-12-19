@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
-import { CreateOrderDto, postOrderFromApi } from "../../api/OrderApi";
-import { ApiError } from "../../api/auth";
+import { CreateOrderDto, postOrderFromApi } from "../../../api/OrderApi";
+import { ApiError } from "../../../api/auth";
 
 type ProductLine = { ean: string; quantity: number };
 
 type Props = {
-  onCreated?: () => void; // np. żeby odświeżyć listę po dodaniu
+  onCreated?: () => void; 
 };
 
 const CreateOrderPanel: React.FC<Props> = ({ onCreated }) => {

@@ -56,7 +56,6 @@ const VerifyEmailPage = (props: Props) => {
         </p>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* EMAIL */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
               Email
@@ -73,7 +72,6 @@ const VerifyEmailPage = (props: Props) => {
             )}
           </div>
 
-          {/* CODE */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
               Verification code

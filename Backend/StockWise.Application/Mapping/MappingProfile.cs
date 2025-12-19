@@ -3,6 +3,7 @@ using StockWise.Application.Abstractions;
 using StockWise.Application.Contracts.AccountDtos;
 using StockWise.Application.Contracts.CompanyDtos;
 using StockWise.Application.Contracts.CompanyProductDtos;
+using StockWise.Application.Contracts.InventoryMovementDtos;
 using StockWise.Application.Contracts.OrderDtos;
 using StockWise.Application.Contracts.ProductDtos;
 using StockWise.Models;
@@ -33,6 +34,8 @@ namespace StockWise.Application.Mapping
 
             CreateMap<Product, ProductDto>();
             CreateMap<CompanyProduct, CreateCompanyProductDto>();
+
+            CreateMap<InventoryMovement, InventoryMovementDto>();
 
             CreateMap<AppUser, CompanyUserDto>();
             CreateMap<Company, CompanyMiniDto>();

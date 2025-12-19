@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { InventoryMovementDto } from './api/inventoryManagment';
 
 export type Category = {
   categoryId: number;
@@ -92,14 +93,6 @@ export const UpdateProductApi = async (product: UpdateProductDto) => {
 };
 
 
-export type InventoryMovementDto = {
-  Date:Date;
-  Type:string;
-  Ean: string;
-  Quantity: number;
-  Comment: string;
-
-}
 
 export const AddMovementFromApi = async(movement: InventoryMovementDto)=>{
   try{
