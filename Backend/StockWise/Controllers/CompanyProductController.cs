@@ -66,6 +66,17 @@ namespace StockWise.Controllers
             return this.ToActionResult(result);
         }
 
+        [HttpGet("GetAvailable")]
+        public async Task<IActionResult> GetAllAvailableCompanyProducts([FromQuery] CompanyProductsAvailableQueryParams q, CancellationToken ct = default)
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null) return Unauthorized(ApiError.From(new Exception("User not found."), StatusCodes.Status401Unauthorized, HttpContext));
+
+            var result = await _companyProductService.GetAllAvailableCompanyProducts(user, q, ct);
+
+            return this.ToActionResult(result);
+        }
+
         [HttpPost]
         [Authorize(Roles = "Manager,Worker")]
         public async Task<IActionResult> AddCompanyProduct([FromForm] CreateCompanyProductDto dto, CancellationToken ct = default)

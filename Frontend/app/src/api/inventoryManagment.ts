@@ -24,4 +24,3 @@ export const postInventoryMovementFromApi = async (dto: InventoryMovementDto) : 
     const response = await apiClient.post<InventoryMovementDto>(`/InventoryMovement`, dto);
     return response.data;
 };
-

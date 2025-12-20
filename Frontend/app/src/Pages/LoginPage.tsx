@@ -91,7 +91,10 @@ const LoginPage = () => {
                 >
                   Register here
                 </Link>
-                
+              </div>
+              <div>
+                <span className="text-sm text-slate-600">Do you want to add your company? </span>
+                <p></p>
                 <Link
                   to="/create-account-with-company"
                   className="text-sm font-medium text-blue-600 hover:underline"

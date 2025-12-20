@@ -11,12 +11,10 @@ type Props = {
   productName?: string | null;
   onCreated?: (created: InventoryMovementDto) => void;
 
-  // jeśli chcesz jak modal
   open?: boolean;
   onClose?: () => void;
 };
 
-type FormErrors = Partial<Record<keyof InventoryMovementDto, string>>;
 
 const toLocalInputValue = (d: Date) => {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -96,7 +94,6 @@ const AddInventoryMovementPanel: React.FC<Props> = ({
     <div className="flex justify-center">
       <div className="w-full max-w-xl">
         <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-8">
-          {/* Header */}
           <div className="mb-6 text-center">
             <div className="text-xs uppercase tracking-wide text-slate-400">
               Inventory
@@ -109,9 +106,7 @@ const AddInventoryMovementPanel: React.FC<Props> = ({
             </p>
           </div>
 
-          {/* FORM */}
           <form onSubmit={submit} className="space-y-5">
-            {/* Product */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Product ID
@@ -126,7 +121,6 @@ const AddInventoryMovementPanel: React.FC<Props> = ({
               />
             </div>
 
-            {/* Type + Qty */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -158,7 +152,6 @@ const AddInventoryMovementPanel: React.FC<Props> = ({
               </div>
             </div>
 
-            {/* Date */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Date
@@ -176,7 +169,6 @@ const AddInventoryMovementPanel: React.FC<Props> = ({
               />
             </div>
 
-            {/* Comment */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Comment
@@ -189,8 +181,6 @@ const AddInventoryMovementPanel: React.FC<Props> = ({
                 className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
             </div>
-
-            {/* Submit */}
             <button
               type="submit"
               disabled={saving}

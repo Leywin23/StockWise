@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StockWise.Application.Abstractions;
+using StockWise.Application.Contracts.CompanyDtos;
 using StockWise.Application.Contracts.CompanyProductDtos;
 using StockWise.Application.Contracts.InventoryMovementDtos;
 using StockWise.Application.Interfaces;
@@ -139,6 +142,108 @@ namespace StockWise.Infrastructure.Services
 
             return ServiceResult<PageResult<CompanyProduct>>.Ok(page);
         }
+
+        public async Task<ServiceResult<PageResult<CompanyProductDtoWithCompany>>> GetAllAvailableCompanyProducts(AppUser user, CompanyProductsAvailableQueryParams q, CancellationToken ct = default)
+        {
+            if (user.CompanyMembershipStatus != CompanyMembershipStatus.Approved)
+            {
+                return ServiceResult<PageResult<CompanyProductDtoWithCompany>>.Unauthorized("You have to be approved by a manager to use this functionality");
+            }
+            if (q.Page <= 0) q.Page = 1;
+            if (q.PageSize <= 0) q.PageSize = 10;
+            if (q.PageSize > 100) q.PageSize = 100;
+
+            if (q.MinTotal.HasValue && q.MaxTotal.HasValue && q.MinTotal > q.MaxTotal)
+                return ServiceResult<PageResult<CompanyProductDtoWithCompany>>.BadRequest(
+                    "Validation Failed",
+                    new Dictionary<string, string[]>
+                    {
+                        ["minTotal"] = new[] { "MinTotal cannot be greater than MaxTotal" },
+                        ["maxTotal"] = new[] { "MinTotal cannot be greater than MaxTotal." },
+                    }
+                );
+
+
+            if (user?.CompanyId == null)
+                return ServiceResult<PageResult<CompanyProductDtoWithCompany>>.Forbidden("User is not assigned to any company.");
+
+
+            var query = _context.CompanyProducts
+                .AsNoTracking()
+                .Where(cp => cp.IsAvailableForOrder)
+                .ProjectTo<CompanyProductDtoWithCompany>(_mapper.ConfigurationProvider);
+
+            var baseQuery = _context.CompanyProducts
+                .AsNoTracking()
+                .Where(cp => cp.IsAvailableForOrder && !cp.IsDeleted);
+
+            if (q.Stock is > 0)
+                baseQuery = baseQuery.Where(cp => cp.Stock >= q.Stock.Value);
+
+            if (q.MinTotal is > 0)
+                baseQuery = baseQuery.Where(cp => cp.Price.Amount >= q.MinTotal.Value);
+
+            if (q.MaxTotal is > 0)
+                baseQuery = baseQuery.Where(cp => cp.Price.Amount <= q.MaxTotal.Value);
+
+            IOrderedQueryable<CompanyProduct> orderedEntities = q.SortedBy switch
+            {
+                CompanyProductSortBy.Stock => q.SortDir == SortDir.Asc
+                    ? baseQuery.OrderBy(cp => cp.Stock)
+                    : baseQuery.OrderByDescending(cp => cp.Stock),
+
+                CompanyProductSortBy.Price => q.SortDir == SortDir.Asc
+                    ? baseQuery.OrderBy(cp => cp.Price.Amount)
+                    : baseQuery.OrderByDescending(cp => cp.Price.Amount),
+
+                CompanyProductSortBy.CompanyName => q.SortDir == SortDir.Asc
+                    ? baseQuery.OrderBy(cp => cp.Company.Name)
+                    : baseQuery.OrderByDescending(cp => cp.Company.Name),
+
+                CompanyProductSortBy.CategoryName => q.SortDir == SortDir.Asc
+                    ? baseQuery.OrderBy(cp => cp.Category.Name)
+                    : baseQuery.OrderByDescending(cp => cp.Category.Name),
+
+                _ => q.SortDir == SortDir.Asc
+                    ? baseQuery.OrderBy(cp => cp.Stock)
+                    : baseQuery.OrderByDescending(cp => cp.Stock),
+            };
+
+            var ordered = orderedEntities
+                .ThenBy(cp => cp.CompanyProductId)
+                .ProjectTo<CompanyProductDtoWithCompany>(_mapper.ConfigurationProvider);
+            if (ordered is null)
+            {
+                return ServiceResult<PageResult<CompanyProductDtoWithCompany>>.BadRequest(
+                    "Validation Failed",
+                    new Dictionary<string, string[]>
+                    {
+                        ["sortedBy"] = new[] { "Unknow SortedBy. Allowed: id, stock, price" }
+                    });
+            };
+
+
+            var totalCount = await ordered.CountAsync(ct);
+
+            var items = await ordered
+                .Skip((q.Page - 1) * q.PageSize)
+                .Take(q.PageSize)
+                .ToListAsync();
+
+            var page = new PageResult<CompanyProductDtoWithCompany>
+            {
+                Page = q.Page,
+                PageSize = q.PageSize,
+                TotalCount = totalCount,
+                SortBy = q.SortedBy.ToString(),
+                SortDir = q.SortDir,
+                Items = items
+            };
+
+
+            return ServiceResult<PageResult<CompanyProductDtoWithCompany>>.Ok(page);
+        }
+
         public async Task<ServiceResult<CompanyProductDto>> GetCompanyProductAsyncById(AppUser user, int companyProductId, bool withDetails=true)
         {
             if (user?.Company == null) return ServiceResult<CompanyProductDto>.Forbidden("User is not assigned to any company.");

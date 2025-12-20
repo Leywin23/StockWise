@@ -779,6 +779,74 @@
         }
       }
     },
+    "/api/CompanyProduct/GetAvailable": {
+      "get": {
+        "tags": [
+          "CompanyProduct"
+        ],
+        "parameters": [
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Stock",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "MinTotal",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "MaxTotal",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "SortedBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/CompanyProductSortBy"
+            }
+          },
+          {
+            "name": "SortDir",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SortDir"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/CompanyProduct/{productId}/convert": {
       "get": {
         "tags": [
@@ -1369,6 +1437,16 @@
   },
   "components": {
     "schemas": {
+      "CompanyProductSortBy": {
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
       "CreateCompanyDto": {
         "type": "object",
         "properties": {

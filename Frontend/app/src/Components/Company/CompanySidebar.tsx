@@ -42,6 +42,19 @@ const CompanySidebar: React.FC<Props> = ({ activeView, onChangeView }) => {
         </button>
 
         <button
+          onClick={() => onChangeView("available")}
+          className={
+            "w-full text-left px-4 py-2 text-sm flex items-center gap-2 " +
+            (activeView === "available"
+              ? "bg-slate-900 text-white"
+              : "text-slate-700 hover:bg-slate-100")
+          }
+        >
+          <span>🔍</span>
+          <span>Check available products to order</span>
+        </button>
+
+        <button
           onClick={() => onChangeView("orderlist")}
           className={
             "w-full text-left px-4 py-2 text-sm flex items-center gap-2 " +

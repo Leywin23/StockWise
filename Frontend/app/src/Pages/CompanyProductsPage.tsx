@@ -4,6 +4,7 @@ import {
   getCompanyProductFromApi,
   CompanyProductQueryParams,
   PageResult,
+  CompanyProductWithCompanyDto,
 } from "../api/companyProducts";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
@@ -16,8 +17,9 @@ import OrdersPanel from "../Components/Panels/OrderPanels/CreateOrderPanel";
 import { CompanyView } from "../Components/Company/CompanyView";
 import OrdersListPanel from "../Components/Panels/OrderPanels/OrdersListPanel";
 import CreateOrderPanel from "../Components/Panels/OrderPanels/CreateOrderPanel";
-import InventoryMovementsPanel from "../Components/Panels/InventoryMovementsPanel/InventoryMovementsPanel";
-import AddInventoryMovementPanel from "../Components/Panels/InventoryMovementsPanel/AddInventoryMovementPanel";
+import InventoryMovementsPanel from "../Components/Panels/InventoryMovementsPanels/InventoryMovementsPanel";
+import AddInventoryMovementPanel from "../Components/Panels/InventoryMovementsPanels/AddInventoryMovementPanel";
+import AvailableForOdresProductsListPanel from "../Components/Panels/CompanyProductsPanels/AvailableForOdresProductsListPanel";
 
 
 
@@ -42,6 +44,7 @@ const CompanyProductsPage: React.FC = () => {
   const [sortDir, setSortDir] = useState<number>(1); 
   const [historyProductId, setHistoryProductId] = useState<number | null>(null);
   const [historyProductName, setHistoryProductName] = useState<string | null>(null);
+  const [selectedOffer, setSelectedOffer] = useState<CompanyProductWithCompanyDto | null>(null);
 
   const loadCompanyProducts = async () => {
     try {
@@ -105,9 +108,6 @@ const CompanyProductsPage: React.FC = () => {
             <>
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <div className="text-xs text-slate-500 mb-1">
-                    Katalog / Produkty
-                  </div>
                   <h1 className="text-2xl font-semibold text-slate-800">
                     Products
                   </h1>
@@ -168,11 +168,25 @@ const CompanyProductsPage: React.FC = () => {
             />
           )}
 
+          {activeView === "available" && (
+            <AvailableForOdresProductsListPanel
+              onCreateOrder={(offer) => {
+                setSelectedOffer(offer);
+                setActiveView("creteOrders");
+              }}
+            />
+          )}
           {activeView === "orderlist" && (
             <OrdersListPanel/>
           )}
           {activeView === "creteOrders" && (
-            <CreateOrderPanel/>
+            <CreateOrderPanel
+              initialOffer={selectedOffer}
+              onCreated={() => {
+                setSelectedOffer(null);
+                setActiveView("orderlist");
+              }}
+            />
           )}
 
           {activeView === "addMovement" && (

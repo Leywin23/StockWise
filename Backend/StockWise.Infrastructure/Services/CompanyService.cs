@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using StockWise.Application.Abstractions;
 using StockWise.Application.Contracts.AccountDtos;
 using StockWise.Application.Contracts.CompanyDtos;
+using StockWise.Application.Contracts.CompanyProductDtos;
 using StockWise.Application.Contracts.OrderDtos;
 using StockWise.Application.Interfaces;
 using StockWise.Infrastructure.Persistence;
@@ -114,6 +115,7 @@ namespace StockWise.Infrastructure.Services
 
             return ServiceResult<AdvancedCompanyDto>.Ok(company);
         }
+
 
         public async Task<ServiceResult<CompanyDto>> CreateCompanyAsync(CreateCompanyDto companyDto)
         {

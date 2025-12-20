@@ -1,5 +1,6 @@
 import { number, string } from "yup";
 import apiClient from "./axiosClient";
+import { CompanyDto } from "./companyApi";
 
 export type Money = {
   amount: number;
@@ -29,6 +30,33 @@ export type companyProductDto = {
   isAvailableForOrder: boolean;
 };
 
+export type CompanyProductWithCompanyDto = {
+  companyProductId: number;
+  companyProductName: string;
+  ean: string;
+
+  categoryName?: string;
+  category?: {
+    categoryId: number;
+    name: string;
+    parentId: number | null;
+    parent: any | null;
+    children: any[] | null;
+  } | null;
+
+  image: string | null;
+  description: string;
+  price: Money;
+  stock: number;
+  company: CompanyDto;
+};
+
+export enum CompanyProductSortBy {
+  Stock=0,
+  Price=1,
+  CompanyName=2,
+  CategoryName=3
+}
 
 export type createCompanyProductDto = {
   companyProductName: string;
@@ -63,6 +91,15 @@ export type CompanyProductQueryParams = {
   sortDir?: number; 
 };
 
+export type CompanyProductsAvailableQueryParams = {
+  page?: number;
+  pageSize?: number;
+  stock?: number;
+  minTotal?: number;
+  maxTotal?: number;
+  sortedBy?: CompanyProductSortBy,
+  sortDir?: number; 
+};
 export type ValidationDetails = Record<string, string[]>;
 
 export const getCompanyProductFromApi = async (
@@ -89,6 +126,28 @@ export const getCompanyProductFromApi = async (
     return null;
   }
 };
+
+export const getAllAvailableCompanyProductsFromApi = async(query: CompanyProductsAvailableQueryParams) : Promise<PageResult<CompanyProductWithCompanyDto> | null> =>{
+  try {
+    const response = await apiClient.get<PageResult<CompanyProductWithCompanyDto>>("/CompanyProduct/GetAvailable", {
+      params: {
+        page: query.page,
+        pageSize: query.pageSize,
+        stock: query.stock,
+        minTotal: query.minTotal,
+        maxTotal: query.maxTotal,
+        sortedBy: query.sortedBy,
+        sortDir: query.sortDir,
+      },
+    });
+
+    console.log("GET /CompanyProduct response:", response.data);
+    return response.data;
+  } catch (err) {
+    console.error("GET /CompanyProduct error:", (err as any)?.response?.data ?? err);
+    return null;
+  }
+}
 
 export const getCompanyProductDetailsFromApi = async () => {
   
@@ -173,9 +232,8 @@ export const putCompanyProductFromApi = async (
     formData
   );
   return response.data;
-
-
 };
+
 export const convertToAnotherCurrencyFromApi = async (
   productId: number,
   toCode: string
@@ -188,6 +246,3 @@ export const convertToAnotherCurrencyFromApi = async (
 
   return response.data;
 };
-
-
-

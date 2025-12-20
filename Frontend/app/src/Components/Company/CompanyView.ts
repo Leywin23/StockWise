@@ -1,1 +1,1 @@
-export type CompanyView = "products" | "create" | "creteOrders" | "orderlist" | "addMovement" | "inventoryHistory";
+export type CompanyView = "products" | "create" | "creteOrders" | "orderlist" | "addMovement" | "inventoryHistory" | "available";

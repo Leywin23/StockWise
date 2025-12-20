@@ -68,6 +68,13 @@ namespace StockWise.Application.Mapping
                 .ForMember(d => d.CategoryId, opt => opt.Ignore())
                 .ForMember(d => d.Category, opt => opt.Ignore());
 
+            CreateMap<CompanyProduct, CompanyProductDtoWithCompany>()
+            .ForMember(d => d.CategoryName,
+                opt => opt.MapFrom(s => s.Category.Name))
+            .ForMember(d => d.Company,
+                opt => opt.MapFrom(s => s.Company));
+            CreateMap<Money, Money>();
+
         }
     }
 }
