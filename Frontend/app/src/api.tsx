@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { InventoryMovementDto } from './api/inventoryManagment';
+import { InventoryMovementDto } from './features/inventory/api/inventoryApi';
 
 export type Category = {
   categoryId: number;
