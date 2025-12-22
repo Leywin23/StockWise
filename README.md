@@ -1,5 +1,5 @@
 📦 StockWise
-Inteligentne zarządzanie produktami, zamówieniami i magazynem
+Intelligent product, order and warehouse management
 
 StockWise is a modern web application for managing products, orders, and inventory levels in companies. 
 The system supports user roles, order processes, inventory movements, and secure authentication.
