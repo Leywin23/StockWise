@@ -1,119 +1,233 @@
 📦 StockWise
-Intelligent product, order and warehouse management
 
-StockWise is a modern web application for managing products, orders, and inventory levels in companies. 
-The system supports user roles, order processes, inventory movements, and secure authentication.
+Intelligent Product, Order & Warehouse Management System
 
-🏢 Company products  
-  Adding and editing products (name, category, price, currency, photo)
-  Inventory management
-  Marking products as available for ordering
-  Inline editing in a table
+StockWise is a modern web application designed to manage products, inventory, orders, and inter-company offers.
+It supports role-based access, secure authentication, inventory movements, and order lifecycle management.
+
+🚀 Key Features
+🏢 Company Products
+
+Create and edit products
+(name, category, price, currency, photo)
+
+Inventory level management
+
+Mark products as available for ordering
+
+Inline editing in product tables
 
 📦 Warehouse / Inventory
-  Recording warehouse movements (Inbound/Outbound)
-  History of all product movements
-  Adding movements with date, quantity, and comment
-  Dedicated warehouse history panel
 
-🛒 Market / Offers  
-  View products available for order from other companies
-  
-  Filter by:
-  -stock
-  -price
+Record inventory movements:
 
-  Sort by:
-  -price
-  -condition
-  -company name
-  -category
+Inbound
 
-  Search by:
-  -product name
-  -company name
-  -EAN
-  
-  Paginacja
+Outbound
+
+Full history of all product movements
+
+Movement details:
+
+Date
+
+Quantity
+
+Comment
+
+Dedicated warehouse history panel
+
+🛒 Market / Offers
+
+Browse products available for order from other companies.
+
+Filtering
+
+Stock availability
+
+Price range
+
+Sorting
+
+Price
+
+Condition
+
+Company name
+
+Category
+
+Searching
+
+Product name
+
+Company name
+
+EAN
+
+Additional
+
+Pagination support
 
 🧾 Orders
-  Creating orders based on quotes
-  Managing multiple products in a single order
-  Validating seller and buyer data
-  Order statuses
 
-🔐Security
-  JWT Authorization
-  User Roles (Manager / Worker)
-  Access to company data only
-  Secured API Endpoints
+Create orders based on quotes
+
+Multiple products per order
+
+Seller and buyer data validation
+
+Order status management:
+
+Pending
+
+Accepted
+
+Rejected
+
+Canceled
+
+Completed
+
+🔐 Security
+
+JWT-based authentication
+
+Role-based authorization:
+
+Worker
+
+Manager
+
+Admin
+
+Company-level data isolation
+
+Fully secured API endpoints
 
 🔎 Project Status
+🟢 Current Stage
+Backend
 
-  🟢 Current stage:
-    Backend:
-      Full CRUD API for products
-      Full CRUD API for orders
-      Order status handling:
-        Pending / Accepted / Rejected / Canceled / Completed
-      Inventory management logic
-      Stock synchronization
-      User account system
-      User roles:
-        -Worker
-        -Manager
-        -Admin
-      Authorization and authentication (JWT)
-      Extensive integration and unit testing
-      Clean Architecture
-    Frontend:
-      Product CRUD
-      Order CRUD
-      Inventory Management
-      User Authorization
-      Account Registration
-      Email Verification (code)
-      Password Reset (code)
-  
-  🟡 In progress/planned
-    Manager Panel
-    Admin Panel
-    Docker
-    GitHub Actions (CI/CD)
-      -build
-      -tests
-      -lint
-    
-🧪 Tests
-The project includes extensive integration testing, including:
-  API controllers
-  authorization and roles
-  order statuses
-  database operations
-  error validation
+Full CRUD API:
 
-💡 Technologies used
-  Backend
-    .NET 8 / ASP.NET Core Web API
-    Clean Architecture
-    Application / Domain / Infrastructure / API
-    Entity Framework Core
-    Microsoft SQL Server
-    ASP.NET Core Identity
-    JWT (JSON Web Tokens)
-    xUnit
-    FluentAssertions
-    AutoMapper
-    In-memory cache (IMemoryCache)
-    Email Service (Fake / SMTP – test/prod)
-    Azure Blob Storage
-    SignalR
-    
-  Frontend
-    React
-    TypeScript
-    Tailwind CSS
-    React Hook Form + Yup
-    Axios
+Products
 
-  
+Orders
+
+Order status handling
+
+Inventory management logic
+
+Stock synchronization
+
+User account system
+
+Role management:
+
+Worker
+
+Manager
+
+Admin
+
+Authentication & authorization (JWT)
+
+Clean Architecture:
+
+Application
+
+Domain
+
+Infrastructure
+
+API
+
+Extensive unit & integration testing
+
+Frontend
+
+Product management (CRUD)
+
+Order management (CRUD)
+
+Inventory management
+
+User authentication & authorization
+
+Account registration
+
+Email verification (code-based)
+
+Password reset (code-based)
+
+🟡 In Progress / Planned
+
+Manager Panel
+
+Admin Panel
+
+Docker support
+
+GitHub Actions (CI/CD):
+
+Build
+
+Tests
+
+Linting
+
+🧪 Testing
+
+The project includes extensive integration and unit testing, covering:
+
+API controllers
+
+Authorization and role validation
+
+Order status transitions
+
+Database operations
+
+Error handling and validation
+
+💡 Technologies Used
+Backend
+
+.NET 8 / ASP.NET Core Web API
+
+Clean Architecture
+
+Entity Framework Core
+
+Microsoft SQL Server
+
+ASP.NET Core Identity
+
+JWT (JSON Web Tokens)
+
+xUnit
+
+FluentAssertions
+
+AutoMapper
+
+IMemoryCache
+
+Email Service (Fake / SMTP – test & prod)
+
+Azure Blob Storage
+
+SignalR
+
+Frontend
+
+React
+
+TypeScript
+
+Tailwind CSS
+
+React Hook Form + Yup
+
+Axios
