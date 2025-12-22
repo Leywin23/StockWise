@@ -5,21 +5,21 @@ import {
   CompanyProductQueryParams,
   PageResult,
   CompanyProductWithCompanyDto,
-} from "../api/companyProducts";
+} from "../../products/api/companyProducts";
 import { useAuth } from "../../../app/core/context/AuthContext";
 import { toast } from "react-toastify";
 
-import CompanySidebar from "../../company/components/CompanySidebar";
-import ProductFiltersBar from "../../../Components/Company/ProductFiltersBar";
-import ProductsTable from "../components/ProductsTable";
-import CreateProductForm from "../components/CreateProductForm";
+import CompanySidebar from "../components/CompanySidebar";
+import ProductFiltersBar from "../../products/components/ProductFiltersBar";
+import ProductsTable from "../../products/components/ProductsTable";
+import CreateProductForm from "../../products/components/CreateProductForm";
 import OrdersPanel from "../../orders/components/CreateOrderPanel";
-import { CompanyView } from "../../../Components/Company/CompanyView";
+import { CompanyView } from "../components/CompanyView";
 import OrdersListPanel from "../../orders/components/OrdersListPanel";
 import CreateOrderPanel from "../../orders/components/CreateOrderPanel";
 import InventoryMovementsPanel from "../../inventory/componets/InventoryMovementsPanel";
 import AddInventoryMovementPanel from "../../inventory/componets/AddInventoryMovementPanel";
-import AvailableForOdresProductsListPanel from "../components/AvailableForOdresProductsListPanel";
+import AvailableForOdresProductsListPanel from "../../products/components/AvailableForOdresProductsListPanel";
 
 
 const CompanyProductsPage: React.FC = () => {

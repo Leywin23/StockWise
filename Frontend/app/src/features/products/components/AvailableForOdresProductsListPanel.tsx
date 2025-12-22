@@ -239,9 +239,9 @@ const AvailableForOdresProductsListPanel: React.FC<Props> = ({ onCreateOrder }) 
                   </td>
                 </tr>
               ) : (
-                filteredOffers.map((p) => (
+                filteredOffers.map((p, idx) => (
                   <tr
-                    key={p.companyProductId}
+                    key={idx}
                     className="border-t border-slate-100 hover:bg-slate-50"
                   >
                     <td className="px-2 py-2">

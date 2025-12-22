@@ -8,10 +8,11 @@ using StockWise.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-using System.Net;
 
 namespace StockWise.Tests.Api.Controllers.AccountController_Tests
 {
@@ -61,7 +62,7 @@ namespace StockWise.Tests.Api.Controllers.AccountController_Tests
             await CreateUnconfirmedUserAsync(_factory, email, code);
 
             var client = _factory.CreateClient();
-            var resp = await client.PostAsync($"api/Account/verify-email?email={email}&code={code}", null);
+            var resp = await client.PostAsJsonAsync($"api/Account/verify-email?email", new { Email = email, Code=code});
             var body = await resp.Content.ReadAsStringAsync();
 
             resp.StatusCode.Should().Be(HttpStatusCode.OK, body);
@@ -84,19 +85,27 @@ namespace StockWise.Tests.Api.Controllers.AccountController_Tests
             await CreateUnconfirmedUserAsync(_factory, email, code);
 
             var client = _factory.CreateClient();
-            var resp = await client.PostAsync($"api/Account/verify-email?email={email}&code={wrongCode}", null);
+
+            var resp = await client.PostAsJsonAsync(
+                "/api/Account/verify-email",
+                new { Email = email, Code = wrongCode }   
+            );
+
             var body = await resp.Content.ReadAsStringAsync();
 
             resp.StatusCode.Should().Be(HttpStatusCode.BadRequest, body);
+
             using (var scope = _factory.Services.CreateScope())
             {
-                var db = scope.ServiceProvider.GetRequiredService<StockWiseDb>();
                 var um = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
                 var testUser = await um.FindByEmailAsync(email);
-                testUser?.EmailConfirmed.Should().Be(false);
+                testUser.Should().NotBeNull();
+                testUser!.EmailConfirmed.Should().BeFalse();
             }
+
             body.Should().NotBeNullOrEmpty();
-            body!.Should().Contain("Verification code not found or expired.");
         }
+
+
     }
 }

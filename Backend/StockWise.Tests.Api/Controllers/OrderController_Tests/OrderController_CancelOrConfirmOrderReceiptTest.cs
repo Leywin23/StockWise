@@ -83,7 +83,7 @@ namespace StockWise.Tests.Api.Controllers.OrderController_Tests
             var client = _factory.CreateClient();
 
             var resp = await client.PutAsJsonAsync(
-                $"/api/Order/CancellOrCorfirm/{orderId}",
+                $"/api/Order/CancelOrCorfirm/{orderId}",
                 OrderStatus.Completed); 
 
             var body = await resp.Content.ReadAsStringAsync();
@@ -158,8 +158,8 @@ namespace StockWise.Tests.Api.Controllers.OrderController_Tests
             var client = _factory.CreateClient();
 
             var resp = await client.PutAsJsonAsync(
-                $"/api/Order/CancellOrCorfirm/{orderId}",
-                OrderStatus.Cancelled);
+                $"/api/Order/CancelOrCorfirm/{orderId}",
+                OrderStatus.Canceled);
 
             var body = await resp.Content.ReadAsStringAsync();
 
@@ -169,7 +169,7 @@ namespace StockWise.Tests.Api.Controllers.OrderController_Tests
             {
                 var db2 = scope2.ServiceProvider.GetRequiredService<StockWiseDb>();
                 var updated = db2.Orders.Single(o => o.Id == orderId);
-                updated.Status.Should().Be(OrderStatus.Cancelled);
+                updated.Status.Should().Be(OrderStatus.Canceled);
             }
         }
 
@@ -233,7 +233,7 @@ namespace StockWise.Tests.Api.Controllers.OrderController_Tests
             var client = _factory.CreateClient();
 
             var resp = await client.PutAsJsonAsync(
-                $"/api/Order/CancellOrCorfirm/{orderId}",
+                $"/api/Order/CancelOrCorfirm/{orderId}",
                 OrderStatus.Pending);
 
             var body = await resp.Content.ReadAsStringAsync();
@@ -248,7 +248,7 @@ namespace StockWise.Tests.Api.Controllers.OrderController_Tests
             var client = _factory.CreateClient();
 
             var resp = await client.PutAsJsonAsync(
-                "/api/Order/CancellOrCorfirm/999999",
+                "/api/Order/CancelOrCorfirm/999999",
                 OrderStatus.Completed);
 
             var body = await resp.Content.ReadAsStringAsync();

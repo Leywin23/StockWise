@@ -22,43 +22,82 @@ namespace StockWise.Tests.Api.Controllers.AccountController_Tests
         {
             _factory = factory;
         }
-        private async Task<AppUser> CreatePendingUser(CustomWebAppFactory factory)
+        private static async Task<AppUser> CreatePendingUser(CustomWebAppFactory factory)
         {
-            var scope = factory.Services.CreateScope();
+            using var scope = factory.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<StockWiseDb>();
             var um = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
-            var company = db.Companies.First();
+
+            var company = db.Companies.Single(c => c.NIP == "1234567890");
+
+            var unique = Guid.NewGuid().ToString("N")[..8];
+            var email = $"pending-{unique}@test.com";
+            var userName = $"pending_{unique}";
+
             var user = new AppUser
             {
-                UserName = "Test1",
-                Email = "Test1@test.com",
-                CompanyMembershipStatus = CompanyMembershipStatus.Pending,
+                UserName = userName,
+                Email = email,
+                EmailConfirmed = true,
+                CompanyId = company.Id,
                 Company = company,
+                CompanyMembershipStatus = CompanyMembershipStatus.Pending
             };
-            var res = await um.CreateAsync(user, "Pas$word1");
-            res.Succeeded.Should().BeTrue();
+
+            var res = await um.CreateAsync(user, "P@ssw0rd1A!");
+            res.Succeeded.Should().BeTrue(
+                $"CreateAsync failed: {string.Join("; ", res.Errors.Select(e => $"{e.Code}:{e.Description}"))}"
+            );
 
             return user;
         }
 
-        private async Task<AppUser> CreateApprovedUser(CustomWebAppFactory factory)
+
+        private static async Task<AppUser> CreateApprovedUser(CustomWebAppFactory factory)
         {
-            var scope = factory.Services.CreateScope();
+            using var scope = factory.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<StockWiseDb>();
             var um = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
-            var company = db.Companies.First();
+
+            var company = db.Companies.Single(c => c.NIP == "1234567890");
+
+            var unique = Guid.NewGuid().ToString("N")[..8];
+            var email = $"approved-{unique}@test.com";
+            var userName = $"approved_{unique}";
+
             var user = new AppUser
             {
-                UserName = "Test1",
-                Email = "Test1@test.com",
-                CompanyMembershipStatus = CompanyMembershipStatus.Approved,
-                Company = company,
+                UserName = userName,
+                Email = email,
+                EmailConfirmed = true,
+                CompanyId = company.Id,
+                Company = company, 
+                CompanyMembershipStatus = CompanyMembershipStatus.Approved
             };
 
-            var res = await um.CreateAsync(user, "Pas$word1");
-            res.Succeeded.Should().BeTrue();
+            var res = await um.CreateAsync(user, "P@ssw0rd1A!");
+            res.Succeeded.Should().BeTrue(
+                $"CreateAsync failed: {string.Join("; ", res.Errors.Select(e => $"{e.Code}:{e.Description}"))}"
+            );
 
             return user;
+        }
+
+        private static async Task EnsureCurrentUserHasCompany(CustomWebAppFactory factory)
+        {
+            using var scope = factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<StockWiseDb>();
+            var um = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+
+            var currentUser = await um.FindByIdAsync("u1");
+            currentUser.Should().NotBeNull();
+
+            var acme = db.Companies.Single(c => c.NIP == "1234567890");
+
+            currentUser!.CompanyId = acme.Id;
+            currentUser.CompanyMembershipStatus = CompanyMembershipStatus.Approved;
+
+            (await um.UpdateAsync(currentUser)).Succeeded.Should().BeTrue();
         }
         private async Task<AppUser> CreatePendingUserAndComapny(CustomWebAppFactory factory)
         {
@@ -113,28 +152,31 @@ namespace StockWise.Tests.Api.Controllers.AccountController_Tests
         [Fact]
         public async Task ApproveUserTest_ShouldReturnBadRequestUserFromAnotherCompany()
         {
-            var user = await CreatePendingUserAndComapny(_factory);
+            await EnsureCurrentUserHasCompany(_factory);
+
+            var user = await CreatePendingUserAndComapny(_factory); 
+
             var client = _factory.CreateClient();
-            var resp = await client.PostAsync($"api/Account/approve-user/{user.Id}", null);
+            var resp = await client.PostAsync($"/api/Account/approve-user/{user.Id}", null);
             var body = await resp.Content.ReadAsStringAsync();
 
             resp.StatusCode.Should().Be(HttpStatusCode.BadRequest, body);
+            body.Should().Contain("User does not belong to your company.");
 
             using (var scope = _factory.Services.CreateScope())
             {
                 var um = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
                 var approvedUser = await um.FindByIdAsync(user.Id);
-                approvedUser.Should().NotBeNull();
 
+                approvedUser.Should().NotBeNull();
                 approvedUser!.CompanyMembershipStatus.Should().Be(CompanyMembershipStatus.Pending);
             }
-            body.Should().NotBeNull();
-            body.Should().Contain("User does not belong to your company.");
         }
-
         [Fact]
         public async Task ApproveUser_ShouldReturnBadRequest_WhenUserIsNotPending()
         {
+            await EnsureCurrentUserHasCompany(_factory);
+
             var user = await CreateApprovedUser(_factory);
 
             var client = _factory.CreateClient();
@@ -148,6 +190,7 @@ namespace StockWise.Tests.Api.Controllers.AccountController_Tests
             {
                 var um2 = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
                 var reloaded = await um2.FindByIdAsync(user.Id);
+                reloaded.Should().NotBeNull();
                 reloaded!.CompanyMembershipStatus.Should().Be(CompanyMembershipStatus.Approved);
             }
         }

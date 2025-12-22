@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { CompanyWithAccountDto, CreateCompanyWithAccountDto, createCompanyWithAccountFromApi, CreateProductDto, postProductToApi } from '../../api';
+import { CompanyWithAccountDto, CreateCompanyWithAccountDto, createCompanyWithAccountFromApi, CreateProductDto, postProductToApi } from '../../../api';
 import { json } from 'stream/consumers';
 
-const CreateCompanyWithAccount: React.FC = () => {
+export const CreateCompanyWithAccount: React.FC = () => {
   const [form, setForm] = useState<CreateCompanyWithAccountDto>({
     userName: "",
     email: "",

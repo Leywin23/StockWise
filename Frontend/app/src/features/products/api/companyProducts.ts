@@ -193,46 +193,41 @@ export const deleteCompanyProductFromApi = async (productId : number) : Promise<
 
 export type updateCompanyProductDto = {
   companyProductName: string;
-  description: string;
+  categoryName: string;
+  description?: string;
   price: number;
   currency: string;
-  categoryName: string;
-  imageFile: File | null;
   stock: number;
   isAvailableForOrder: boolean;
+  imageFile?: File | null;
 };
 
 export const putCompanyProductFromApi = async (
   productId: number,
   dto: updateCompanyProductDto
-): Promise<companyProductDto> => {
-  const formData = new FormData();
+) => {
+  const fd = new FormData();
 
-  formData.append("CompanyProductName", dto.companyProductName);
-  formData.append("Description", dto.description || "");
-  formData.append("Category", dto.categoryName);
+  fd.append("CompanyProductName", dto.companyProductName ?? "");
+  fd.append("CategoryName", dto.categoryName ?? "");
+  fd.append("Description", dto.description ?? "");
+  fd.append("Price", dto.price.toFixed(2).replace(".", ","));
 
-  const priceStr = dto.price.toLocaleString("pl-PL", {
-    useGrouping: false,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  });
-  formData.append("Price", priceStr);
-  formData.append("Currency", dto.currency.toUpperCase()); 
-
-  formData.append("Stock", String(dto.stock));
-  formData.append("IsAvailableForOrder", String(dto.isAvailableForOrder));
+  fd.append("Currency", (dto.currency ?? "PLN").toUpperCase());
+  fd.append("Stock", String(dto.stock ?? 0));
+  fd.append("IsAvailableForOrder", String(!!dto.isAvailableForOrder));
 
   if (dto.imageFile instanceof File) {
-    formData.append("ImageFile", dto.imageFile);
+    fd.append("ImageFile", dto.imageFile);
   }
 
-  const response = await apiClient.put<companyProductDto>(
-    `/CompanyProduct/${productId}`,
-    formData
-  );
-  return response.data;
+  const res = await apiClient.put(`/CompanyProduct/${productId}`, fd, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+  return res.data;
 };
+
 
 export const convertToAnotherCurrencyFromApi = async (
   productId: number,

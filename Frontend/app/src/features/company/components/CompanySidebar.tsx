@@ -1,5 +1,5 @@
 import React from "react";
-import { CompanyView } from "../../../Components/Company/CompanyView";
+import { CompanyView } from "./CompanyView";
 
 type Props = {
   activeView: CompanyView;

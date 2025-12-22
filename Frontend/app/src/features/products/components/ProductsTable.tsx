@@ -24,12 +24,24 @@ type EditForm = {
   companyProductName: string;
   category: string;
   description: string;
-  amount: number;
+
+  amountText: string;
+
   currency: string;
   stock: number;
   isAvailableForOrder: boolean;
   imageFile: File | null;
 };
+
+const parsePriceToNumber = (raw: string): number | null => {
+  const s = raw.trim().replace(/\s+/g, "").replace(",", ".");
+  if (s === "") return null;
+  const n = Number(s);
+  if (!Number.isFinite(n)) return null;
+  return n;
+};
+
+const formatPriceForInput = (n: number) => String(n).replace(".", ",");
 
 const ProductsTable: React.FC<Props> = ({
   products,
@@ -54,7 +66,7 @@ const ProductsTable: React.FC<Props> = ({
       companyProductName: p.companyProductName,
       category: p.category?.name ?? "",
       description: p.description,
-      amount: p.price.amount,
+      amountText: formatPriceForInput(p.price.amount),
       currency: p.price.currency.code,
       stock: p.stock,
       isAvailableForOrder: p.isAvailableForOrder,
@@ -79,10 +91,16 @@ const ProductsTable: React.FC<Props> = ({
   const saveEdit = async (id: number) => {
     if (!editForm) return;
 
+    const parsedPrice = parsePriceToNumber(editForm.amountText);
+    if (parsedPrice === null) {
+      toast.error("Podaj poprawną cenę (np. 12,34)");
+      return;
+    }
+
     const dto: updateCompanyProductDto = {
       companyProductName: editForm.companyProductName,
       description: editForm.description,
-      price: editForm.amount,
+      price: parsedPrice,
       currency: editForm.currency,
       categoryName: editForm.category,
       imageFile: editForm.imageFile,
@@ -126,9 +144,7 @@ const ProductsTable: React.FC<Props> = ({
       const res = await convertToAnotherCurrencyFromApi(productId, code);
       setConvertResult(res);
     } catch (err: any) {
-      toast.error(
-        err?.response?.data?.detail || "Failed to convert currency"
-      );
+      toast.error(err?.response?.data?.detail || "Failed to convert currency");
     }
   };
 
@@ -162,8 +178,8 @@ const ProductsTable: React.FC<Props> = ({
                 <td
                   colSpan={10}
                   className="px-3 py-6 text-center text-slate-500 text-sm"
-                > 
-                    no products.
+                >
+                  no products.
                 </td>
               </tr>
             ) : (
@@ -252,7 +268,9 @@ const ProductsTable: React.FC<Props> = ({
                           </button>
                           <button
                             type="button"
-                            onClick={() => onOpenHistory(p.companyProductId, p.companyProductName)}
+                            onClick={() =>
+                              onOpenHistory(p.companyProductId, p.companyProductName)
+                            }
                             className="px-2 py-1 rounded border border-slate-300 text-[11px] text-slate-700 hover:bg-slate-100"
                             title="Inventory movements"
                           >
@@ -274,10 +292,7 @@ const ProductsTable: React.FC<Props> = ({
                                 <input
                                   value={editForm.companyProductName}
                                   onChange={(e) =>
-                                    handleEditChange(
-                                      "companyProductName",
-                                      e.target.value
-                                    )
+                                    handleEditChange("companyProductName", e.target.value)
                                   }
                                   className="w-full rounded-md border border-slate-300 px-2 py-1"
                                 />
@@ -302,10 +317,7 @@ const ProductsTable: React.FC<Props> = ({
                                   type="number"
                                   value={editForm.stock}
                                   onChange={(e) =>
-                                    handleEditChange(
-                                      "stock",
-                                      Number(e.target.value)
-                                    )
+                                    handleEditChange("stock", Number(e.target.value))
                                   }
                                   className="w-full rounded-md border border-slate-300 px-2 py-1"
                                 />
@@ -318,16 +330,14 @@ const ProductsTable: React.FC<Props> = ({
                                   Price
                                 </label>
                                 <input
-                                  type="number"
-                                  step="0.01"
-                                  value={editForm.amount}
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={editForm.amountText}
                                   onChange={(e) =>
-                                    handleEditChange(
-                                      "amount",
-                                      Number(e.target.value)
-                                    )
+                                    handleEditChange("amountText", e.target.value)
                                   }
                                   className="w-full rounded-md border border-slate-300 px-2 py-1"
+                                  placeholder="np. 12,34"
                                 />
                               </div>
                               <div>
@@ -350,10 +360,7 @@ const ProductsTable: React.FC<Props> = ({
                                   type="file"
                                   accept="image/*"
                                   onChange={(e) =>
-                                    handleEditChange(
-                                      "imageFile",
-                                      e.target.files?.[0] ?? null
-                                    )
+                                    handleEditChange("imageFile", e.target.files?.[0] ?? null)
                                   }
                                   className="w-full text-xs"
                                 />
@@ -367,10 +374,7 @@ const ProductsTable: React.FC<Props> = ({
                               <input
                                 value={editForm.description}
                                 onChange={(e) =>
-                                  handleEditChange(
-                                    "description",
-                                    e.target.value
-                                  )
+                                  handleEditChange("description", e.target.value)
                                 }
                                 className="w-full rounded-md border border-slate-300 px-2 py-1"
                               />
@@ -382,16 +386,11 @@ const ProductsTable: React.FC<Props> = ({
                                   type="checkbox"
                                   checked={editForm.isAvailableForOrder}
                                   onChange={(e) =>
-                                    handleEditChange(
-                                      "isAvailableForOrder",
-                                      e.target.checked
-                                    )
+                                    handleEditChange("isAvailableForOrder", e.target.checked)
                                   }
                                   className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                                 />
-                                <span className="ml-2">
-                                  Available for order
-                                </span>
+                                <span className="ml-2">Available for order</span>
                               </label>
 
                               <div className="ml-auto flex gap-2">
@@ -428,9 +427,7 @@ const ProductsTable: React.FC<Props> = ({
                               <input
                                 type="text"
                                 value={convertCode}
-                                onChange={(e) =>
-                                  setConvertCode(e.target.value)
-                                }
+                                onChange={(e) => setConvertCode(e.target.value)}
                                 maxLength={3}
                                 className="w-24 rounded-md border border-slate-300 px-2 py-1 uppercase"
                                 placeholder="USD"
@@ -448,8 +445,7 @@ const ProductsTable: React.FC<Props> = ({
                               <div className="text-xs text-slate-700 ml-2">
                                 {p.price.amount} {p.price.currency.code} →{" "}
                                 <span className="font-semibold">
-                                  {convertResult.amount}{" "}
-                                  {convertResult.currency.code}
+                                  {convertResult.amount} {convertResult.currency.code}
                                 </span>
                               </div>
                             )}

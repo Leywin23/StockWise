@@ -26,15 +26,44 @@ namespace StockWise.Tests.Api.Controllers.OrderController_Tests
         public async Task AcceptOrRejectOrder_AcceptShouldReturnOk()
         {
             int orderId;
+
             using (var scope = _factory.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<StockWiseDb>();
-                orderId = db.Orders.First().Id;
+
+                var seller = db.Companies.First(c => c.NIP == "1234567890"); 
+                var buyer = db.Companies.First(c => c.NIP != "1234567890");
+
+                var product = db.CompanyProducts.First(p => p.CompanyId == seller.Id);
+
+                var order = new Order
+                {
+                    SellerId = seller.Id,
+                    BuyerId = buyer.Id,
+                    Status = OrderStatus.Pending,
+                    CreatedAt = DateTime.UtcNow,
+                    UserNameWhoMadeOrder = "test"
+                };
+
+                order.ProductsWithQuantity.Add(new OrderProduct
+                {
+                    CompanyProductId = product.CompanyProductId,
+                    Quantity = 1
+                });
+
+                order.TotalPrice = Money.Of(product.Price.Amount * 1, product.Price.Currency.Code);
+
+                db.Orders.Add(order);
+                db.SaveChanges();
+
+                orderId = order.Id;
             }
+
             var client = _factory.CreateClient();
-            var status = OrderStatus.Accepted;
-            var resp = await client.PutAsJsonAsync($"/api/Order/AcceptOrRejectOrder/{orderId}", status);
+
+            var resp = await client.PutAsJsonAsync($"/api/Order/AcceptOrRejectOrder/{orderId}", OrderStatus.Accepted);
             var body = await resp.Content.ReadAsStringAsync();
+
             resp.StatusCode.Should().Be(HttpStatusCode.OK, body);
 
             using (var scope2 = _factory.Services.CreateScope())
@@ -44,6 +73,7 @@ namespace StockWise.Tests.Api.Controllers.OrderController_Tests
                 updated.Status.Should().Be(OrderStatus.Accepted);
             }
         }
+
 
         [Fact]
         public async Task AcceptOrRejectOrder_RejectShouldReturnOk()

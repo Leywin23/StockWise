@@ -236,6 +236,7 @@ namespace StockWise.Tests.Api.Controllers.OrderController_Tests
         public async Task UpdateOrder_WhenStatusIsNotPending_ShouldReturn409()
         {
             int orderId;
+            string ean = RandomEan8();
 
             using (var scope = _factory.Services.CreateScope())
             {
@@ -254,12 +255,12 @@ namespace StockWise.Tests.Api.Controllers.OrderController_Tests
                 var prod = new CompanyProduct
                 {
                     CompanyProductName = "P",
-                    EAN = "11111111",
+                    EAN = ean,
                     Description = "d",
                     Price = Money.Of(10, "PLN"),
                     Stock = 100,
-                    Company = seller,
-                    Category = cat,
+                    CompanyId = seller.Id,     
+                    CategoryId = cat.CategoryId,
                     IsAvailableForOrder = true
                 };
                 db.CompanyProducts.Add(prod);
@@ -267,17 +268,20 @@ namespace StockWise.Tests.Api.Controllers.OrderController_Tests
 
                 var order = new Order
                 {
-                    Seller = seller,
-                    Buyer = buyer,
-                    Status = OrderStatus.Accepted,
+                    SellerId = seller.Id,      
+                    BuyerId = buyer.Id,
+                    Status = OrderStatus.Accepted, 
                     CreatedAt = DateTime.UtcNow,
                     UserNameWhoMadeOrder = "loginuser",
-                    ProductsWithQuantity = new List<OrderProduct>
-            {
-                new OrderProduct { CompanyProductId = prod.CompanyProductId, Quantity = 1 }
-            },
                     TotalPrice = Money.Of(10, "PLN")
                 };
+
+                order.ProductsWithQuantity.Add(new OrderProduct
+                {
+                    CompanyProductId = prod.CompanyProductId,
+                    Quantity = 1
+                });
+
                 db.Orders.Add(order);
                 db.SaveChanges();
 
@@ -285,12 +289,13 @@ namespace StockWise.Tests.Api.Controllers.OrderController_Tests
             }
 
             var client = _factory.CreateClient();
+
             var dto = new UpdateOrderDto
             {
                 Currency = "PLN",
                 ProductsEANWithQuantity = new()
                 {
-                    ["11111111"] = 5
+                    [ean] = 5
                 }
             };
 
@@ -300,6 +305,16 @@ namespace StockWise.Tests.Api.Controllers.OrderController_Tests
             resp.StatusCode.Should().Be(HttpStatusCode.Conflict, body);
             body.Should().Contain("Only 'Pending' orders can be edited");
         }
+
+        private static string RandomEan8()
+        {
+
+            var s = Guid.NewGuid().ToString("N");
+            var digits = new string(s.Where(char.IsDigit).ToArray());
+            if (digits.Length < 7) digits = digits.PadRight(7, '1');
+            return "9" + digits.Substring(0, 7);
+        }
+
         [Fact]
         public async Task UpdateOrder_WhenCompanyIsNotBuyer_ShouldReturn403()
         {
