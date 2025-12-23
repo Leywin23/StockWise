@@ -5,7 +5,7 @@ import {
   CompanyProductSortBy,
   getAllAvailableCompanyProductsFromApi,
   PageResult,
-} from "../api/companyProducts";
+} from "../../products/api/companyProducts";
 import { useAuth } from "../../../app/core/context/AuthContext";
 import { toast } from "react-toastify";
 
@@ -242,6 +242,8 @@ const AvailableForOdresProductsListPanel: React.FC<Props> = ({ onCreateOrder }) 
                 filteredOffers.map((p, idx) => (
                   <tr
                     key={idx}
+
+                    
                     className="border-t border-slate-100 hover:bg-slate-50"
                   >
                     <td className="px-2 py-2">

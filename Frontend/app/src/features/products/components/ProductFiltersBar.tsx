@@ -117,8 +117,8 @@ const ProductFiltersBar: React.FC<Props> = ({
           onChange={(e) => setSortDir(Number(e.target.value))}
           className="rounded-md border border-slate-300 px-2 py-1"
         >
-          <option value={0}>Asc</option>
-          <option value={1}>Desc</option>
+          <option value={0}>Desc</option>
+          <option value={1}>Asc</option>
         </select>
       </div>
 

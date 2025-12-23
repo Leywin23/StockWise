@@ -19,7 +19,7 @@ import OrdersListPanel from "../../orders/components/OrdersListPanel";
 import CreateOrderPanel from "../../orders/components/CreateOrderPanel";
 import InventoryMovementsPanel from "../../inventory/componets/InventoryMovementsPanel";
 import AddInventoryMovementPanel from "../../inventory/componets/AddInventoryMovementPanel";
-import AvailableForOdresProductsListPanel from "../../products/components/AvailableForOdresProductsListPanel";
+import AvailableForOdresProductsListPanel from "../../orders/components/AvailableForOdresProductsListPanel";
 
 
 const CompanyProductsPage: React.FC = () => {
