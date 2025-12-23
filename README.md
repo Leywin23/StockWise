@@ -161,12 +161,14 @@ The project includes **extensive integration and unit testing**, covering:
 - Axios
 
 ## Frontend - screenshots 📷
+<img width="1844" height="916" alt="Login Page" src="https://github.com/user-attachments/assets/a16096d6-d5c1-4a76-9319-773891c88df8" />
+<img width="1848" height="922" alt="RegisterWithCompany" src="https://github.com/user-attachments/assets/df59139b-204c-4069-9bb8-1e3cd7c9d4ae" />
+<img width="1849" height="922" alt="RegisterPage" src="https://github.com/user-attachments/assets/b1f11548-7479-4684-a2ba-7d8c488e74a2" />
+<img width="1842" height="901" alt="VerifyPage" src="https://github.com/user-attachments/assets/a1f40a27-d15f-4527-a507-2e718dc0c199" />
 <img width="1842" height="676" alt="CompanyProductList" src="https://github.com/user-attachments/assets/d57acfe7-c5e4-4430-83d6-0c4cba8b63c0" />
 <img width="1522" height="133" alt="convert" src="https://github.com/user-attachments/assets/0786e90b-75d9-4c6d-8b0a-625800aa5962" />
 <img width="1806" height="838" alt="AvailableList" src="https://github.com/user-attachments/assets/144cb673-8876-475f-bfc8-b345c901bd81" />
 <img width="1850" height="520" alt="MovementsList" src="https://github.com/user-attachments/assets/ff2235d6-ea32-422c-9cb6-f40c60e0b6a3" />
-<img width="778" height="895" alt="CreateOrderFrom" src="https://github.com/user-attachments/assets/7f9a7290-1bbb-4b5c-9eb4-631929a872da" />
-<img width="626" height="581" alt="Add new movement" src="https://github.com/user-attachments/assets/9052672b-853c-4f6d-9d10-cfe518eb1762" />
 <img width="1846" height="716" alt="Order Placed" src="https://github.com/user-attachments/assets/c3ee5006-9c63-49db-aeb4-2a013a8639bd" />
 <img width="1845" height="791" alt="Order Recived" src="https://github.com/user-attachments/assets/63e6274d-da2d-4e7e-869a-da015141a11d" />
-<img width="1848" height="909" alt="Login Page" src="https://github.com/user-attachments/assets/43996487-49db-4693-b486-8dbc9840dad3" />
+
