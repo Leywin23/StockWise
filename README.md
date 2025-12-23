@@ -159,3 +159,14 @@ The project includes **extensive integration and unit testing**, covering:
 - Tailwind CSS
 - React Hook Form + Yup
 - Axios
+
+## Frontend - screenshots 📷
+<img width="1842" height="676" alt="CompanyProductList" src="https://github.com/user-attachments/assets/d57acfe7-c5e4-4430-83d6-0c4cba8b63c0" />
+<img width="1522" height="133" alt="convert" src="https://github.com/user-attachments/assets/0786e90b-75d9-4c6d-8b0a-625800aa5962" />
+<img width="1806" height="838" alt="AvailableList" src="https://github.com/user-attachments/assets/144cb673-8876-475f-bfc8-b345c901bd81" />
+<img width="1850" height="520" alt="MovementsList" src="https://github.com/user-attachments/assets/ff2235d6-ea32-422c-9cb6-f40c60e0b6a3" />
+<img width="778" height="895" alt="CreateOrderFrom" src="https://github.com/user-attachments/assets/7f9a7290-1bbb-4b5c-9eb4-631929a872da" />
+<img width="626" height="581" alt="Add new movement" src="https://github.com/user-attachments/assets/9052672b-853c-4f6d-9d10-cfe518eb1762" />
+<img width="1846" height="716" alt="Order Placed" src="https://github.com/user-attachments/assets/c3ee5006-9c63-49db-aeb4-2a013a8639bd" />
+<img width="1845" height="791" alt="Order Recived" src="https://github.com/user-attachments/assets/63e6274d-da2d-4e7e-869a-da015141a11d" />
+<img width="1848" height="909" alt="Login Page" src="https://github.com/user-attachments/assets/43996487-49db-4693-b486-8dbc9840dad3" />
