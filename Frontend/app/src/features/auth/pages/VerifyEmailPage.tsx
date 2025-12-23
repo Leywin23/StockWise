@@ -79,7 +79,7 @@ const VerifyEmailPage = (props: Props) => {
             <input
               {...register("code")}
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 tracking-widest"
-              placeholder="e.g. 123456"
+
             />
             {errors.code && (
               <p className="mt-1 text-xs text-red-500">
