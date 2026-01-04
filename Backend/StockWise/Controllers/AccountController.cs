@@ -165,6 +165,12 @@ namespace StockWise.Controllers
             var result = await _accountService.CreateCompanyWithAccountAsync(dto);
             return this.ToActionResult(result);
         }
-
+        [HttpGet("CompanyWorkers")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> GetAllCompanyUsers()
+        {
+            var result = await _accountService.GetAllWorkersAsync();
+            return this.ToActionResult(result);
+        }
     }
 }

@@ -107,6 +107,16 @@
   },
   {
     "ContainingType": "StockWise.Controllers.AccountController",
+    "Method": "GetAllCompanyUsers",
+    "RelativePath": "api/Account/CompanyWorkers",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockWise.Controllers.AccountController",
     "Method": "Login",
     "RelativePath": "api/Account/login",
     "HttpMethod": "POST",

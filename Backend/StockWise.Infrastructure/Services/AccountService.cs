@@ -1,18 +1,19 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using StockWise.Models;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.IdentityModel.Tokens.Jwt;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
-using StockWise.Infrastructure.Persistence;
-using StockWise.Application.Contracts.AccountDtos;
 using StockWise.Application.Abstractions;
+using StockWise.Application.Contracts.AccountDtos;
 using StockWise.Application.Interfaces;
 using StockWise.Infrastructure.Identity;
-using Microsoft.AspNetCore.Http;
+using StockWise.Infrastructure.Persistence;
+using StockWise.Models;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace StockWise.Infrastructure.Services
 {
@@ -523,5 +524,31 @@ namespace StockWise.Infrastructure.Services
             return ServiceResult<CompanyWithAccountDto>.Ok(result);
         }
 
+        public async Task<ServiceResult<List<WorkerDto>>> GetAllWorkersAsync(CancellationToken ct = default)
+        {
+            var currentUser = await _currentUserService.EnsureAsync(ct);
+            var users = await _context.Users.Where(u=>u.CompanyId == currentUser.CompanyId).ToListAsync();
+            if (!users.Any())
+                return ServiceResult <List<WorkerDto>>.NotFound("There isn't any worker assigned to your company");
+
+            var workers = new List<WorkerDto>();
+
+            foreach(var user in users)
+            {
+                var userRoles = await _userManager.GetRolesAsync(user);
+
+                var worker = new WorkerDto
+                {
+                    Id = user.Id,
+                    Name = user.UserName,
+                    Email = user.Email,
+                    Role = userRoles.FirstOrDefault(),
+                    CompanyMembershipStatus = user.CompanyMembershipStatus,
+                };
+
+                workers.Add(worker);
+            };
+            return ServiceResult<List<WorkerDto>>.Ok(workers);
+        }
     }
 }

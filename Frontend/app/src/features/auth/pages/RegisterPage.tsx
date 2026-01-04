@@ -2,7 +2,7 @@ import React from "react";
 import * as Yup from "yup";
 import "../../../shared/utils/yupExtensions";
 import { useForm } from "react-hook-form";
-import { ApiError, registerFromApi, RegisterRequest } from "../api/auth";
+import { ApiError, registerFromApi, RegisterRequest } from "../api/accountApi";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";

@@ -9,7 +9,7 @@ import {
   OrderStatus,
   putOrderFromApi,
   UpdateOrderDto, } from "../api/OrderApi";
-import { ApiError } from "../../auth/api/auth";
+import { ApiError } from "../../auth/api/accountApi";
 
 type ProductLine = { ean: string; quantity: number };
 type Tab = "received" | "placed";

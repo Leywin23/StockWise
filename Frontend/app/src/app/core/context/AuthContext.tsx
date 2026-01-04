@@ -1,7 +1,7 @@
 import React, { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { loginFromApi, LoginResponse } from "../../../features/auth/api/auth";
+import { loginFromApi, LoginResponse } from "../../../features/auth/api/accountApi";
 import { CompanyDto, getMyCompanyFromApi } from "../../../features/company/api/companyApi";
 
 export type UserProfile = {

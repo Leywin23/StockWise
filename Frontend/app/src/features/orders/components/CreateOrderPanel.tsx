@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
 import { CreateOrderDto, postOrderFromApi } from "../api/OrderApi";
-import { ApiError } from "../../auth/api/auth";
+import { ApiError } from "../../auth/api/accountApi";
 import { CompanyProductWithCompanyDto } from "../../products/api/companyProducts";
 
 type ProductLine = { ean: string; quantity: number };

@@ -45,6 +45,21 @@ export type NewUserDto = {
   companyName: string;
 };
 
+export enum CompanyMembershipStatus {
+  Pending = 0,
+  Approved = 1,
+  Rejected = 2,
+  Suspended = 3,
+};
+
+export type WorkerDto = {
+  id: string;
+  name: string;
+  email: string;
+  role : string;
+  companyMembershipStatus: CompanyMembershipStatus;
+};
+
 export const registerFromApi = async(
   data: RegisterRequest
 ): Promise<NewUserDto> => {
@@ -54,5 +69,10 @@ export const registerFromApi = async(
 
 export const logoutFromApi = async() => {
   const res = await apiClient.post("/Account/logout", null);
+  return res.data;
+};
+
+export const getAllCompanyWorkers = async() : Promise<WorkerDto[]>=>{
+  const res = await apiClient.get<WorkerDto[]>('Account/CompanyWorkers');
   return res.data;
 };

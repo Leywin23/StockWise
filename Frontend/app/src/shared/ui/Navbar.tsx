@@ -1,5 +1,5 @@
 import React from 'react'
-import { logoutFromApi } from '../../features/auth/api/auth'
+import { logoutFromApi } from '../../features/auth/api/accountApi'
 import { useAuth } from '../../app/core/context/AuthContext';
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';

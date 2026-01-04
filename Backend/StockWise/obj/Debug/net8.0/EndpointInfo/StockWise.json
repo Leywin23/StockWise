@@ -319,6 +319,18 @@
         }
       }
     },
+    "/api/Account/CompanyWorkers": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Company/me": {
       "get": {
         "tags": [

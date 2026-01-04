@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("StockWise.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+86262d6390e5f95261c8ccad312bec0169128518")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+05f36ea0c80fc3821e4de1cb435096ceda66f9ed")]
 [assembly: System.Reflection.AssemblyProductAttribute("StockWise.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("StockWise.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

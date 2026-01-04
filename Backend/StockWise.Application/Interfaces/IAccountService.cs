@@ -20,6 +20,7 @@ namespace StockWise.Application.Interfaces
         Task<ServiceResult<string>> SuspendUserFromCompanyAsync(string userId);
         Task<ServiceResult<string>> UnsuspendUserFromCompanyAsync(string userId);
         Task<ServiceResult<string>> VerifyEmailAsync(string email, string code, CancellationToken ct = default);
+        Task<ServiceResult<List<WorkerDto>>> GetAllWorkersAsync(CancellationToken ct = default);
 
     }
 }
