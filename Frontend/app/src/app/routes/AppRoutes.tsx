@@ -8,7 +8,7 @@ import CreateCompanyWithAccount from "../../features/company/components/CreateCo
 import CreateCompanyWithAccountPage from "../../features/auth/pages/CreateCompanyWithAccountPage";
 import VerifyEmailPage from "../../features/auth/pages/VerifyEmailPage";
 import VerifyEmail from "../../features/auth/pages/VerifyEmail";
-import ManagerPanel from "../../features/auth/pages/ManagerPanel";
+import ManagerPanel from "../../features/auth/pages/ManagerPage";
 
 type AuthGateProps = {
   whenLoggedIn: React.ReactNode;
@@ -107,7 +107,7 @@ export default function AppRoutes() {
           />
         }
       />
-      
+
       <Route path="*" element={<div>Not found</div>} />
     </Routes>
   );

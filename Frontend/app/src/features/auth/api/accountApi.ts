@@ -76,3 +76,8 @@ export const getAllCompanyWorkers = async() : Promise<WorkerDto[]>=>{
   const res = await apiClient.get<WorkerDto[]>('Account/CompanyWorkers');
   return res.data;
 };
+
+export const ApproveWorkerFromApi = async(userId: string) : Promise<string>=>{
+  const res = await apiClient.post<string>(`/Account/approve-user/${userId}`, null);
+  return res.data;
+};
