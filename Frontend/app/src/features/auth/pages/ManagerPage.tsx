@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { ApproveWorkerFromApi, CompanyMembershipStatus, getAllCompanyWorkers, WorkerDto } from '../api/accountApi'
+import { ApproveWorkerFromApi, CompanyMembershipStatus, getAllCompanyWorkers, SuspendWorkerFromCompany, UnsuspendWorkerFromApi, WorkerDto } from '../api/accountApi'
 import { toast } from 'react-toastify';
 
 type Props = {}
@@ -22,11 +22,33 @@ const ManagerPanel = (props: Props) => {
     const handleApproveWorker = async(userId:string)=>{
         try{
             const approveWorkerName = await ApproveWorkerFromApi(userId);
+            await getAllWorkers();
             toast.success(`Worker ${approveWorkerName} has been approved`);
         }catch(err:any){
-            console.log(err,"Problem with approving user occured");
+            console.log(err,"Problem with approving worker occured");
         }
     };
+
+    const handleSuspendWorker = async(userId: string)=>{
+        try{
+            const suspendedWorker = await SuspendWorkerFromCompany(userId);
+            await getAllWorkers();
+            toast.success(`Worker ${suspendedWorker} `);
+        }
+        catch(err:any){
+            console.log(err, "Problem with suspending worker occuerd");
+        }
+    }
+
+    const handleUnsuspendWorker = async(userId:string)=>{
+        try{
+            const unsuspendedWorker = await UnsuspendWorkerFromApi(userId);
+            await getAllWorkers();
+            toast.success(`Worker ${unsuspendedWorker} `);
+        }catch(err: any){
+            console.log(err, "Problem with unsuspending user occured");
+        }
+    }
 
   return (
     <div className="bg-white rounded-md border border-slate-200 overflow-hidden shadow-sm">
@@ -63,19 +85,39 @@ const ManagerPanel = (props: Props) => {
                             <td className="px-3 py-2">
                                 {CompanyMembershipStatus[w.companyMembershipStatus]}
                             </td>
-                            {w.companyMembershipStatus === CompanyMembershipStatus.Pending && (
+                            
                             <td>
                                 <div>
+                                    {w.companyMembershipStatus === CompanyMembershipStatus.Pending && (
                                     <button
                                         title='Approve worker'
-                                        onClick={() => ApproveWorkerFromApi(w.id)}
+                                        onClick={() => handleApproveWorker(w.id)}
                                         className="px-2 py-1 rounded border border-slate-300 text-[11px] hover:bg-slate-100"
                                     >
                                         ✓
                                     </button>
+                                    )}
+                                    {w.role !== 'Manager' &&  w.companyMembershipStatus === CompanyMembershipStatus.Approved &&(
+                                    <button
+                                        title='Suspend worker'
+                                        onClick={()=> handleSuspendWorker(w.id)}
+                                        className="px-2 py-1 rounded border border-slate-300 text-[11px] hover:bg-slate-100"
+                                    >
+                                        ❌
+                                    </button>
+                                    )}
+                                    {w.companyMembershipStatus === CompanyMembershipStatus.Suspended && (
+                                        <button title='Unsuspend worker'
+                                        onClick={()=> handleUnsuspendWorker(w.id)}
+                                        className="px-2 py-1 rounded border border-slate-300 text-[11px] hover:bg-slate-100">
+                                            🠉
+                                        </button>
+                                    )}
                                 </div>
-                            </td>)}
-                            
+                            </td>
+                            <td>
+
+                            </td>
                         </tr>
                     </React.Fragment>
                 )

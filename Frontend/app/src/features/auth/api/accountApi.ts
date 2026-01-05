@@ -78,6 +78,16 @@ export const getAllCompanyWorkers = async() : Promise<WorkerDto[]>=>{
 };
 
 export const ApproveWorkerFromApi = async(userId: string) : Promise<string>=>{
-  const res = await apiClient.post<string>(`/Account/approve-user/${userId}`, null);
+  const res = await apiClient.post<string>(`Account/approve-user/${userId}`);
   return res.data;
 };
+
+export const SuspendWorkerFromCompany = async(userId: string) : Promise<string> => {
+  const res = await apiClient.post<string>(`Account/companies/suspend/${userId}`);
+  return res.data;
+};
+
+export const UnsuspendWorkerFromApi = async(userId: string) : Promise<string> => {
+  const res = await apiClient.post<string>(`Account/companies/unsuspend/${userId}`);
+  return res.data;
+}
