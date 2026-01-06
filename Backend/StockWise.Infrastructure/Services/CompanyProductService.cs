@@ -167,12 +167,6 @@ namespace StockWise.Infrastructure.Services
             if (user?.CompanyId == null)
                 return ServiceResult<PageResult<CompanyProductDtoWithCompany>>.Forbidden("User is not assigned to any company.");
 
-
-            var query = _context.CompanyProducts
-                .AsNoTracking()
-                .Where(cp => cp.IsAvailableForOrder)
-                .ProjectTo<CompanyProductDtoWithCompany>(_mapper.ConfigurationProvider);
-
             var baseQuery = _context.CompanyProducts
                 .AsNoTracking()
                 .Where(cp => cp.IsAvailableForOrder && !cp.IsDeleted);

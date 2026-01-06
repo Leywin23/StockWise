@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using MailKit.Search;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Caching.Memory;
 using StockWise.Application.Abstractions;
 using StockWise.Application.Contracts.AccountDtos;
@@ -122,11 +124,13 @@ namespace StockWise.Infrastructure.Services
                 {
                     return ServiceResult<LoginDto>.Unauthorized("Email not found and/or password incorrect");
                 }
+                var roles = await _userManager.GetRolesAsync(user);
                 return ServiceResult<LoginDto>.Ok(new LoginDto
                 {
                     UserName = user.UserName,
                     Email = user.Email,
-                    Token = await _tokenService.CreateToken(user)
+                    Token = await _tokenService.CreateToken(user),
+                    Role = roles.FirstOrDefault()
                 });
             }
             catch (Exception e)
@@ -524,31 +528,74 @@ namespace StockWise.Infrastructure.Services
             return ServiceResult<CompanyWithAccountDto>.Ok(result);
         }
 
-        public async Task<ServiceResult<List<WorkerDto>>> GetAllWorkersAsync(CancellationToken ct = default)
+        public async Task<ServiceResult<PageResult<WorkerDto>>> GetAllWorkersAsync(WorkerQueryParams q, CancellationToken ct = default)
         {
-            var currentUser = await _currentUserService.EnsureAsync(ct);
-            var users = await _context.Users.Where(u=>u.CompanyId == currentUser.CompanyId).ToListAsync();
-            if (!users.Any())
-                return ServiceResult <List<WorkerDto>>.NotFound("There isn't any worker assigned to your company");
+            if (q.Page <= 0) q.Page = 1;
+            if (q.PageSize <= 0) q.PageSize = 10;
+            if (q.PageSize > 100) q.PageSize = 100;
 
-            var workers = new List<WorkerDto>();
+            var currentUser = await _currentUserService.EnsureAsync(ct);
+
+            var users = await _context.Users
+                .Where(u=>u.CompanyId == currentUser.CompanyId)
+                .AsNoTracking()
+                .ToListAsync(ct);
+
+            if (!users.Any())
+                return ServiceResult<PageResult<WorkerDto>>.NotFound("There isn't any worker assigned to your company");
+
+            var workers = new List<WorkerDto>(users.Count);
 
             foreach(var user in users)
             {
                 var userRoles = await _userManager.GetRolesAsync(user);
 
-                var worker = new WorkerDto
+                workers.Add(new WorkerDto
                 {
                     Id = user.Id,
                     Name = user.UserName,
                     Email = user.Email,
                     Role = userRoles.FirstOrDefault(),
                     CompanyMembershipStatus = user.CompanyMembershipStatus,
-                };
-
-                workers.Add(worker);
+                });
             };
-            return ServiceResult<List<WorkerDto>>.Ok(workers);
+
+
+            workers = (q.SortedBy, q.SortDir) switch
+            {
+                (WorkersSortBy.Role, SortDir.Asc) => workers.OrderBy(w => w.Role).ToList(),
+                (WorkersSortBy.Role, SortDir.Desc) => workers.OrderByDescending(w => w.Role).ToList(),
+
+                (WorkersSortBy.CompanyMembershipStatus, SortDir.Asc) => workers.OrderBy(w => w.CompanyMembershipStatus).ToList(),
+                (WorkersSortBy.CompanyMembershipStatus, SortDir.Desc) => workers.OrderByDescending(w => w.CompanyMembershipStatus).ToList(),
+
+                (WorkersSortBy.Name, SortDir.Asc) => workers.OrderBy(w => w.Name).ToList(),
+                (WorkersSortBy.Name, SortDir.Desc) => workers.OrderByDescending(w => w.Name).ToList(),
+
+                (WorkersSortBy.Email, SortDir.Asc) => workers.OrderBy(w => w.Email).ToList(),
+                (WorkersSortBy.Email, SortDir.Desc) => workers.OrderByDescending(w => w.Email).ToList(),
+
+                _ => workers
+            };
+
+            var totalCount = workers.Count();
+
+            workers = workers
+               .Skip((q.Page - 1) * q.PageSize)
+               .Take(q.PageSize)
+               .ToList();
+
+            var page = new PageResult<WorkerDto>
+            {
+                Page = q.Page,
+                PageSize = q.PageSize,
+                TotalCount = totalCount,
+                SortBy = q.SortedBy.ToString(),
+                SortDir = q.SortDir,
+                Items = workers,
+            };
+
+            return ServiceResult<PageResult<WorkerDto>>.Ok(page);
         }
     }
 }

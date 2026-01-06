@@ -167,9 +167,9 @@ namespace StockWise.Controllers
         }
         [HttpGet("CompanyWorkers")]
         [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> GetAllCompanyUsers()
+        public async Task<IActionResult> GetAllCompanyUsers([FromQuery] WorkerQueryParams q, CancellationToken ct = default)
         {
-            var result = await _accountService.GetAllWorkersAsync();
+            var result = await _accountService.GetAllWorkersAsync(q, ct);
             return this.ToActionResult(result);
         }
     }

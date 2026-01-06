@@ -324,6 +324,52 @@
         "tags": [
           "Account"
         ],
+        "parameters": [
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Role",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/CompanyRole"
+            }
+          },
+          {
+            "name": "CompanyMembershipStatus",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/CompanyMembershipStatus"
+            }
+          },
+          {
+            "name": "SortedBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/WorkersSortBy"
+            }
+          },
+          {
+            "name": "SortDir",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SortDir"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -1449,12 +1495,30 @@
   },
   "components": {
     "schemas": {
+      "CompanyMembershipStatus": {
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
       "CompanyProductSortBy": {
         "enum": [
           0,
           1,
           2,
           3
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "CompanyRole": {
+        "enum": [
+          0,
+          1
         ],
         "type": "integer",
         "format": "int32"
@@ -1704,6 +1768,16 @@
           }
         },
         "additionalProperties": false
+      },
+      "WorkersSortBy": {
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "format": "int32"
       }
     },
     "securitySchemes": {
