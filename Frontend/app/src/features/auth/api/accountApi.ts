@@ -1,4 +1,6 @@
+import { SortDirection } from "@mui/material";
 import apiClient from "../../../app/core/api/axiosClient";
+import { PageResult } from "../../products/api/companyProducts";
 
 export type LoginRequest = {
   email: string;
@@ -9,6 +11,7 @@ export type LoginResponse = {
   userName: string;
   email: string;
   token: string;
+  role:string;
 };
 
 export const loginFromApi = async (
@@ -60,6 +63,30 @@ export type WorkerDto = {
   companyMembershipStatus: CompanyMembershipStatus;
 };
 
+export enum CompanyRole {
+  Manager = 0,
+  Worker = 1,
+}
+
+export enum WorkersSortBy {
+  Name = 0,
+  Email = 1,
+  Role = 2,
+  CompanyMembershipStatus = 3,
+}
+
+export enum sortDir{
+  Desc,
+  Asc
+}
+
+export type WorkerQueryParams = {
+  page:number;
+  pageSize: number
+  sortedBy: WorkersSortBy;
+  sortDir: sortDir
+};
+
 export const registerFromApi = async(
   data: RegisterRequest
 ): Promise<NewUserDto> => {
@@ -72,9 +99,21 @@ export const logoutFromApi = async() => {
   return res.data;
 };
 
-export const getAllCompanyWorkers = async() : Promise<WorkerDto[]>=>{
-  const res = await apiClient.get<WorkerDto[]>('Account/CompanyWorkers');
-  return res.data;
+export const getAllCompanyWorkers = async(q: WorkerQueryParams) : Promise<PageResult<WorkerDto> | null>=>{
+  try{
+    const res = await apiClient.get<PageResult<WorkerDto>>('Account/CompanyWorkers', {
+      params:{
+        page: q.page,
+        pageSize: q.pageSize,
+        sortedBy: q.sortedBy,
+        sortDir: q.sortDir
+      }
+    });
+    return res.data;
+  }catch(err) {
+    console.error("GET /Account/CompanyWorkers error:", (err as any)?.response?.data ?? err);
+    return null;
+  }
 };
 
 export const ApproveWorkerFromApi = async(userId: string) : Promise<string>=>{
@@ -90,4 +129,4 @@ export const SuspendWorkerFromCompany = async(userId: string) : Promise<string> 
 export const UnsuspendWorkerFromApi = async(userId: string) : Promise<string> => {
   const res = await apiClient.post<string>(`Account/companies/unsuspend/${userId}`);
   return res.data;
-}
+};

@@ -32,7 +32,7 @@ const navigate = useNavigate();
         <div className="flex gap-4 items-center">
           {user && (
             <span>
-              {user.userName} ({user.email})
+              {user.userName} ({user.email}) [{user.role}]
             </span>
           )}
 

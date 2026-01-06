@@ -7,6 +7,7 @@ import { CompanyDto, getMyCompanyFromApi } from "../../../features/company/api/c
 export type UserProfile = {
   userName: string;
   email: string;
+  role: string;
 };
 
 type UserContextType = {
@@ -73,6 +74,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       const userObj: UserProfile = {
         userName: res.userName,
         email: res.email,
+        role: res.role
       };
 
       localStorage.setItem("token", res.token);

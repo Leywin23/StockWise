@@ -342,20 +342,6 @@
             }
           },
           {
-            "name": "Role",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/CompanyRole"
-            }
-          },
-          {
-            "name": "CompanyMembershipStatus",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/CompanyMembershipStatus"
-            }
-          },
-          {
             "name": "SortedBy",
             "in": "query",
             "schema": {
@@ -1495,30 +1481,12 @@
   },
   "components": {
     "schemas": {
-      "CompanyMembershipStatus": {
-        "enum": [
-          0,
-          1,
-          2,
-          3
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
       "CompanyProductSortBy": {
         "enum": [
           0,
           1,
           2,
           3
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
-      "CompanyRole": {
-        "enum": [
-          0,
-          1
         ],
         "type": "integer",
         "format": "int32"

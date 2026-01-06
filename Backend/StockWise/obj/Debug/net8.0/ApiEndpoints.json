@@ -124,16 +124,6 @@
         "IsRequired": false
       },
       {
-        "Name": "Role",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "CompanyMembershipStatus",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
         "Name": "SortedBy",
         "Type": "System.String",
         "IsRequired": false
